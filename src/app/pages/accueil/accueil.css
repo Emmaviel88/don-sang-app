@@ -1,0 +1,9 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f2f4f7;
+}
+
+h1 {
+  margin: 0;
+}

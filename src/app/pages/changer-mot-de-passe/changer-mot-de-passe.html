@@ -1,0 +1,46 @@
+<div class="password-container">
+
+  <h1>Changer le mot de passe</h1>
+
+  <form (ngSubmit)="changerMotDePasse()">
+
+    <label for="nouveauMotDePasse">Nouveau mot de passe</label>
+
+    <input
+      id="nouveauMotDePasse"
+      name="nouveauMotDePasse"
+      type="password"
+      [(ngModel)]="nouveauMotDePasse"
+      autocomplete="new-password"
+      required
+      [disabled]="chargement"
+    >
+
+    <label for="confirmation">Confirmer le mot de passe</label>
+
+    <input
+      id="confirmation"
+      name="confirmation"
+      type="password"
+      [(ngModel)]="confirmation"
+      autocomplete="new-password"
+      required
+      [disabled]="chargement"
+    >
+
+    @if (message) {
+      <p>{{ message }}</p>
+    }
+
+    <button type="submit" [disabled]="chargement">
+      @if (chargement) {
+        <span class="spinner"></span>
+        Vérification en cours...
+      } @else {
+        Modifier le mot de passe
+      }
+    </button>
+
+  </form>
+
+</div>

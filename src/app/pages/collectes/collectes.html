@@ -1,0 +1,110 @@
+<div class="container-fluid py-3">
+
+  <h2 class="mb-3">Collectes</h2>
+
+  @if (message()) {
+    <div class="alert alert-danger py-2">
+      {{ message() }}
+    </div>
+  }
+
+  @if (collecteSelectionnee(); as collecte) {
+    <div class="alert alert-success py-2 mb-3">
+
+      <span>
+        Collecte sélectionnée :
+        <strong>
+          {{ collecte.annee }}
+          —
+          collecte {{ collecte.NumCollecte }}
+          —
+          {{ collecte.DateCollecte | date:'dd/MM/yyyy' }}
+        </strong>
+      </span>
+
+      <button
+        type="button"
+        class="btn btn-primary btn-sm ms-3"
+        (click)="ouvrirChoixCollecte()">
+        Changer de collecte
+      </button>
+
+      @if (choixOuvert()) {
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm ms-2"
+          (click)="fermerChoixCollecte()">
+          Annuler
+        </button>
+      }
+
+    </div>
+  }
+
+  @if (choixOuvert()) {
+
+    <div class="card">
+
+      <div class="card-header py-2">
+        Choisir une collecte
+      </div>
+
+      <div class="card-body p-2">
+
+        <table class="table table-bordered table-sm mb-0">
+
+          <thead>
+            <tr>
+              <th>Année</th>
+              <th>Collecte 5</th>
+              <th>Collecte 4</th>
+              <th>Collecte 3</th>
+              <th>Collecte 2</th>
+              <th>Collecte 1</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (annee of annees(); track annee) {
+
+              <tr>
+
+                <th>{{ annee }}</th>
+
+                @for (numero of [5, 4, 3, 2, 1]; track numero) {
+
+                  <td>
+
+                    @if (getCollecte(annee, numero); as collecte) {
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="selectionnerCollecte(collecte)">
+
+                        {{ collecte.DateCollecte | date:'dd/MM/yyyy' }}
+
+                      </button>
+
+                    }
+
+                  </td>
+
+                }
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

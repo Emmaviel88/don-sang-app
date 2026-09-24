@@ -1,0 +1,50 @@
+<div class="login-container">
+
+  <h1>Connexion</h1>
+
+  <form (ngSubmit)="seConnecter()">
+
+    <label for="login">Utilisateur</label>
+
+    <select
+      id="login"
+      name="login"
+      [(ngModel)]="login"
+      required
+      [disabled]="chargement()"
+    >
+      <option value="">Sélectionnez votre nom</option>
+
+      @for (nom of logins(); track $index) {
+        <option [value]="nom">{{ nom }}</option>
+      }
+    </select>
+
+    <label for="password">Mot de passe</label>
+
+    <input
+      id="password"
+      name="password"
+      type="password"
+      [(ngModel)]="password"
+      autocomplete="current-password"
+      required
+      [disabled]="chargement()"
+    >
+
+    <button type="submit" [disabled]="chargement()">
+      @if (chargement()) {
+        <span class="spinner"></span>
+        Vérification en cours...
+      } @else {
+        Se connecter
+      }
+    </button>
+
+  </form>
+
+  @if (message()) {
+    <p>{{ message() }}</p>
+  }
+
+</div>

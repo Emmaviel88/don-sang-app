@@ -1,0 +1,57 @@
+<div class="d-flex flex-column min-vh-100">
+
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container-fluid">
+
+      <div class="d-flex align-items-center">
+
+        <img
+          src="Logo Amicale.png"
+          alt="Logo de l'association"
+          height="70"
+          class="me-2">
+
+        <span class="navbar-brand">
+          Donneurs de Sang Bénévoles du Tholy et environs
+        </span>
+
+      </div>
+
+      <div class="d-flex align-items-center">
+
+        <span class="navbar-text me-3">
+          {{ session.utilisateur()?.Login }}
+          —
+          {{ session.utilisateur()?.Role }}
+        </span>
+
+        <button
+          type="button"
+          class="btn btn-outline-light"
+          (click)="seDeconnecter()">
+          Déconnexion
+        </button>
+
+      </div>
+
+    </div>
+  </nav>
+
+  <main class="container-fluid py-4 flex-grow-1">
+  </main>
+
+  <footer class="bg-light border-top py-2">
+    <div class="container-fluid d-flex justify-content-between">
+
+      <span>
+        {{ session.utilisateur()?.Login }}
+      </span>
+
+      <span>
+        {{ session.utilisateur()?.Role }} — Connecté
+      </span>
+
+    </div>
+  </footer>
+
+</div>

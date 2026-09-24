@@ -1,0 +1,660 @@
+<div class="container-fluid">
+
+  <div class="row mb-2">
+
+    <div class="col-12">
+
+      <div class="d-flex align-items-center gap-2">
+
+        <label
+          for="rechercheDonneur"
+          class="form-label mb-0">
+          Recherche
+        </label>
+
+        <input
+          id="rechercheDonneur"
+          type="text"
+          class="form-control"
+          style="width: 500px;"
+          [(ngModel)]="recherche"
+          (ngModelChange)="rechercherDonneurs()"
+          autocomplete="off">
+
+        @if (rechercheEnCours) {
+
+          <span
+            class="spinner-border spinner-border-sm"
+            aria-hidden="true">
+          </span>
+
+        }
+
+      </div>
+
+      @if (resultats.length > 0) {
+
+        <div
+          class="list-group mt-1"
+          style="width: 500px;">
+
+          @for (
+            resultat of resultats;
+            track resultat.IdContact
+          ) {
+
+            <button
+              type="button"
+              class="list-group-item list-group-item-action"
+              (click)="selectionnerDonneur(resultat.IdContact)">
+
+              {{ afficherResultat(resultat) }}
+
+              @if (resultat.DateNaissance) {
+
+                <span class="text-muted ms-2">
+                  {{ afficherDate(resultat.DateNaissance) }}
+                </span>
+
+              }
+
+            </button>
+
+          }
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+  @if (erreur) {
+
+    <div class="alert alert-danger py-1 mb-2">
+      {{ erreur }}
+    </div>
+
+  }
+
+  <div class="row g-2">
+
+    <!-- ÉTAT CIVIL -->
+
+    <div class="col-md-8">
+
+      <div class="card h-100">
+
+        <div class="card-header py-1 fw-bold">
+          État civil
+        </div>
+
+        <div class="card-body py-2">
+
+          <div class="row g-2">
+
+            <div class="col-md-2">
+
+              <label class="form-label mb-1">
+                Civilité
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [ngModel]="donneur?.Civilite">
+
+            </div>
+
+            <div class="col-md-4">
+
+              <label class="form-label mb-1">
+                Nom d'usage
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [ngModel]="donneur?.NomUsage">
+
+            </div>
+
+            <div class="col-md-4">
+
+              <label class="form-label mb-1">
+                Nom de naissance
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [ngModel]="donneur?.NomdeNaissance">
+
+            </div>
+
+            <div class="col-md-2">
+
+              <label class="form-label mb-1">
+                IdContact
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm bg-light"
+                style="width: 80px;"
+                [value]="donneur?.IdContact ?? ''"
+                readonly>
+
+            </div>
+
+            <div class="col-md-4">
+
+              <label class="form-label mb-1">
+                Prénom
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [ngModel]="donneur?.Prenom">
+
+            </div>
+
+            <div class="col-md-2">
+
+              <label class="form-label mb-1">
+                Sexe
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [ngModel]="donneur?.Sexe">
+
+            </div>
+
+            <div class="col-md-3">
+
+              <label class="form-label mb-1">
+                Date de naissance
+              </label>
+
+              <input
+                type="date"
+                class="form-control form-control-sm"
+                [ngModel]="donneur?.DateNaissance"
+                (ngModelChange)="calculerAge()">
+
+            </div>
+
+            <div class="col-md-3">
+
+              <label class="form-label mb-1">
+                Âge à la collecte
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm bg-light"
+                [value]="age"
+                readonly>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ÉTAT / STATUT -->
+
+    <div class="col-md-4">
+
+      <div class="card h-100">
+
+        <div class="card-header py-1 fw-bold">
+          État / Statut
+        </div>
+
+        <div class="card-body py-2">
+
+          <div class="form-check mb-1">
+
+            <input
+              id="actif"
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="donneur?.Actif">
+
+            <label
+              for="actif"
+              class="form-check-label">
+              Actif
+            </label>
+
+          </div>
+
+          <div class="form-check mb-1">
+
+            <input
+              id="primoDon"
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="donneur?.PrimoDon">
+
+            <label
+              for="primoDon"
+              class="form-check-label">
+              Primo-don
+            </label>
+
+          </div>
+
+          <div class="form-check mb-1">
+
+            <input
+              id="volontairePlasma"
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="donneur?.VolontairePlasma">
+
+            <label
+              for="volontairePlasma"
+              class="form-check-label">
+              Volontaire plasma
+            </label>
+
+          </div>
+
+          <div class="form-check mb-1">
+
+            <input
+              id="nePeutVeutPlusDonner"
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="donneur?.NePeutVeutPlusDonner">
+
+            <label
+              for="nePeutVeutPlusDonner"
+              class="form-check-label">
+              Ne peut/veut plus donner
+            </label>
+
+          </div>
+
+          <div class="form-check mb-1">
+
+            <input
+              id="estDecede"
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="donneur?.EstDecede">
+
+            <label
+              for="estDecede"
+              class="form-check-label">
+              Décédé
+            </label>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- COORDONNÉES -->
+
+    <div class="col-md-8">
+
+      <div class="card h-100">
+
+        <div class="card-header py-1 fw-bold">
+          Coordonnées
+        </div>
+
+        <div class="card-body py-2">
+
+          <div class="row g-2">
+
+            <div class="col-md-6">
+
+              <label class="form-label mb-1">
+                Adresse 1
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [value]="adresse?.Adresse1 ?? ''"
+                readonly>
+
+            </div>
+
+            <div class="col-md-6">
+
+              <label class="form-label mb-1">
+                Adresse 2
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [value]="adresse?.Adresse2 ?? ''"
+                readonly>
+
+            </div>
+
+            <div class="col-md-3">
+
+              <label class="form-label mb-1">
+                Code postal
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [value]="adresse?.CodePostal ?? ''"
+                readonly>
+
+            </div>
+
+            <div class="col-md-5">
+
+              <label class="form-label mb-1">
+                Commune
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [value]="adresse?.Commune ?? ''"
+                readonly>
+
+            </div>
+
+            <div class="col-md-4">
+
+              <label class="form-label mb-1">
+                Pays
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [value]="pays?.NomPays ?? ''"
+                readonly>
+
+            </div>
+
+            <div class="col-12">
+
+              <label class="form-label mb-1">
+                Commentaire
+              </label>
+
+              <textarea
+                class="form-control form-control-sm"
+                rows="2"
+                [ngModel]="donneur?.Commentaire">
+              </textarea>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- MOYENS DE CONTACT -->
+
+    <div class="col-md-4">
+
+      <div class="card h-100">
+
+        <div class="card-header py-1 fw-bold">
+          Moyens de contact
+        </div>
+
+        <div class="card-body py-2">
+
+          <div class="mb-2">
+
+            <label class="form-label mb-1">
+              Téléphone portable
+            </label>
+
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              [value]="telephonePortable"
+              readonly>
+
+          </div>
+
+          <div>
+
+            <label class="form-label mb-1">
+              E-mail
+            </label>
+
+            <input
+              type="email"
+              class="form-control form-control-sm"
+              [value]="email"
+              readonly>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ÉLIGIBILITÉ -->
+
+    <div class="col-12">
+
+      <div class="card">
+
+        <div class="card-header py-1 fw-bold">
+          Éligibilité à la collecte
+        </div>
+
+        <div class="card-body py-2">
+
+          <div class="row g-2">
+
+            <div class="col-md-3">
+
+              <label class="form-label mb-1">
+                Collecte
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm bg-light"
+                [value]="
+                  selection
+                    ? selection.annee + ' - collecte ' + selection.NumCollecte +
+                      ' - ' + afficherDate(selection.DateCollecte)
+                    : ''
+                "
+                readonly>
+
+            </div>
+
+            <div class="col-md-2">
+
+              <label class="form-label mb-1">
+                Âge
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm bg-light"
+                [value]="age"
+                readonly>
+
+            </div>
+
+            <div class="col-md-2">
+
+              <label class="form-label mb-1">
+                Dernier don
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm bg-light"
+                [value]="
+                  dernierDon
+                    ? afficherDate(dernierDon)
+                    : 'Aucun'
+                "
+                readonly>
+
+            </div>
+
+            <div class="col-md-2">
+
+              <label class="form-label mb-1">
+                Délai depuis le dernier don
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm bg-light"
+                [value]="delaiDernierDon"
+                readonly>
+
+            </div>
+
+            <div class="col-md-3">
+
+              <label class="form-label mb-1">
+                Dons dans les 365 derniers jours
+              </label>
+
+              <input
+                type="text"
+                class="form-control form-control-sm bg-light"
+                [value]="nombreDons365"
+                readonly>
+
+            </div>
+
+          </div>
+
+          <div class="row g-2 mt-1">
+
+            <div class="col-md-3">
+
+              <div
+                class="border rounded p-2"
+                [class.border-success]="ageOK"
+                [class.border-danger]="!ageOK">
+
+                <strong>
+                  Âge
+                </strong>
+
+                <span class="ms-2">
+                  @if (ageOK) {
+                    OK
+                  } @else {
+                    Non conforme
+                  }
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+              <div
+                class="border rounded p-2"
+                [class.border-success]="delaiDernierDonOK"
+                [class.border-danger]="!delaiDernierDonOK">
+
+                <strong>
+                  Délai mini entre 2 dons (56 jours
+                </strong>
+
+                <span class="ms-2">
+                  @if (delaiDernierDonOK) {
+                    OK
+                  } @else {
+                    Non conforme
+                  }
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+              <div
+                class="border rounded p-2"
+                [class.border-success]="nombreDons365OK"
+                [class.border-danger]="!nombreDons365OK">
+
+                <strong>
+                  Maximum 4 dons / 365 jours
+                </strong>
+
+                <span class="ms-2">
+                  @if (nombreDons365OK) {
+                    OK
+                  } @else {
+                    Non conforme
+                  }
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+              <div
+                class="border rounded p-2 fw-bold"
+                [class.border-success]="eligible"
+                [class.border-danger]="!eligible">
+
+                @if (eligible) {
+                  <span>
+                    ÉLIGIBLE
+                  </span>
+                } @else {
+                  <span>
+                    NON ÉLIGIBLE
+                  </span>
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
