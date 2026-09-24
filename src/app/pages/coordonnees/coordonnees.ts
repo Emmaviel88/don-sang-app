@@ -877,6 +877,8 @@ export class Coordonnees implements OnInit {
       return;
     }
 
+    this.modeEdition = false;
+
     void this.selectionnerDonneur(
       this.donneur.IdContact
     );

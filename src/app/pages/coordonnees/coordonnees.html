@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid pt-2">
 
   <div class="row mb-2">
 
@@ -29,6 +29,46 @@
           </span>
 
         }
+
+        <button
+          type="button"
+          class="btn btn-primary btn-sm ms-2"
+          [disabled]="modeEdition">
+          Nouveau donneur
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="!donneur || modeEdition"
+          (click)="modifier()">
+          Modifier donneur
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-success btn-sm"
+          [disabled]="!modeEdition || enregistrementEnCours"
+          (click)="enregistrer()">
+
+          @if (enregistrementEnCours) {
+            <span
+              class="spinner-border spinner-border-sm me-1"
+              aria-hidden="true">
+            </span>
+          }
+
+          Enregistrer donneur
+
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          [disabled]="!modeEdition || enregistrementEnCours"
+          (click)="annuler()">
+          Annuler modifs
+        </button>
 
       </div>
 
@@ -555,12 +595,12 @@
 
           </div>
 
-          <div class="row g-2 mt-1">
+          <div class="row g-2 mt-1 align-items-stretch">
 
             <div class="col-md-3">
 
               <div
-                class="border rounded p-2"
+                class="border border-3 rounded p-2 h-100"
                 [class.border-success]="ageOK"
                 [class.border-danger]="!ageOK">
 
@@ -583,12 +623,12 @@
             <div class="col-md-3">
 
               <div
-                class="border rounded p-2"
+                class="border border-3 rounded p-2 h-100"
                 [class.border-success]="delaiDernierDonOK"
                 [class.border-danger]="!delaiDernierDonOK">
 
                 <strong>
-                  Délai mini entre 2 dons (56 jours
+                  Délai mini entre 2 dons (56 jours)
                 </strong>
 
                 <span class="ms-2">
@@ -606,7 +646,7 @@
             <div class="col-md-3">
 
               <div
-                class="border rounded p-2"
+                class="border border-3 rounded p-2 h-100"
                 [class.border-success]="nombreDons365OK"
                 [class.border-danger]="!nombreDons365OK">
 
@@ -629,7 +669,7 @@
             <div class="col-md-3">
 
               <div
-                class="border rounded p-2 fw-bold"
+                class="border border-3 rounded p-2 h-100 fw-bold"
                 [class.border-success]="eligible"
                 [class.border-danger]="!eligible">
 
