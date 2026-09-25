@@ -373,6 +373,9 @@ export class Coordonnees implements OnInit {
     texte: string
   ): Promise<void> {
 
+    const debutRecherche =
+      performance.now();
+
     try {
       const terme =
         `${texte}%`;
@@ -398,6 +401,12 @@ export class Coordonnees implements OnInit {
             }
           )
           .limit(50);
+
+      console.log(
+        'Temps requête Supabase :',
+        performance.now() - debutRecherche,
+        'ms'
+      );
 
       if (error) {
         throw error;
