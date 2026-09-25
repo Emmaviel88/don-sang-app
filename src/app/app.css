@@ -1,0 +1,16 @@
+.navbar .navbar-nav .nav-link.active {
+  color: #ffffff !important;
+}
+
+.navbar .navbar-nav .nav-link:not(.active) {
+  color: #d3d3d3 !important;
+}
+
+.navbar .navbar-text {
+  color: rgb(255, 251, 0);
+  font-weight: 600;
+}
+
+.navbar-association {
+  background-color: #C00000;
+}

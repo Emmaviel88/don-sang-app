@@ -32,6 +32,7 @@ export class CollectesComponent {
     private supabase: SupabaseService,
     private selection: CollecteSelectionService
   ) {
+    this.collecteSelectionnee.set(this.selection.collecte());
     this.chargerCollectes();
   }
 
@@ -56,7 +57,10 @@ export class CollectesComponent {
           new Date(b.DateCollecte).getTime()
         );
 
-      if (prochaines.length > 0) {
+      if (
+        prochaines.length > 0 &&
+        !this.selection.collecte()
+      ) {
         this.selectionnerCollecte(prochaines[0]);
       }
 

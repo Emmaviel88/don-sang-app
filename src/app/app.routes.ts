@@ -17,9 +17,8 @@ export const routes: Routes = [
 
   {
     path: 'accueil',
-    loadComponent: () =>
-      import('./pages/accueil/accueil')
-        .then(m => m.AccueilComponent)
+    redirectTo: 'coordonnees',
+    pathMatch: 'full'
   },
 
   {
@@ -34,6 +33,27 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/coordonnees/coordonnees')
         .then(m => m.Coordonnees)
+  },
+
+  {
+    path: 'statistiques',
+    loadComponent: () =>
+      import('./pages/statistiques/statistiques')
+        .then(m => m.Statistiques)
+  },
+
+  {
+    path: 'adhesion-amicale',
+    loadComponent: () =>
+      import('./pages/adhesion-amicale/adhesion-amicale')
+        .then(m => m.AdhesionAmicale)
+  },
+
+  {
+    path: 'comite',
+    loadComponent: () =>
+      import('./pages/comite/comite')
+        .then(m => m.Comite)
   },
 
   {

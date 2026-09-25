@@ -107,6 +107,6 @@ export class LoginComponent {
     }
 
     this.chargement.set(false);
-    await this.router.navigate(['/accueil']);
+    await this.router.navigate(['/coordonnees']);
   }
 }
