@@ -1,6 +1,6 @@
-<div class="container-fluid pt-2">
+<div class="container-fluid mt-4 pt-2">
 
-  <div class="row mb-2">
+  <div class="row mb-4">
 
     <div class="col-12">
 
@@ -13,6 +13,7 @@
         </label>
 
         <input
+          #controleRecherche
           id="rechercheDonneur"
           type="text"
           class="form-control"
@@ -721,7 +722,9 @@
                 [class.border-danger]="!nombreDons365OK">
 
                 <strong>
-                  Maximum 4 dons / 365 jours
+                  Maximum
+                  {{ donneur?.Sexe === 'M' ? 6 : 4 }}
+                  dons / 365 jours
                 </strong>
 
                 <span class="ms-2">
