@@ -32,6 +32,7 @@ interface Donneur {
   Prenom: string | null;
   Sexe: string | null;
   DateNaissance: string | null;
+  NbDonsAvant2013: number;
   EstDecede: boolean;
   Actif: boolean;
   NePeutVeutPlusDonner: boolean;
@@ -253,6 +254,7 @@ export class Coordonnees implements OnInit {
             Prenom,
             Sexe,
             DateNaissance,
+            NbDonsAvant2013,
             "EstDécédé",
             Actif,
             NePeutVeutPlusDonner,
@@ -288,6 +290,8 @@ export class Coordonnees implements OnInit {
         Sexe: data.Sexe,
         DateNaissance:
           data.DateNaissance,
+        NbDonsAvant2013:
+          data.NbDonsAvant2013 ?? 0,
         EstDecede:
           data['EstDécédé'],
         Actif: data.Actif,
@@ -304,7 +308,10 @@ export class Coordonnees implements OnInit {
         IdContact: this.donneur.IdContact,
         NomUsage: this.donneur.NomUsage,
         Prenom: this.donneur.Prenom,
-        DateNaissance: this.donneur.DateNaissance
+        DateNaissance: this.donneur.DateNaissance,
+        NbDonsAvant2013:
+          this.donneur.NbDonsAvant2013,
+        eligible: this.eligible
       });
 
       this.adresse = null;
@@ -330,6 +337,16 @@ export class Coordonnees implements OnInit {
         this.chargerMoyensContact(),
         this.calculerEligibilite()
       ]);
+
+      this.donneurSelection.definirDonneur({
+        IdContact: this.donneur.IdContact,
+        NomUsage: this.donneur.NomUsage,
+        Prenom: this.donneur.Prenom,
+        DateNaissance: this.donneur.DateNaissance,
+        NbDonsAvant2013:
+          this.donneur.NbDonsAvant2013,
+        eligible: this.eligible
+      });
 
       this.changeDetectorRef.detectChanges();
 
@@ -1095,16 +1112,26 @@ export class Coordonnees implements OnInit {
     this.donneur.DateNaissance =
       date || null;
 
-    this.donneurSelection.definirDonneur({
-      IdContact: this.donneur.IdContact,
-      NomUsage: this.donneur.NomUsage,
-      Prenom: this.donneur.Prenom,
-      DateNaissance: this.donneur.DateNaissance
-    });
-
     this.calculerAge();
 
-    void this.calculerEligibilite();
+    void this.calculerEligibilite().then(() => {
+
+      if (!this.donneur) {
+        return;
+      }
+
+      this.donneurSelection.definirDonneur({
+        IdContact: this.donneur.IdContact,
+        NomUsage: this.donneur.NomUsage,
+        Prenom: this.donneur.Prenom,
+        DateNaissance: this.donneur.DateNaissance,
+        NbDonsAvant2013:
+          this.donneur.NbDonsAvant2013,
+        eligible: this.eligible
+      });
+
+      this.changeDetectorRef.detectChanges();
+    });
   }
 
   annuler(): void {
@@ -1220,6 +1247,16 @@ export class Coordonnees implements OnInit {
       this.modeEdition = false;
 
       await this.calculerEligibilite();
+
+      this.donneurSelection.definirDonneur({
+        IdContact: this.donneur.IdContact,
+        NomUsage: this.donneur.NomUsage,
+        Prenom: this.donneur.Prenom,
+        DateNaissance: this.donneur.DateNaissance,
+        NbDonsAvant2013:
+          this.donneur.NbDonsAvant2013,
+        eligible: this.eligible
+      });
 
       this.changeDetectorRef.detectChanges();
 

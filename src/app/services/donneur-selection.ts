@@ -5,6 +5,8 @@ export interface DonneurSelectionne {
   NomUsage: string | null;
   Prenom: string | null;
   DateNaissance: string | null;
+  NbDonsAvant2013: number;
+  eligible: boolean;
 }
 
 @Injectable({

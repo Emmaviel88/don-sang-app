@@ -74,4 +74,61 @@ export class SupabaseService {
         return b.NumCollecte - a.NumCollecte;
       });
   }
+
+  async getDons(IdContact: number) {
+    const { data, error } = await this.supabase
+      .from('t_Dons')
+      .select('IdDon, IdDonneur, "AnnéeDon", NumCollecte, DateDon, IdSourceDon')
+      .eq('IdDonneur', IdContact)
+      .order('DateDon', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data.map(ligne => ({
+      IdDon: ligne.IdDon,
+      IdDonneur: ligne.IdDonneur,
+      annee: ligne['AnnéeDon'],
+      NumCollecte: ligne.NumCollecte,
+      DateDon: ligne.DateDon,
+      IdSourceDon: ligne.IdSourceDon
+    }));
+  }
+
+  async ajouterDon(
+    IdContact: number,
+    annee: number,
+    NumCollecte: number,
+    DateDon: string
+  ) {
+    const { data, error } = await this.supabase
+      .from('t_Dons')
+      .insert({
+        IdDonneur: IdContact,
+        'AnnéeDon': annee,
+        NumCollecte: NumCollecte,
+        DateDon: DateDon,
+        IdSourceDon: 2
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  async supprimerDon(IdDon: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('t_Dons')
+      .delete()
+      .eq('IdDon', IdDon);
+
+    if (error) {
+      throw error;
+    }
+  }
 }

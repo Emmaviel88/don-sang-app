@@ -43,7 +43,7 @@
 
   @if (choixOuvert()) {
 
-    <div class="card">
+    <div class="card mb-3">
 
       <div class="card-header py-2">
         Choisir une collecte
@@ -103,6 +103,190 @@
 
       </div>
 
+    </div>
+
+  }
+
+  @if (donneurSelectionne(); as donneur) {
+
+    <div class="row align-items-end mb-3">
+
+      <div class="col-md-6">
+
+        <label class="form-label fw-bold">
+          Donneur
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          [value]="
+            (donneur.NomUsage || '') +
+            ' ' +
+            (donneur.Prenom || '') +
+            ' - ' +
+            (donneur.DateNaissance | date:'dd/MM/yyyy')
+          "
+          readonly>
+
+      </div>
+
+      <div class="col-md-6">
+
+        <div class="d-flex gap-2">
+
+          <button
+            type="button"
+            class="btn btn-success"
+            [disabled]="
+              !donneur.eligible ||
+              !collecteModifiable()
+            "
+            (click)="enregistrerDon()">
+            Enregistrer don
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="
+              !donSelectionne() ||
+              !collecteModifiable()
+            "
+            (click)="supprimerDon()">
+            Supprimer don
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="row g-3 mb-3">
+
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted">
+              Nb dons avant 2013
+            </div>
+            <div class="fs-4 fw-bold">
+              {{ nbDonsAvant2013() }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted">
+              Nb dons après 2013
+            </div>
+            <div class="fs-4 fw-bold">
+              {{ nbDonsApres2013() }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted">
+              Nb total de dons
+            </div>
+            <div class="fs-4 fw-bold">
+              {{ nbDonsTotal() }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="mb-3">
+
+      <label for="filtreAnnee" class="form-label fw-bold">
+        Année
+      </label>
+
+      <select
+        id="filtreAnnee"
+        class="form-select"
+        [value]="anneeFiltre()"
+        (change)="changerFiltreAnnee($any($event.target).value)">
+
+        <option value="Toutes">
+          Toutes
+        </option>
+
+        @for (annee of anneesDons(); track annee) {
+          <option [value]="annee">
+            {{ annee }}
+          </option>
+        }
+
+      </select>
+
+    </div>
+
+    <div class="table-responsive mb-3">
+
+      <table class="table table-bordered table-hover table-sm">
+
+        <thead>
+          <tr>
+            <th>Année</th>
+            <th>Collecte N°</th>
+            <th>Date don</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          @for (don of donsFiltres(); track don.IdDon) {
+
+            <tr
+              [class.table-primary]="donSelectionne()?.IdDon === don.IdDon"
+              (click)="selectionnerDon(don)"
+              style="cursor: pointer;">
+
+              <td>
+                {{ don.annee }}
+              </td>
+
+              <td>
+                {{ don.NumCollecte }}
+              </td>
+
+              <td>
+                {{ don.DateDon | date:'dd/MM/yyyy' }}
+              </td>
+
+            </tr>
+
+          } @empty {
+
+            <tr>
+              <td colspan="3" class="text-center text-muted">
+                Aucun don à afficher.
+              </td>
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  } @else {
+
+    <div class="alert alert-info">
+      Aucun donneur sélectionné.
     </div>
 
   }
