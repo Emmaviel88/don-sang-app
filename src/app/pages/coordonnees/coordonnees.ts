@@ -11,6 +11,9 @@ import {
   CollecteSelectionService,
   CollecteSelectionnee
 } from '../../services/collecte-selection';
+import {
+  DonneurSelectionService
+} from '../../services/donneur-selection';
 
 interface ResultatRecherche {
   IdContact: number;
@@ -112,6 +115,7 @@ export class Coordonnees implements OnInit {
   constructor(
     private supabase: SupabaseService,
     private collecteSelection: CollecteSelectionService,
+    private donneurSelection: DonneurSelectionService,
     private changeDetectorRef: ChangeDetectorRef
   ) {}
 
@@ -268,6 +272,7 @@ export class Coordonnees implements OnInit {
 
       if (!data) {
         this.donneur = null;
+        this.donneurSelection.effacerDonneur();
         this.erreur =
           'Donneur introuvable.';
         return;
@@ -294,6 +299,13 @@ export class Coordonnees implements OnInit {
         Commentaire:
           data.Commentaire
       };
+
+      this.donneurSelection.definirDonneur({
+        IdContact: this.donneur.IdContact,
+        NomUsage: this.donneur.NomUsage,
+        Prenom: this.donneur.Prenom,
+        DateNaissance: this.donneur.DateNaissance
+      });
 
       this.adresse = null;
       this.pays = null;
@@ -1082,6 +1094,13 @@ export class Coordonnees implements OnInit {
 
     this.donneur.DateNaissance =
       date || null;
+
+    this.donneurSelection.definirDonneur({
+      IdContact: this.donneur.IdContact,
+      NomUsage: this.donneur.NomUsage,
+      Prenom: this.donneur.Prenom,
+      DateNaissance: this.donneur.DateNaissance
+    });
 
     this.calculerAge();
 

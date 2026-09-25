@@ -5,6 +5,10 @@ import {
   CollecteSelectionService,
   CollecteSelectionnee
 } from '../../services/collecte-selection';
+import {
+  DonneurSelectionService,
+  DonneurSelectionne
+} from '../../services/donneur-selection';
 
 interface Collecte {
   IdCollecte: number;
@@ -25,14 +29,17 @@ export class CollectesComponent {
   collectes = signal<Collecte[]>([]);
   annees = signal<number[]>([]);
   collecteSelectionnee = signal<CollecteSelectionnee | null>(null);
+  donneurSelectionne = signal<DonneurSelectionne | null>(null);
   choixOuvert = signal(false);
   message = signal('');
 
   constructor(
     private supabase: SupabaseService,
-    private selection: CollecteSelectionService
+    private selection: CollecteSelectionService,
+    private donneurSelection: DonneurSelectionService
   ) {
     this.collecteSelectionnee.set(this.selection.collecte());
+    this.donneurSelectionne.set(this.donneurSelection.donneur());
     this.chargerCollectes();
   }
 
