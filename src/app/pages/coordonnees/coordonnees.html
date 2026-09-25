@@ -410,7 +410,7 @@
             <div class="col-md-6">
 
               <label class="form-label mb-1">
-                Adresse 1
+                Adresse
               </label>
 
               <input
@@ -426,7 +426,7 @@
             <div class="col-md-6">
 
               <label class="form-label mb-1">
-                Adresse 2
+                Complément d'adresse
               </label>
 
               <input
@@ -535,8 +535,8 @@
 
           <div class="mb-2">
 
-            <label class="form-label mb-1">
-              Téléphone portable
+            <label class="form-label mb-1 fs-4 text-dark">
+              <i class="bi bi-telephone"></i>
             </label>
 
             <input
@@ -549,8 +549,8 @@
 
           <div>
 
-            <label class="form-label mb-1">
-              E-mail
+            <label class="form-label mb-1 fs-4 text-dark">
+              <i class="bi bi-envelope"></i>
             </label>
 
             <input
@@ -574,7 +574,31 @@
       <div class="card">
 
         <div class="card-header py-1 fw-bold">
+
           Éligibilité à la collecte
+
+          @if (selection) {
+            du {{ afficherDate(selection.DateCollecte) }}
+            (N° {{ selection.NumCollecte }} / {{ selection.annee }})
+          }
+
+          <span
+            class="ms-3 px-2 py-1 rounded border border-2 fs-5 fw-bold"
+            [class.text-success]="eligible"
+            [class.border-success]="eligible"
+            [class.bg-success-subtle]="eligible"
+            [class.text-danger]="!eligible"
+            [class.border-danger]="!eligible"
+            [class.bg-danger-subtle]="!eligible">
+
+            @if (eligible) {
+              ✓ ÉLIGIBLE
+            } @else {
+              ✕ NON ÉLIGIBLE
+            }
+
+          </span>
+
         </div>
 
         <div class="card-body py-2">
@@ -582,25 +606,6 @@
           <div class="row g-2">
 
             <div class="col-md-3">
-
-              <label class="form-label mb-1">
-                Collecte
-              </label>
-
-              <input
-                type="text"
-                class="form-control form-control-sm bg-light"
-                [value]="
-                  selection
-                    ? selection.annee + ' - collecte ' + selection.NumCollecte +
-                      ' - ' + afficherDate(selection.DateCollecte)
-                    : ''
-                "
-                readonly>
-
-            </div>
-
-            <div class="col-md-2">
 
               <label class="form-label mb-1">
                 Âge
@@ -614,7 +619,7 @@
 
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-3">
 
               <label class="form-label mb-1">
                 Dernier don
@@ -632,7 +637,7 @@
 
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-3">
 
               <label class="form-label mb-1">
                 Délai depuis le dernier don
@@ -678,14 +683,22 @@
                 <span class="ms-2">
 
                   @if (ageOK) {
-                    OK
+                    <span class="text-success fs-5 fw-bold">
+                      ✓
+                    </span>
                   } @else {
-                    Non conforme
+                    <span class="text-danger fs-5 fw-bold">
+                      ✕
+                    </span>
                   }
 
                 </span>
 
               </div>
+
+            </div>
+
+            <div class="col-md-3">
 
             </div>
 
@@ -703,9 +716,13 @@
                 <span class="ms-2">
 
                   @if (delaiDernierDonOK) {
-                    OK
+                    <span class="text-success fs-5 fw-bold">
+                      ✓
+                    </span>
                   } @else {
-                    Non conforme
+                    <span class="text-danger fs-5 fw-bold">
+                      ✕
+                    </span>
                   }
 
                 </span>
@@ -730,37 +747,16 @@
                 <span class="ms-2">
 
                   @if (nombreDons365OK) {
-                    OK
+                    <span class="text-success fs-5 fw-bold">
+                      ✓
+                    </span>
                   } @else {
-                    Non conforme
+                    <span class="text-danger fs-5 fw-bold">
+                      ✕
+                    </span>
                   }
 
                 </span>
-
-              </div>
-
-            </div>
-
-            <div class="col-md-3">
-
-              <div
-                class="border border-3 rounded p-2 h-100 fw-bold"
-                [class.border-success]="eligible"
-                [class.border-danger]="!eligible">
-
-                @if (eligible) {
-
-                  <span>
-                    ÉLIGIBLE
-                  </span>
-
-                } @else {
-
-                  <span>
-                    NON ÉLIGIBLE
-                  </span>
-
-                }
 
               </div>
 
