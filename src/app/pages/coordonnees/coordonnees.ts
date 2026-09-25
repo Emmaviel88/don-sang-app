@@ -123,7 +123,17 @@ export class Coordonnees implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.chargerCollecteSelectionnee();
     await this.chargerPays();
-    await this.selectionnerDonneur(1);
+
+    const donneurSelectionne =
+      this.donneurSelection.donneur();
+
+    if (donneurSelectionne) {
+      await this.selectionnerDonneur(
+        donneurSelectionne.IdContact
+      );
+    } else {
+      await this.selectionnerDonneur(1);
+    }
   }
 
   private async chargerPays(): Promise<void> {
