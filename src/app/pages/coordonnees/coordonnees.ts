@@ -37,6 +37,7 @@ interface Adresse {
   CodePostal: string | null;
   Commune: string | null;
   IdPays: number | null;
+  Commentaire: string | null;
   EstPrincipale: boolean;
   EstValide: boolean;
 }
@@ -77,6 +78,7 @@ export class Coordonnees implements OnInit {
 
   adresse: Adresse | null = null;
   pays: Pays | null = null;
+  paysDisponibles: Pays[] = [];
 
   telephonePortable = '';
   email = '';
@@ -105,11 +107,39 @@ export class Coordonnees implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.chargerCollecteSelectionnee();
+    await this.chargerPays();
     await this.selectionnerDonneur(1);
   }
 
+  private async chargerPays(): Promise<void> {
+
+    const { data, error } =
+      await this.supabase.client
+        .from('t_Pays')
+        .select(`
+          IdPays,
+          NomPays,
+          CodeISO
+        `)
+        .order(
+          'NomPays',
+          {
+            ascending: true
+          }
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    this.paysDisponibles =
+      (data ?? []) as Pays[];
+  }
+
   private async chargerCollecteSelectionnee(): Promise<void> {
-    const selection = this.collecteSelection.collecte();
+
+    const selection =
+      this.collecteSelection.collecte();
 
     if (selection) {
       this.selection = selection;
@@ -118,41 +148,49 @@ export class Coordonnees implements OnInit {
     }
 
     try {
-      const collectes = await this.supabase.getCollectes();
 
-      const maintenant = new Date();
+      const collectes =
+        await this.supabase.getCollectes();
 
-      const prochaines = collectes
-        .filter(collecte =>
-          new Date(collecte.DateCollecte) >= maintenant
-        )
-        .sort((a, b) =>
-          new Date(a.DateCollecte).getTime() -
-          new Date(b.DateCollecte).getTime()
-        );
+      const maintenant =
+        new Date();
+
+      const prochaines =
+        collectes
+          .filter(collecte =>
+            new Date(collecte.DateCollecte) >= maintenant
+          )
+          .sort((a, b) =>
+            new Date(a.DateCollecte).getTime() -
+            new Date(b.DateCollecte).getTime()
+          );
 
       if (prochaines.length === 0) {
         return;
       }
 
-      const prochaine = prochaines[0];
+      const prochaine =
+        prochaines[0];
 
-      const selectionSuivante: CollecteSelectionnee = {
-        IdCollecte: prochaine.IdCollecte,
-        annee: prochaine.annee,
-        NumCollecte: prochaine.NumCollecte,
-        DateCollecte: prochaine.DateCollecte
-      };
+      const selectionSuivante:
+        CollecteSelectionnee = {
+          IdCollecte: prochaine.IdCollecte,
+          annee: prochaine.annee,
+          NumCollecte: prochaine.NumCollecte,
+          DateCollecte: prochaine.DateCollecte
+        };
 
       this.collecteSelection.definirCollecte(
         selectionSuivante
       );
 
-      this.selection = selectionSuivante;
+      this.selection =
+        selectionSuivante;
 
       this.calculerAge();
 
     } catch (error) {
+
       console.error(
         'ERREUR CHARGEMENT COLLECTE :',
         error
@@ -168,8 +206,10 @@ export class Coordonnees implements OnInit {
   ): Promise<void> {
 
     this.erreur = '';
+    this.modeEdition = false;
 
     try {
+
       const { data, error } =
         await this.supabase.client
           .from('t_Contacts')
@@ -188,25 +228,42 @@ export class Coordonnees implements OnInit {
       }
 
       this.donneur = {
-        IdContact: Number(data['IdContact']),
-        Civilite: data['Civilite'] ?? null,
-        NomUsage: data['NomUsage'] ?? null,
+        IdContact:
+          Number(data['IdContact']),
+
+        Civilite:
+          data['Civilite'] ?? null,
+
+        NomUsage:
+          data['NomUsage'] ?? null,
+
         NomdeNaissance:
           data['NomdeNaissance'] ?? null,
-        Prenom: data['Prenom'] ?? null,
-        Sexe: data['Sexe'] ?? null,
+
+        Prenom:
+          data['Prenom'] ?? null,
+
+        Sexe:
+          data['Sexe'] ?? null,
+
         DateNaissance:
           data['DateNaissance'] ?? null,
+
         EstDecede:
           Boolean(data['EstDécédé']),
+
         Actif:
           Boolean(data['Actif']),
+
         NePeutVeutPlusDonner:
           Boolean(data['NePeutVeutPlusDonner']),
+
         VolontairePlasma:
           Boolean(data['VolontairePlasma']),
+
         PrimoDon:
           Boolean(data['PrimoDon']),
+
         Commentaire:
           data['Commentaire'] ?? null
       };
@@ -219,6 +276,7 @@ export class Coordonnees implements OnInit {
 
       this.adresse = null;
       this.pays = null;
+
       this.telephonePortable = '';
       this.email = '';
 
@@ -243,38 +301,33 @@ export class Coordonnees implements OnInit {
       this.changeDetectorRef.detectChanges();
 
     } catch (error) {
+
       console.error(
         'ERREUR CHARGEMENT DONNEUR :',
         error
       );
 
-      this.donneur = null;
-      this.age = '—';
-      this.adresse = null;
-      this.pays = null;
-      this.telephonePortable = '';
-      this.email = '';
-      this.dernierDon = null;
-      this.delaiDernierDon = '—';
-      this.nombreDons365 = 0;
-      this.eligible = false;
-
       this.erreur =
         'Impossible de charger le donneur.';
+
+      this.changeDetectorRef.detectChanges();
     }
   }
 
   rechercherDonneurs(): void {
 
     if (this.minuterieRecherche !== null) {
-      clearTimeout(this.minuterieRecherche);
+      clearTimeout(
+        this.minuterieRecherche
+      );
     }
 
     this.resultats = [];
     this.rechercheEffectuee = false;
     this.rechercheEnCours = false;
 
-    const texte = this.recherche.trim();
+    const texte =
+      this.recherche.trim();
 
     if (texte.length < 2) {
       return;
@@ -282,9 +335,10 @@ export class Coordonnees implements OnInit {
 
     this.rechercheEnCours = true;
 
-    this.minuterieRecherche = setTimeout(() => {
-      void this.executerRecherche(texte);
-    }, 300);
+    this.minuterieRecherche =
+      setTimeout(() => {
+        void this.executerRecherche(texte);
+      }, 300);
   }
 
   private async executerRecherche(
@@ -292,7 +346,9 @@ export class Coordonnees implements OnInit {
   ): Promise<void> {
 
     try {
-      const terme = `${texte}%`;
+
+      const terme =
+        `${texte}%`;
 
       const { data, error } =
         await this.supabase.client
@@ -323,6 +379,7 @@ export class Coordonnees implements OnInit {
       this.rechercheEffectuee = true;
 
     } catch (error) {
+
       console.error(
         'ERREUR RECHERCHE DONNEUR :',
         error
@@ -332,6 +389,7 @@ export class Coordonnees implements OnInit {
         'Erreur pendant la recherche.';
 
     } finally {
+
       this.rechercheEnCours = false;
 
       this.changeDetectorRef.detectChanges();
@@ -353,6 +411,7 @@ export class Coordonnees implements OnInit {
           CodePostal,
           Commune,
           IdPays,
+          Commentaire,
           EstPrincipale,
           EstValide
         `)
@@ -377,32 +436,35 @@ export class Coordonnees implements OnInit {
     this.adresse =
       data as Adresse | null;
 
-    if (
-      this.adresse &&
-      this.adresse.IdPays !== null
-    ) {
+    this.pays = null;
 
-      const resultatPays =
-        await this.supabase.client
-          .from('t_Pays')
-          .select(`
-            IdPays,
-            NomPays,
-            CodeISO
-          `)
-          .eq(
-            'IdPays',
-            this.adresse.IdPays
-          )
-          .maybeSingle();
-
-      if (resultatPays.error) {
-        throw resultatPays.error;
-      }
-
-      this.pays =
-        resultatPays.data as Pays | null;
+    if (!this.adresse?.IdPays) {
+      return;
     }
+
+    const {
+      data: pays,
+      error: erreurPays
+    } =
+      await this.supabase.client
+        .from('t_Pays')
+        .select(`
+          IdPays,
+          NomPays,
+          CodeISO
+        `)
+        .eq(
+          'IdPays',
+          this.adresse.IdPays
+        )
+        .maybeSingle();
+
+    if (erreurPays) {
+      throw erreurPays;
+    }
+
+    this.pays =
+      pays as Pays | null;
   }
 
   private async chargerMoyensContact(): Promise<void> {
@@ -444,94 +506,63 @@ export class Coordonnees implements OnInit {
     const moyens =
       (data ?? []) as MoyenContact[];
 
-    const portable =
-      moyens.find(
-        moyen => moyen.IdTypeMoyen === 2
-      );
+    this.telephonePortable = '';
+    this.email = '';
 
-    const mail =
-      moyens.find(
-        moyen => moyen.IdTypeMoyen === 3
-      );
+    for (const moyen of moyens) {
 
-    this.telephonePortable =
-      this.formaterTelephone(
-        portable?.Valeur ?? ''
-      );
+      if (
+        moyen.IdTypeMoyen === 2 &&
+        moyen.Valeur
+      ) {
+        this.telephonePortable =
+          this.formaterTelephone(
+            moyen.Valeur
+          );
+      }
 
-    this.email =
-      mail?.Valeur ?? '';
+      if (
+        moyen.IdTypeMoyen === 3 &&
+        moyen.Valeur
+      ) {
+        this.email =
+          moyen.Valeur;
+      }
+    }
   }
 
   private formaterTelephone(
     telephone: string
   ): string {
 
-    const valeur =
-      telephone.trim();
+    const chiffres =
+      telephone.replace(
+        /\D/g,
+        ''
+      );
 
-    if (!valeur) {
-      return '';
+    if (chiffres.length !== 10) {
+      return telephone;
     }
 
-    const nettoye =
-      valeur.replace(/[^\d+]/g, '');
-
-    if (nettoye.startsWith('+352')) {
-
-      const numero =
-        nettoye
-          .substring(4)
-          .replace(/\D/g, '');
-
-      if (!numero) {
-        return '+352';
-      }
-
-      const groupes =
-        numero.match(/.{1,3}/g);
-
-      return `+352 ${groupes?.join(' ') ?? numero}`;
-    }
-
-    if (nettoye.startsWith('+33')) {
-
-      const numero =
-        nettoye
-          .substring(3)
-          .replace(/\D/g, '');
-
-      if (numero.length === 9) {
-
-        return `+33 ${numero.substring(0, 1)} ${numero.substring(1, 3)} ${numero.substring(3, 5)} ${numero.substring(5, 7)} ${numero.substring(7, 9)}`;
-      }
-
-      return `+33 ${numero}`;
-    }
-
-    const numero =
-      nettoye.replace(/\D/g, '');
-
-    if (numero.length === 10) {
-
-      const groupes =
-        numero.match(/.{1,2}/g);
-
-      return groupes?.join(' ') ?? numero;
-    }
-
-    return valeur;
+    return chiffres
+      .replace(
+        /(\d{2})(?=\d)/g,
+        '$1 '
+      )
+      .trim();
   }
 
   private async calculerEligibilite(): Promise<void> {
 
     if (
       !this.donneur ||
-      !this.selection ||
-      !this.selection.DateCollecte
+      !this.selection
     ) {
       return;
     }
+
+    this.calculerAge();
 
     const dateCollecte =
       this.creerDateLocale(
@@ -542,69 +573,72 @@ export class Coordonnees implements OnInit {
       return;
     }
 
-    this.calculerAge();
+    const dateNaissance =
+      this.creerDateLocale(
+        this.donneur.DateNaissance
+      );
 
-    const naissance =
-      this.donneur.DateNaissance
-        ? this.creerDateLocale(
-            this.donneur.DateNaissance
-          )
-        : null;
+    if (!dateNaissance) {
 
-    if (!naissance) {
       this.ageOK = false;
-    } else {
-      let age =
-        dateCollecte.getFullYear() -
-        naissance.getFullYear();
+      this.delaiDernierDonOK = false;
+      this.nombreDons365OK = true;
 
-      const mois =
-        dateCollecte.getMonth() -
-        naissance.getMonth();
+      this.statutOK =
+        this.donneur.Actif &&
+        !this.donneur.EstDecede &&
+        !this.donneur.NePeutVeutPlusDonner;
 
-      const jours =
-        dateCollecte.getDate() -
-        naissance.getDate();
+      this.eligible =
+        this.ageOK &&
+        this.delaiDernierDonOK &&
+        this.nombreDons365OK &&
+        this.statutOK;
 
-      if (
-        mois < 0 ||
-        (mois === 0 && jours < 0)
-      ) {
-        age--;
-      }
-
-      this.ageOK =
-        age >= 18 &&
-        age < 71;
+      return;
     }
 
-    const dateLimite56 =
+    let ageAnnees =
+      dateCollecte.getFullYear() -
+      dateNaissance.getFullYear();
+
+    const mois =
+      dateCollecte.getMonth() -
+      dateNaissance.getMonth();
+
+    if (
+      mois < 0 ||
+      (
+        mois === 0 &&
+        dateCollecte.getDate() <
+        dateNaissance.getDate()
+      )
+    ) {
+      ageAnnees--;
+    }
+
+    this.ageOK =
+      ageAnnees >= 18 &&
+      ageAnnees < 71;
+
+    const date365 =
       new Date(dateCollecte);
 
-    dateLimite56.setDate(
-      dateLimite56.getDate() - 56
-    );
-
-    const dateLimite365 =
-      new Date(dateCollecte);
-
-    dateLimite365.setDate(
-      dateLimite365.getDate() - 365
+    date365.setDate(
+      date365.getDate() - 365
     );
 
     const { data, error } =
       await this.supabase.client
         .from('t_Dons')
-        .select(`
-          DateDon
-        `)
+        .select('DateDon')
         .eq(
           'IdDonneur',
           this.donneur.IdContact
         )
         .gte(
           'DateDon',
-          this.dateToString(dateLimite365)
+          this.dateToString(date365)
         )
         .lte(
           'DateDon',
@@ -612,7 +646,9 @@ export class Coordonnees implements OnInit {
         )
         .order(
           'DateDon',
-          { ascending: false }
+          {
+            ascending: false
+          }
         );
 
     if (error) {
@@ -620,7 +656,9 @@ export class Coordonnees implements OnInit {
     }
 
     const dons =
-      data ?? [];
+      (data ?? []) as {
+        DateDon: string;
+      }[];
 
     this.nombreDons365 =
       dons.length;
@@ -628,47 +666,44 @@ export class Coordonnees implements OnInit {
     this.nombreDons365OK =
       this.nombreDons365 < 4;
 
-    if (dons.length > 0) {
+    if (dons.length === 0) {
 
-      this.dernierDon =
-        dons[0]['DateDon'] ?? null;
-
-      const dernierDonDate =
-        this.creerDateLocale(
-          this.dernierDon ?? ''
-        );
-
-      if (dernierDonDate) {
-
-        const diff =
-          dateCollecte.getTime() -
-          dernierDonDate.getTime();
-
-        const jours =
-          Math.floor(
-            diff / (1000 * 60 * 60 * 24)
-          );
-
-        this.delaiDernierDon =
-          `${jours} jours`;
-
-        this.delaiDernierDonOK =
-          jours >= 56;
-
-      } else {
-        this.delaiDernierDonOK =
-          false;
-      }
+      this.dernierDon = null;
+      this.delaiDernierDon = 'Aucun';
+      this.delaiDernierDonOK = true;
 
     } else {
 
-      this.dernierDon = null;
+      this.dernierDon =
+        dons[0].DateDon;
 
-      this.delaiDernierDon =
-        'Aucun don dans les 365 derniers jours';
+      const dernierDon =
+        this.creerDateLocale(
+          this.dernierDon
+        );
 
-      this.delaiDernierDonOK =
-        true;
+      if (!dernierDon) {
+
+        this.delaiDernierDon = '—';
+        this.delaiDernierDonOK = false;
+
+      } else {
+
+        const difference =
+          Math.floor(
+            (
+              dateCollecte.getTime() -
+              dernierDon.getTime()
+            ) /
+            (1000 * 60 * 60 * 24)
+          );
+
+        this.delaiDernierDon =
+          `${difference} jour${difference > 1 ? 's' : ''}`;
+
+        this.delaiDernierDonOK =
+          difference >= 56;
+      }
     }
 
     this.statutOK =
@@ -688,12 +723,12 @@ export class Coordonnees implements OnInit {
   ): string {
 
     const nom =
-      resultat.NomUsage ||
-      resultat.NomdeNaissance ||
+      resultat.NomUsage ??
+      resultat.NomdeNaissance ??
       '';
 
     const prenom =
-      resultat.Prenom ||
+      resultat.Prenom ??
       '';
 
     return `${nom} ${prenom}`.trim();
@@ -704,12 +739,12 @@ export class Coordonnees implements OnInit {
   ): string {
 
     const nom =
-      donneur.NomUsage ||
-      donneur.NomdeNaissance ||
+      donneur.NomUsage ??
+      donneur.NomdeNaissance ??
       '';
 
     const prenom =
-      donneur.Prenom ||
+      donneur.Prenom ??
       '';
 
     return `${nom} ${prenom}`.trim();
@@ -723,26 +758,23 @@ export class Coordonnees implements OnInit {
       return '';
     }
 
-    const partieDate =
-      date.substring(0, 10);
+    const dateLocale =
+      this.creerDateLocale(date);
 
-    const morceaux =
-      partieDate.split('-');
-
-    if (morceaux.length !== 3) {
+    if (!dateLocale) {
       return '';
     }
 
-    return `${morceaux[2]}/${morceaux[1]}/${morceaux[0]}`;
+    return dateLocale.toLocaleDateString(
+      'fr-FR'
+    );
   }
 
   calculerAge(): void {
 
     if (
-      !this.donneur ||
-      !this.donneur.DateNaissance ||
-      !this.selection ||
-      !this.selection.DateCollecte
+      !this.donneur?.DateNaissance ||
+      !this.selection?.DateCollecte
     ) {
       this.age = '—';
       return;
@@ -760,8 +792,7 @@ export class Coordonnees implements OnInit {
 
     if (
       !naissance ||
-      !collecte ||
-      collecte < naissance
+      !collecte
     ) {
       this.age = '—';
       return;
@@ -783,36 +814,40 @@ export class Coordonnees implements OnInit {
 
       mois--;
 
-      const joursMoisPrecedent =
+      const dernierJourMoisPrecedent =
         new Date(
           collecte.getFullYear(),
           collecte.getMonth(),
           0
         ).getDate();
 
-      jours += joursMoisPrecedent;
+      jours +=
+        dernierJourMoisPrecedent;
     }
 
     if (mois < 0) {
 
       annees--;
-
       mois += 12;
     }
 
     this.age =
-      `${annees} ans ${mois} mois ${jours} jours`;
+      `${annees} an${annees > 1 ? 's' : ''} ` +
+      `${mois} mois ${jours} jour${jours > 1 ? 's' : ''}`;
   }
 
   private creerDateLocale(
-    date: string
+    date: string | null
   ): Date | null {
 
-    const partieDate =
-      date.substring(0, 10);
+    if (!date) {
+      return null;
+    }
 
     const morceaux =
-      partieDate.split('-');
+      date
+        .substring(0, 10)
+        .split('-');
 
     if (morceaux.length !== 3) {
       return null;
@@ -828,9 +863,9 @@ export class Coordonnees implements OnInit {
       Number(morceaux[2]);
 
     if (
-      !Number.isInteger(annee) ||
-      !Number.isInteger(mois) ||
-      !Number.isInteger(jour)
+      !annee ||
+      !mois ||
+      !jour
     ) {
       return null;
     }
@@ -852,14 +887,40 @@ export class Coordonnees implements OnInit {
     const mois =
       String(
         date.getMonth() + 1
-      ).padStart(2, '0');
+      ).padStart(
+        2,
+        '0'
+      );
 
     const jour =
       String(
         date.getDate()
-      ).padStart(2, '0');
+      ).padStart(
+        2,
+        '0'
+      );
 
     return `${annee}-${mois}-${jour}`;
+  }
+
+  modifierPays(idPays: number | null): void {
+
+    if (
+      !this.adresse ||
+      !this.modeEdition
+    ) {
+      return;
+    }
+
+    this.adresse.IdPays =
+      idPays !== null
+        ? Number(idPays)
+        : null;
+
+    console.log(
+      'IdPays sélectionné :',
+      this.adresse.IdPays
+    );
   }
 
   modifier(): void {
@@ -868,7 +929,29 @@ export class Coordonnees implements OnInit {
       return;
     }
 
+    this.erreur = '';
     this.modeEdition = true;
+
+    this.changeDetectorRef.detectChanges();
+  }
+
+  modifierDateNaissance(
+    date: string | null
+  ): void {
+
+    if (
+      !this.donneur ||
+      !this.modeEdition
+    ) {
+      return;
+    }
+
+    this.donneur.DateNaissance =
+      date || null;
+
+    this.calculerAge();
+
+    void this.calculerEligibilite();
   }
 
   annuler(): void {
@@ -877,98 +960,156 @@ export class Coordonnees implements OnInit {
       return;
     }
 
+    const idContact =
+      this.donneur.IdContact;
+
     this.modeEdition = false;
 
     void this.selectionnerDonneur(
-      this.donneur.IdContact
+      idContact
     );
   }
 
   async enregistrer(): Promise<void> {
 
-    if (!this.donneur) {
-      return;
+  if (
+    !this.donneur ||
+    !this.modeEdition
+  ) {
+    return;
+  }
+
+  this.enregistrementEnCours = true;
+  this.erreur = '';
+
+  try {
+
+    const { error: erreurContact } =
+      await this.supabase.client
+        .from('t_Contacts')
+        .update({
+
+          Civilite:
+            this.donneur.Civilite,
+
+          NomUsage:
+            this.donneur.NomUsage,
+
+          NomdeNaissance:
+            this.donneur.NomdeNaissance,
+
+          Prenom:
+            this.donneur.Prenom,
+
+          Sexe:
+            this.donneur.Sexe,
+
+          DateNaissance:
+            this.donneur.DateNaissance,
+
+          'EstDécédé':
+            this.donneur.EstDecede,
+
+          Actif:
+            this.donneur.Actif,
+
+          NePeutVeutPlusDonner:
+            this.donneur.NePeutVeutPlusDonner,
+
+          VolontairePlasma:
+            this.donneur.VolontairePlasma,
+
+          PrimoDon:
+            this.donneur.PrimoDon
+
+        })
+        .eq(
+          'IdContact',
+          this.donneur.IdContact
+        );
+
+    if (erreurContact) {
+      throw erreurContact;
     }
 
-    if (
-      !this.donneur.Commentaire ||
-      this.donneur.Commentaire.trim() === ''
-    ) {
-      this.erreur =
-        'Le commentaire est obligatoire.';
+    console.log('IdPays à enregistrer :', this.adresse?.IdPays);
 
-      return;
-    }
+    if (this.adresse) {
 
-    this.enregistrementEnCours = true;
-    this.erreur = '';
-
-    try {
-
-      const { error } =
+      const { error: erreurAdresse } =
         await this.supabase.client
-          .from('t_Contacts')
+          .from('t_Adresses')
           .update({
-            Civilite:
-              this.donneur.Civilite,
 
-            NomUsage:
-              this.donneur.NomUsage,
+            Adresse1:
+              this.adresse.Adresse1,
+              
+            Adresse2:
+              this.adresse.Adresse2,
 
-            NomdeNaissance:
-              this.donneur.NomdeNaissance,
-
-            Prenom:
-              this.donneur.Prenom,
-
-            Sexe:
-              this.donneur.Sexe,
-
-            DateNaissance:
-              this.donneur.DateNaissance,
-
-            'EstDécédé':
-              this.donneur.EstDecede,
-
-            Actif:
-              this.donneur.Actif,
-
-            NePeutVeutPlusDonner:
-              this.donneur.NePeutVeutPlusDonner,
-
-            VolontairePlasma:
-              this.donneur.VolontairePlasma,
-
-            PrimoDon:
-              this.donneur.PrimoDon,
-
+            IdPays:
+              this.adresse.IdPays,
+            
             Commentaire:
-              this.donneur.Commentaire
+            this.adresse.Commentaire
+
           })
           .eq(
             'IdContact',
             this.donneur.IdContact
+          )
+          .eq(
+            'EstPrincipale',
+            true
+          )
+          .eq(
+            'EstValide',
+            true
           );
 
-      if (error) {
-        throw error;
+      if (erreurAdresse) {
+        throw erreurAdresse;
       }
-
-      this.modeEdition = false;
-
-    } catch (error) {
-
-      console.error(
-        'ERREUR ENREGISTREMENT DONNEUR :',
-        error
-      );
-
-      this.erreur =
-        'Impossible d’enregistrer les modifications.';
-
-    } finally {
-
-      this.enregistrementEnCours = false;
     }
+
+    this.modeEdition = false;
+
+    await this.calculerEligibilite();
+
+    this.changeDetectorRef.detectChanges();
+
+  } catch (error) {
+
+    console.error(
+      'ERREUR ENREGISTREMENT DONNEUR :',
+      error
+    );
+
+    this.erreur =
+      'Impossible d’enregistrer les modifications.';
+
+  } finally {
+
+    this.enregistrementEnCours = false;
   }
+}
+
+formaterCodePostal(codePostal: string | null | undefined): string {
+
+  if (!codePostal) {
+    return '';
+  }
+
+  const code =
+    codePostal.trim();
+
+  if (/^\d{5}$/.test(code)) {
+    return code.substring(0, 2) +
+      ' ' +
+      code.substring(2);
+  }
+
+  return code;
+}
+
 }

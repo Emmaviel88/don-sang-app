@@ -130,121 +130,151 @@
           État civil
         </div>
 
-        <div class="card-body py-2">
+        @if (donneur) {
 
-          <div class="row g-2">
+          <div class="card-body py-2">
 
-            <div class="col-md-2">
+            <div class="row g-2">
 
-              <label class="form-label mb-1">
-                Civilité
-              </label>
+              <div class="col-md-2">
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [ngModel]="donneur?.Civilite">
+                <label class="form-label mb-1">
+                  Civilité
+                </label>
 
-            </div>
+                <select
+                  class="form-select form-select-sm"
+                  [(ngModel)]="donneur.Civilite"
+                  [disabled]="!modeEdition"
+                  [class.bg-success-subtle]="modeEdition">
 
-            <div class="col-md-4">
+                  <option value="Mme">Mme</option>
+                  <option value="Mr">Mr</option>
+                  <option value="Dr">Dr</option>
+                  <option value="Pr">Pr</option>
 
-              <label class="form-label mb-1">
-                Nom d'usage
-              </label>
+                </select>
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [ngModel]="donneur?.NomUsage">
+              </div>
 
-            </div>
+              <div class="col-md-4">
 
-            <div class="col-md-4">
+                <label class="form-label mb-1">
+                  Nom d'usage
+                </label>
 
-              <label class="form-label mb-1">
-                Nom de naissance
-              </label>
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  [ngModel]="donneur.NomUsage"
+                  (ngModelChange)="donneur.NomUsage = $event"
+                  [disabled]="!modeEdition"
+                  [class.bg-success-subtle]="modeEdition">
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [ngModel]="donneur?.NomdeNaissance">
+              </div>
 
-            </div>
+              <div class="col-md-4">
 
-            <div class="col-md-2">
+                <label class="form-label mb-1">
+                  Nom de naissance
+                </label>
 
-              <label class="form-label mb-1">
-                IdContact
-              </label>
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  [ngModel]="donneur.NomdeNaissance"
+                  (ngModelChange)="donneur.NomdeNaissance = $event"
+                  [disabled]="!modeEdition"
+                  [class.bg-success-subtle]="modeEdition">
 
-              <input
-                type="text"
-                class="form-control form-control-sm bg-light"
-                style="width: 80px;"
-                [value]="donneur?.IdContact ?? ''"
-                readonly>
+              </div>
 
-            </div>
+              <div class="col-md-2">
 
-            <div class="col-md-4">
+                <label class="form-label mb-1">
+                  IdContact
+                </label>
 
-              <label class="form-label mb-1">
-                Prénom
-              </label>
+                <input
+                  type="text"
+                  class="form-control form-control-sm bg-light"
+                  style="width: 80px;"
+                  [value]="donneur.IdContact"
+                  readonly
+                  tabindex="-1">
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [ngModel]="donneur?.Prenom">
+              </div>
 
-            </div>
+              <div class="col-md-4">
 
-            <div class="col-md-2">
+                <label class="form-label mb-1">
+                  Prénom
+                </label>
 
-              <label class="form-label mb-1">
-                Sexe
-              </label>
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  [ngModel]="donneur.Prenom"
+                  (ngModelChange)="donneur.Prenom = $event"
+                  [disabled]="!modeEdition"
+                  [class.bg-success-subtle]="modeEdition">
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [ngModel]="donneur?.Sexe">
+              </div>
 
-            </div>
+              <div class="col-md-2">
 
-            <div class="col-md-3">
+                <label class="form-label mb-1">
+                  Sexe
+                </label>
 
-              <label class="form-label mb-1">
-                Date de naissance
-              </label>
+                <select
+                  class="form-select form-select-sm"
+                  [(ngModel)]="donneur.Sexe"
+                  [disabled]="!modeEdition"
+                  [class.bg-success-subtle]="modeEdition">
 
-              <input
-                type="date"
-                class="form-control form-control-sm"
-                [ngModel]="donneur?.DateNaissance"
-                (ngModelChange)="calculerAge()">
+                  <option value="F">F</option>
+                  <option value="M">M</option>
 
-            </div>
+                </select>
 
-            <div class="col-md-3">
+              </div>
 
-              <label class="form-label mb-1">
-                Âge à la collecte
-              </label>
+              <div class="col-md-3">
 
-              <input
-                type="text"
-                class="form-control form-control-sm bg-light"
-                [value]="age"
-                readonly>
+                <label class="form-label mb-1">
+                  Date de naissance
+                </label>
+
+                <input
+                  type="date"
+                  class="form-control form-control-sm"
+                  [ngModel]="donneur.DateNaissance"
+                  (ngModelChange)="modifierDateNaissance($event)"
+                  [disabled]="!modeEdition"
+                  [class.bg-success-subtle]="modeEdition">
+
+              </div>
+
+              <div class="col-md-3">
+
+                <label class="form-label mb-1">
+                  Âge à la collecte
+                </label>
+
+                <input
+                  type="text"
+                  class="form-control form-control-sm bg-light"
+                  [value]="age"
+                  readonly>
+
+              </div>
 
             </div>
 
           </div>
 
-        </div>
+        }
 
       </div>
 
@@ -260,89 +290,103 @@
           État / Statut
         </div>
 
-        <div class="card-body py-2">
+        @if (donneur) {
 
-          <div class="form-check mb-1">
+          <div class="card-body py-2">
 
-            <input
-              id="actif"
-              type="checkbox"
-              class="form-check-input"
-              [ngModel]="donneur?.Actif">
+            <div class="form-check mb-1">
 
-            <label
-              for="actif"
-              class="form-check-label">
-              Actif
-            </label>
+              <input
+                id="actif"
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="donneur.Actif"
+                (ngModelChange)="donneur.Actif = $event"
+                [disabled]="!modeEdition">
+
+              <label
+                for="actif"
+                class="form-check-label">
+                Actif
+              </label>
+
+            </div>
+
+            <div class="form-check mb-1">
+
+              <input
+                id="primoDon"
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="donneur.PrimoDon"
+                (ngModelChange)="donneur.PrimoDon = $event"
+                [disabled]="!modeEdition">
+
+              <label
+                for="primoDon"
+                class="form-check-label">
+                Primo-don
+              </label>
+
+            </div>
+
+            <div class="form-check mb-1">
+
+              <input
+                id="volontairePlasma"
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="donneur.VolontairePlasma"
+                (ngModelChange)="donneur.VolontairePlasma = $event"
+                [disabled]="!modeEdition">
+
+              <label
+                for="volontairePlasma"
+                class="form-check-label">
+                Volontaire plasma
+              </label>
+
+            </div>
+
+            <div class="form-check mb-1">
+
+              <input
+                id="nePeutVeutPlusDonner"
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="donneur.NePeutVeutPlusDonner"
+                (ngModelChange)="donneur.NePeutVeutPlusDonner = $event"
+                [disabled]="!modeEdition">
+
+              <label
+                for="nePeutVeutPlusDonner"
+                class="form-check-label">
+                Ne peut/veut plus donner
+              </label>
+
+            </div>
+
+            <div class="form-check mb-1">
+
+              <input
+                id="estDecede"
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="donneur.EstDecede"
+                (ngModelChange)="donneur.EstDecede = $event"
+                [disabled]="!modeEdition">
+
+              <label
+                for="estDecede"
+                class="form-check-label">
+                Décédé
+              </label>
+
+            </div>
 
           </div>
 
-          <div class="form-check mb-1">
-
-            <input
-              id="primoDon"
-              type="checkbox"
-              class="form-check-input"
-              [ngModel]="donneur?.PrimoDon">
-
-            <label
-              for="primoDon"
-              class="form-check-label">
-              Primo-don
-            </label>
-
-          </div>
-
-          <div class="form-check mb-1">
-
-            <input
-              id="volontairePlasma"
-              type="checkbox"
-              class="form-check-input"
-              [ngModel]="donneur?.VolontairePlasma">
-
-            <label
-              for="volontairePlasma"
-              class="form-check-label">
-              Volontaire plasma
-            </label>
-
-          </div>
-
-          <div class="form-check mb-1">
-
-            <input
-              id="nePeutVeutPlusDonner"
-              type="checkbox"
-              class="form-check-input"
-              [ngModel]="donneur?.NePeutVeutPlusDonner">
-
-            <label
-              for="nePeutVeutPlusDonner"
-              class="form-check-label">
-              Ne peut/veut plus donner
-            </label>
-
-          </div>
-
-          <div class="form-check mb-1">
-
-            <input
-              id="estDecede"
-              type="checkbox"
-              class="form-check-input"
-              [ngModel]="donneur?.EstDecede">
-
-            <label
-              for="estDecede"
-              class="form-check-label">
-              Décédé
-            </label>
-
-          </div>
-
-        </div>
+        }
 
       </div>
 
@@ -371,8 +415,10 @@
               <input
                 type="text"
                 class="form-control form-control-sm"
-                [value]="adresse?.Adresse1 ?? ''"
-                readonly>
+                [ngModel]="adresse?.Adresse1"
+                (ngModelChange)="adresse && (adresse.Adresse1 = $event)"
+                [disabled]="!modeEdition"
+                [class.bg-success-subtle]="modeEdition">
 
             </div>
 
@@ -385,8 +431,10 @@
               <input
                 type="text"
                 class="form-control form-control-sm"
-                [value]="adresse?.Adresse2 ?? ''"
-                readonly>
+                [ngModel]="adresse?.Adresse2"
+                (ngModelChange)="adresse && (adresse.Adresse2 = $event)"
+                [disabled]="!modeEdition"
+                [class.bg-success-subtle]="modeEdition">
 
             </div>
 
@@ -399,7 +447,7 @@
               <input
                 type="text"
                 class="form-control form-control-sm"
-                [value]="adresse?.CodePostal ?? ''"
+                [value]="formaterCodePostal(adresse?.CodePostal)"
                 readonly>
 
             </div>
@@ -424,11 +472,26 @@
                 Pays
               </label>
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [value]="pays?.NomPays ?? ''"
-                readonly>
+              <select
+                class="form-select form-select-sm"
+                [ngModel]="adresse?.IdPays"
+                (ngModelChange)="modifierPays($event)"
+                [disabled]="!modeEdition"
+                [class.bg-success-subtle]="modeEdition">
+
+                @for (
+                  paysDisponible of paysDisponibles;
+                  track paysDisponible.IdPays
+                ) {
+
+                  <option
+                    [ngValue]="paysDisponible.IdPays">
+                    {{ paysDisponible.NomPays }}
+                  </option>
+
+                }
+
+              </select>
 
             </div>
 
@@ -441,7 +504,10 @@
               <textarea
                 class="form-control form-control-sm"
                 rows="2"
-                [ngModel]="donneur?.Commentaire">
+                [ngModel]="adresse?.Commentaire"
+                (ngModelChange)="adresse && (adresse.Commentaire = $event)"
+                [disabled]="!modeEdition"
+                [class.bg-success-subtle]="modeEdition">
               </textarea>
 
             </div>
@@ -609,11 +675,13 @@
                 </strong>
 
                 <span class="ms-2">
+
                   @if (ageOK) {
                     OK
                   } @else {
                     Non conforme
                   }
+
                 </span>
 
               </div>
@@ -632,11 +700,13 @@
                 </strong>
 
                 <span class="ms-2">
+
                   @if (delaiDernierDonOK) {
                     OK
                   } @else {
                     Non conforme
                   }
+
                 </span>
 
               </div>
@@ -655,11 +725,13 @@
                 </strong>
 
                 <span class="ms-2">
+
                   @if (nombreDons365OK) {
                     OK
                   } @else {
                     Non conforme
                   }
+
                 </span>
 
               </div>
@@ -674,13 +746,17 @@
                 [class.border-danger]="!eligible">
 
                 @if (eligible) {
+
                   <span>
                     ÉLIGIBLE
                   </span>
+
                 } @else {
+
                   <span>
                     NON ÉLIGIBLE
                   </span>
+
                 }
 
               </div>
