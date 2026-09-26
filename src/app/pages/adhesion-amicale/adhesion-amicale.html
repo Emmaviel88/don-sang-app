@@ -1,1 +1,299 @@
-<p>adhesion-amicale works!</p>
+<div class="container-fluid py-2">
+  <h2 class="mb-2">Adhésion amicale</h2>
+
+  <!-- Première ligne -->
+  <div class="row align-items-end g-2 mb-2">
+    <div class="col-md-6">
+      <label class="form-label fw-bold mb-1">Donneur</label>
+
+      <input type="text" class="form-control form-control-sm fs-6 fw-bold" value="" readonly />
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label fw-bold mb-1">Année à éditer</label>
+
+      <input
+        type="text"
+        class="form-control form-control-sm fs-6 fw-bold text-center"
+        value=""
+        readonly
+      />
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label fw-bold mb-1">Nb total d'adhérents</label>
+
+      <input
+        type="text"
+        class="form-control form-control-sm fs-6 fw-bold text-center"
+        value=""
+        readonly
+      />
+    </div>
+  </div>
+
+  <!-- Deuxième ligne : tableaux des adhésions + commandes -->
+  <div class="d-flex gap-2">
+    <!-- 1994 à 2010 -->
+    <div>
+      <div class="border rounded adhesion-table-container">
+        <table class="table table-bordered table-hover table-sm mb-0 table-adhesions">
+          <thead>
+            <tr>
+              <th>Année</th>
+              <th>Adhésion</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>1994</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>1995</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>1996</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>1997</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>1998</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>1999</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2000</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2001</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2002</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2003</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2004</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2005</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2006</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2007</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2008</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2009</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2010</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2011 à 2027 -->
+    <div>
+      <div class="border rounded adhesion-table-container">
+        <table class="table table-bordered table-hover table-sm mb-0 table-adhesions">
+          <thead>
+            <tr>
+              <th>Année</th>
+              <th>Adhésion</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>2011</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2012</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2013</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2014</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2015</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2016</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2017</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2018</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2019</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2020</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2021</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2022</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2023</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2024</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2025</td>
+              <td class="text-center"><span class="text-success fw-bold">✓</span></td>
+            </tr>
+            <tr>
+              <td>2026</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2027</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2028 à 2044 -->
+    <div>
+      <div class="border rounded adhesion-table-container">
+        <table class="table table-bordered table-hover table-sm mb-0 table-adhesions">
+          <thead>
+            <tr>
+              <th>Année</th>
+              <th>Adhésion</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>2028</td>
+              <td class="text-center"><span class="text-danger fw-bold">✕</span></td>
+            </tr>
+            <tr>
+              <td>2029</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2030</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2031</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2032</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2033</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2034</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2035</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2036</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2037</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2038</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2039</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2040</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2041</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2042</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2043</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+            <tr>
+              <td>2044</td>
+              <td class="text-danger fw-bold">✕</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Commandes -->
+    <div class="d-flex flex-column gap-2 ms-2">
+      <button type="button" class="btn btn-danger btn-sm" disabled>Supprimer adhésion</button>
+
+      <button type="button" class="btn btn-success btn-sm" disabled>Ajouter adhésion</button>
+    </div>
+  </div>
+</div>

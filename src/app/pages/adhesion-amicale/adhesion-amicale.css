@@ -1,0 +1,32 @@
+.adhesion-table-container {
+  width: 75%;
+}
+
+.table-adhesions {
+  width: 100%;
+}
+
+.table-adhesions th,
+.table-adhesions td {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  line-height: 1.1;
+}
+
+.table-adhesions th:first-child,
+.table-adhesions td:first-child {
+  width: 25%;
+  text-align: center;
+}
+
+.table-adhesions th:last-child,
+.table-adhesions td:last-child {
+  width: 25%;
+  text-align: center;
+}
+
+.table-adhesions th {
+  background-color: #212529;
+  color: #ffffff;
+  text-align: center;
+}
