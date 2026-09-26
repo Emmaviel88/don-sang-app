@@ -12,5 +12,17 @@
 }
 
 .navbar-association {
-  background-color: #C00000;
+  background-color: #c00000;
+}
+
+.navbar .navbar-nav .commande-navbar {
+  width: 150px;
+  color: #d3d3d3 !important;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+}
+
+.navbar .navbar-nav .commande-navbar:not(.active):hover {
+  color: rgb(55, 59, 69) !important;
+  background-color: white !important;
+  border-color: white !important;
 }

@@ -1,114 +1,86 @@
 @if (afficherApplication()) {
-
   <div class="d-flex flex-column min-vh-100">
-
     <nav class="navbar navbar-expand-lg navbar-association">
       <div class="container-fluid">
-
         <div class="d-flex align-items-center">
-
-          <img
-            src="Logo Amicale.png"
-            alt="Logo de l'association"
-            height="70"
-            class="me-2">
+          <img src="Logo Amicale.png" alt="Logo de l'association" height="70" class="me-2" />
 
           <span class="navbar-brand text-white fw-bold fs-4">
-            Donneurs de Sang Bénévoles du Tholy et environs
+            Donneurs de Sang Bénévoles du Tholy et ses environs
           </span>
-
         </div>
 
         <div class="d-flex align-items-center">
-
-          <div class="navbar-nav me-4">
-
+          <div class="navbar-nav me-4 d-flex flex-row gap-2 align-items-stretch">
             <a
-              class="nav-link fs-4"
+              class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
               routerLink="/coordonnees"
-              routerLinkActive="active fw-bold">
-              Accueil
+              routerLinkActive="active fw-bold"
+            >
+              Coordonnées Donneurs
             </a>
 
             <a
-              class="nav-link fs-4"
+              class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
               routerLink="/collectes"
-              routerLinkActive="active fw-bold">
-              Collectes
+              routerLinkActive="active fw-bold"
+            >
+              Collectes & Dons
             </a>
 
             <a
-              class="nav-link fs-4"
+              class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
               routerLink="/statistiques"
-              routerLinkActive="active fw-bold">
-              Statistiques
+              routerLinkActive="active fw-bold"
+            >
+              Statistiques collectes
             </a>
 
-            @if (
-              session.utilisateur()?.Role === 'Admin' ||
-              session.utilisateur()?.Role === 'SA'
-            ) {
-
+            @if (session.utilisateur()?.Role === 'Admin' || session.utilisateur()?.Role === 'SA') {
               <a
-                class="nav-link fs-4"
+                class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
                 routerLink="/adhesion-amicale"
-                routerLinkActive="active fw-bold">
+                routerLinkActive="active fw-bold"
+              >
                 Adhésion amicale
               </a>
 
               <a
-                class="nav-link fs-4"
+                class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
                 routerLink="/comite"
-                routerLinkActive="active fw-bold">
+                routerLinkActive="active fw-bold"
+              >
                 Comité
               </a>
-
             }
-
           </div>
-
-          <span class="navbar-text me-3">
-            {{ session.utilisateur()?.Login }}
-            —
-            {{ session.utilisateur()?.Role }}
-          </span>
 
           <button
             type="button"
-            class="btn btn-outline-light"
-            (click)="seDeconnecter()">
+            class="btn btn-outline-light rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center align-self-stretch"
+            style="width: 150px"
+            (click)="seDeconnecter()"
+          >
             Déconnexion
           </button>
-
         </div>
-
       </div>
     </nav>
 
     <main class="container-fluid py-4 flex-grow-1">
-
       <router-outlet />
-
     </main>
 
-    <footer class="bg-light border-top py-2">
-      <div class="container-fluid d-flex justify-content-between">
-
+    <footer class="navbar-association py-2">
+      <div class="container-fluid d-flex justify-content-between text-white">
         <span>
           {{ session.utilisateur()?.Login }}
         </span>
 
-        <span>
-          {{ session.utilisateur()?.Role }} — Connecté
-        </span>
-
+        <span> {{ session.utilisateur()?.Role }} — Connecté </span>
       </div>
     </footer>
-
   </div>
-
 } @else {
-
   <router-outlet />
-
 }

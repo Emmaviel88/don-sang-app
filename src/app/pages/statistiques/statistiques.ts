@@ -1,7 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { SupabaseService } from '../../services/supabase';
 import { SessionService } from '../../services/session';
+import { CollecteSelectionService, CollecteSelectionnee } from '../../services/collecte-selection';
 
 interface Collecte {
   IdCollecte: number;
@@ -30,23 +31,44 @@ interface DonneurAge {
         NomUsage: string;
         Prenom: string;
         DateNaissance: string;
+        Sexe: string | null;
       }
     | {
         NomUsage: string;
         Prenom: string;
         DateNaissance: string;
+        Sexe: string | null;
       }[];
 }
 
+interface AdresseStatistique {
+  IdContact: number;
+  Commune: string | null;
+  CodePostal: string | null;
+  IdPays: number | null;
+}
+
+interface PaysStatistique {
+  IdPays: number;
+  NomPays: string;
+  CodeISO: string;
+}
+
+interface ClassementCommune {
+  Commune: string;
+  NbDonneurs: number;
+  Pourcentage: number;
+}
+
 @Component({
-  imports: [DatePipe],
+  imports: [DatePipe, DecimalPipe],
   selector: 'app-statistiques',
   styleUrl: './statistiques.css',
   templateUrl: './statistiques.html',
 })
 export class Statistiques implements OnInit {
   collectes = signal<Collecte[]>([]);
-  collecteSelectionnee = signal<Collecte | null>(null);
+  collecteSelectionnee = signal<CollecteSelectionnee | null>(null);
 
   nbTotalDonneurs = signal(0);
   nbPrimoDons = signal(0);
@@ -57,19 +79,34 @@ export class Statistiques implements OnInit {
   plusJeuneNom = signal('');
   plusJeunePrenom = signal('');
   plusJeuneAgeJours = signal(0);
+  plusJeuneSexe = signal<string | null>(null);
 
   plusAgeNom = signal('');
   plusAgePrenom = signal('');
   plusAgeAgeJours = signal(0);
+  plusAgeSexe = signal<string | null>(null);
+
+  classementCommunes = signal<ClassementCommune[]>([]);
+  chargement = signal(true);
 
   constructor(
     private supabase: SupabaseService,
     private session: SessionService,
+    private selection: CollecteSelectionService,
   ) {}
 
   async ngOnInit(): Promise<void> {
-    await this.session.attendreRestaurationSession();
-    await this.chargerCollectes();
+    this.chargement.set(true);
+
+    try {
+      await this.session.attendreRestaurationSession();
+
+      this.collecteSelectionnee.set(this.selection.collecte());
+
+      await this.chargerCollectes();
+    } finally {
+      this.chargement.set(false);
+    }
   }
 
   private async chargerCollectes(): Promise<void> {
@@ -79,10 +116,31 @@ export class Statistiques implements OnInit {
       this.collectes.set(collectes);
 
       if (collectes.length === 0) {
+        this.collecteSelectionnee.set(null);
         return;
       }
 
-      this.collecteSelectionnee.set(collectes[0]);
+      const selectionExistante = this.selection.collecte();
+
+      if (selectionExistante) {
+        const collecte = collectes.find(
+          (item) => item.IdCollecte === selectionExistante.IdCollecte,
+        );
+
+        if (collecte) {
+          this.collecteSelectionnee.set({
+            IdCollecte: collecte.IdCollecte,
+            annee: collecte.annee,
+            NumCollecte: collecte.NumCollecte,
+            DateCollecte: collecte.DateCollecte,
+          });
+        } else {
+          this.selection.effacerCollecte();
+          this.selectionnerCollecteParDefaut(collectes);
+        }
+      } else {
+        this.selectionnerCollecteParDefaut(collectes);
+      }
 
       await this.chargerStatistiques();
     } catch (error) {
@@ -90,7 +148,29 @@ export class Statistiques implements OnInit {
     }
   }
 
+  private selectionnerCollecteParDefaut(collectes: Collecte[]): void {
+    const maintenant = new Date();
+
+    const prochaines = collectes
+      .filter((collecte) => new Date(collecte.DateCollecte) >= maintenant)
+      .sort((a, b) => new Date(a.DateCollecte).getTime() - new Date(b.DateCollecte).getTime());
+
+    const collecte = prochaines.length > 0 ? prochaines[0] : collectes[0];
+
+    const selection: CollecteSelectionnee = {
+      IdCollecte: collecte.IdCollecte,
+      annee: collecte.annee,
+      NumCollecte: collecte.NumCollecte,
+      DateCollecte: collecte.DateCollecte,
+    };
+
+    this.selection.definirCollecte(selection);
+    this.collecteSelectionnee.set(selection);
+  }
+
   private async chargerStatistiques(): Promise<void> {
+    this.chargement.set(true);
+
     const collecte = this.collecteSelectionnee();
 
     if (!collecte) {
@@ -102,9 +182,13 @@ export class Statistiques implements OnInit {
       this.plusJeuneNom.set('');
       this.plusJeunePrenom.set('');
       this.plusJeuneAgeJours.set(0);
+      this.plusJeuneSexe.set(null);
       this.plusAgeNom.set('');
       this.plusAgePrenom.set('');
       this.plusAgeAgeJours.set(0);
+      this.plusAgeSexe.set(null);
+      this.classementCommunes.set([]);
+      this.chargement.set(false);
       return;
     }
 
@@ -131,9 +215,13 @@ export class Statistiques implements OnInit {
         this.plusJeuneNom.set('');
         this.plusJeunePrenom.set('');
         this.plusJeuneAgeJours.set(0);
+        this.plusJeuneSexe.set(null);
         this.plusAgeNom.set('');
         this.plusAgePrenom.set('');
         this.plusAgeAgeJours.set(0);
+        this.plusAgeSexe.set(null);
+        this.classementCommunes.set([]);
+        this.chargement.set(false);
         return;
       }
 
@@ -162,6 +250,85 @@ export class Statistiques implements OnInit {
       this.nbFemmes.set(nbFemmes);
       this.nbHommes.set(nbHommes);
 
+      const { data: adresses, error: erreurAdresses } = await this.supabase.client
+        .from('t_Adresses')
+        .select('IdContact, Commune, CodePostal, IdPays, EstPrincipale, EstValide')
+        .in('IdContact', [...donneurs])
+        .eq('EstPrincipale', true)
+        .eq('EstValide', true);
+
+      if (erreurAdresses) {
+        throw erreurAdresses;
+      }
+
+      const { data: pays, error: erreurPays } = await this.supabase.client
+        .from('t_Pays')
+        .select('IdPays, NomPays, CodeISO');
+
+      if (erreurPays) {
+        throw erreurPays;
+      }
+
+      const paysParId = new Map<number, PaysStatistique>();
+
+      for (const paysItem of (pays ?? []) as PaysStatistique[]) {
+        paysParId.set(paysItem.IdPays, paysItem);
+      }
+
+      const adresseParDonneur = new Map<number, AdresseStatistique>();
+
+      for (const adresse of (adresses ?? []) as AdresseStatistique[]) {
+        const commune = typeof adresse.Commune === 'string' ? adresse.Commune.trim() : '';
+
+        if (commune === '') {
+          continue;
+        }
+
+        adresseParDonneur.set(adresse.IdContact, adresse);
+      }
+
+      const nombreDonneursParCommune = new Map<string, number>();
+
+      for (const idDonneur of donneurs) {
+        const adresse = adresseParDonneur.get(idDonneur);
+
+        if (!adresse) {
+          continue;
+        }
+
+        const paysDonneur = adresse.IdPays !== null ? paysParId.get(adresse.IdPays) : undefined;
+
+        const commune = this.formaterCommune(
+          adresse.Commune ?? '',
+          adresse.CodePostal,
+          paysDonneur,
+        );
+
+        const nombreActuel = nombreDonneursParCommune.get(commune) ?? 0;
+
+        nombreDonneursParCommune.set(commune, nombreActuel + 1);
+      }
+
+      const totalDonneurs = donneurs.size;
+
+      const classementCommunes = [...nombreDonneursParCommune.entries()]
+        .map(([Commune, NbDonneurs]) => ({
+          Commune,
+          NbDonneurs,
+          Pourcentage: (NbDonneurs / totalDonneurs) * 100,
+        }))
+        .sort((a, b) => {
+          if (b.NbDonneurs !== a.NbDonneurs) {
+            return b.NbDonneurs - a.NbDonneurs;
+          }
+
+          return a.Commune.localeCompare(b.Commune, 'fr', {
+            sensitivity: 'base',
+          });
+        });
+
+      this.classementCommunes.set(classementCommunes);
+
       const { data: donsDesDonneurs, error: erreurDonsDesDonneurs } = await this.supabase.client
         .from('t_Dons')
         .select('IdDonneur, "AnnéeDon", NumCollecte')
@@ -173,7 +340,7 @@ export class Statistiques implements OnInit {
 
       const { data: donneursAge, error: erreurDonneursAge } = await this.supabase.client
         .from('t_Dons')
-        .select('IdDonneur, DateDon, t_Contacts!inner(NomUsage, Prenom, DateNaissance)')
+        .select('IdDonneur, DateDon, t_Contacts!inner(NomUsage, Prenom, DateNaissance, Sexe)')
         .eq('AnnéeDon', collecte.annee)
         .eq('NumCollecte', collecte.NumCollecte)
         .in('IdDonneur', [...donneurs]);
@@ -186,12 +353,16 @@ export class Statistiques implements OnInit {
       let nombreAges = 0;
 
       let ageMinimumJours = Number.POSITIVE_INFINITY;
+
       let plusJeuneNom = '';
       let plusJeunePrenom = '';
+      let plusJeuneSexe: string | null = null;
 
       let ageMaximumJours = Number.NEGATIVE_INFINITY;
+
       let plusAgeNom = '';
       let plusAgePrenom = '';
+      let plusAgeSexe: string | null = null;
 
       for (const donneur of (donneursAge ?? []) as DonneurAge[]) {
         const contact = Array.isArray(donneur.t_Contacts)
@@ -214,14 +385,18 @@ export class Statistiques implements OnInit {
 
           if (ageJours < ageMinimumJours) {
             ageMinimumJours = ageJours;
+
             plusJeuneNom = contact.NomUsage ?? '';
             plusJeunePrenom = contact.Prenom ?? '';
+            plusJeuneSexe = contact.Sexe ?? null;
           }
 
           if (ageJours > ageMaximumJours) {
             ageMaximumJours = ageJours;
+
             plusAgeNom = contact.NomUsage ?? '';
             plusAgePrenom = contact.Prenom ?? '';
+            plusAgeSexe = contact.Sexe ?? null;
           }
         }
       }
@@ -234,20 +409,24 @@ export class Statistiques implements OnInit {
         this.plusJeuneNom.set(plusJeuneNom);
         this.plusJeunePrenom.set(plusJeunePrenom);
         this.plusJeuneAgeJours.set(ageMinimumJours);
+        this.plusJeuneSexe.set(plusJeuneSexe);
       } else {
         this.plusJeuneNom.set('');
         this.plusJeunePrenom.set('');
         this.plusJeuneAgeJours.set(0);
+        this.plusJeuneSexe.set(null);
       }
 
       if (Number.isFinite(ageMaximumJours)) {
         this.plusAgeNom.set(plusAgeNom);
         this.plusAgePrenom.set(plusAgePrenom);
         this.plusAgeAgeJours.set(ageMaximumJours);
+        this.plusAgeSexe.set(plusAgeSexe);
       } else {
         this.plusAgeNom.set('');
         this.plusAgePrenom.set('');
         this.plusAgeAgeJours.set(0);
+        this.plusAgeSexe.set(null);
       }
 
       const nbDonsApres2013 = new Map<number, number>();
@@ -293,15 +472,82 @@ export class Statistiques implements OnInit {
       this.plusJeuneNom.set('');
       this.plusJeunePrenom.set('');
       this.plusJeuneAgeJours.set(0);
+      this.plusJeuneSexe.set(null);
 
       this.plusAgeNom.set('');
       this.plusAgePrenom.set('');
       this.plusAgeAgeJours.set(0);
+      this.plusAgeSexe.set(null);
+
+      this.classementCommunes.set([]);
+    } finally {
+      this.chargement.set(false);
     }
+  }
+
+  private formaterCommune(
+    commune: string,
+    codePostal: string | null,
+    pays: PaysStatistique | undefined,
+  ): string {
+    const nomCommune = commune.trim();
+
+    if (!pays || pays.CodeISO === 'FR') {
+      const departement = this.determinerDepartement(codePostal);
+
+      if (!departement || departement === '88') {
+        return nomCommune;
+      }
+
+      return `${nomCommune} (${departement})`;
+    }
+
+    return `${nomCommune} (${pays.NomPays})`;
+  }
+
+  private determinerDepartement(codePostal: string | null): string | null {
+    if (!codePostal) {
+      return null;
+    }
+
+    const code = codePostal.trim();
+
+    if (code.length < 2) {
+      return null;
+    }
+
+    if (code.startsWith('20')) {
+      const codeNumerique = Number(code);
+
+      if (Number.isFinite(codeNumerique) && codeNumerique >= 20000 && codeNumerique <= 20199) {
+        return '2A';
+      }
+
+      if (Number.isFinite(codeNumerique) && codeNumerique >= 20200 && codeNumerique <= 20620) {
+        return '2B';
+      }
+    }
+
+    if (/^\d{3}/.test(code)) {
+      const troisPremiers = code.substring(0, 3);
+
+      if (
+        troisPremiers === '971' ||
+        troisPremiers === '972' ||
+        troisPremiers === '973' ||
+        troisPremiers === '974' ||
+        troisPremiers === '976'
+      ) {
+        return troisPremiers;
+      }
+    }
+
+    return code.substring(0, 2);
   }
 
   formaterAgeMoyen(): string {
     const collecte = this.collecteSelectionnee();
+
     const jours = this.ageMoyenJours();
 
     if (!collecte || jours <= 0) {
@@ -311,8 +557,13 @@ export class Statistiques implements OnInit {
     return this.formaterAge(jours, collecte.DateCollecte);
   }
 
+  libellePlusJeuneDonneur(): string {
+    return this.plusJeuneSexe() === 'F' ? 'Donneuse la plus jeune' : 'Donneur le plus jeune';
+  }
+
   formaterPlusJeuneDonneur(): string {
     const collecte = this.collecteSelectionnee();
+
     const jours = this.plusJeuneAgeJours();
 
     if (!collecte || jours <= 0) {
@@ -325,11 +576,24 @@ export class Statistiques implements OnInit {
     )}`;
   }
 
+  libellePlusAgeDonneur(): string {
+    return this.plusAgeSexe() === 'F' ? 'Donneuse la plus sage' : 'Donneur le plus sage';
+  }
+
   formaterPlusAgeDonneur(): string {
-    const collecte = this.collecteSelectionnee();
     const jours = this.plusAgeAgeJours();
 
-    if (!collecte || jours <= 0) {
+    if (jours <= 0) {
+      return '—';
+    }
+
+    if (this.plusAgeSexe() === 'F') {
+      return `${this.plusAgeNom()} ${this.plusAgePrenom()}`;
+    }
+
+    const collecte = this.collecteSelectionnee();
+
+    if (!collecte) {
       return '—';
     }
 
@@ -375,9 +639,22 @@ export class Statistiques implements OnInit {
   async changerCollecte(idCollecte: string): Promise<void> {
     const id = Number(idCollecte);
 
-    this.collecteSelectionnee.set(
-      this.collectes().find((collecte) => collecte.IdCollecte === id) ?? null,
-    );
+    const collecte = this.collectes().find((item) => item.IdCollecte === id);
+
+    if (!collecte) {
+      return;
+    }
+
+    const selection: CollecteSelectionnee = {
+      IdCollecte: collecte.IdCollecte,
+      annee: collecte.annee,
+      NumCollecte: collecte.NumCollecte,
+      DateCollecte: collecte.DateCollecte,
+    };
+
+    this.selection.definirCollecte(selection);
+
+    this.collecteSelectionnee.set(selection);
 
     await this.chargerStatistiques();
   }

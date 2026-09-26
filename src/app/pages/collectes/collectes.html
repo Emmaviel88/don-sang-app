@@ -1,5 +1,4 @@
 <div class="container-fluid py-3">
-
   <h2 class="mb-3">Collectes</h2>
 
   @if (message()) {
@@ -10,49 +9,34 @@
 
   @if (collecteSelectionnee(); as collecte) {
     <div class="alert alert-success py-2 mb-3">
-
-      <span class = "fs-5 fw-bold">
+      <span class="fs-5 fw-bold">
         Collecte sélectionnée :
         <strong>
           {{ collecte.annee }}
+          — collecte {{ collecte.NumCollecte }}
           —
-          collecte {{ collecte.NumCollecte }}
-          —
-          {{ collecte.DateCollecte | date:'dd/MM/yyyy' }}
+          {{ collecte.DateCollecte | date: 'dd/MM/yyyy' }}
         </strong>
       </span>
 
-      <button
-        type="button"
-        class="btn btn-primary btn-sm ms-3"
-        (click)="ouvrirChoixCollecte()">
+      <button type="button" class="btn btn-primary btn-sm ms-3" (click)="ouvrirChoixCollecte()">
         Changer de collecte
       </button>
 
       @if (choixOuvert()) {
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm ms-2"
-          (click)="fermerChoixCollecte()">
+        <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="fermerChoixCollecte()">
           Annuler
         </button>
       }
-
     </div>
   }
 
   @if (choixOuvert()) {
-
     <div class="card mb-3">
-
-      <div class="card-header py-2">
-        Choisir une collecte
-      </div>
+      <div class="card-header py-2">Choisir une collecte</div>
 
       <div class="card-body p-2">
-
         <table class="table table-bordered table-sm mb-0">
-
           <thead>
             <tr>
               <th>Année</th>
@@ -65,57 +49,35 @@
           </thead>
 
           <tbody>
-
             @for (annee of annees(); track annee) {
-
               <tr>
-
                 <th>{{ annee }}</th>
 
                 @for (numero of [5, 4, 3, 2, 1]; track numero) {
-
                   <td>
-
                     @if (getCollecte(annee, numero); as collecte) {
-
                       <button
                         type="button"
                         class="btn btn-outline-primary btn-sm"
-                        (click)="selectionnerCollecte(collecte)">
-
-                        {{ collecte.DateCollecte | date:'dd/MM/yyyy' }}
-
+                        (click)="selectionnerCollecte(collecte)"
+                      >
+                        {{ collecte.DateCollecte | date: 'dd/MM/yyyy' }}
                       </button>
-
                     }
-
                   </td>
-
                 }
-
               </tr>
-
             }
-
           </tbody>
-
         </table>
-
       </div>
-
     </div>
-
   }
 
   @if (donneurSelectionne(); as donneur) {
-
     <div class="row align-items-end mb-3">
-
       <div class="col-md-6">
-
-        <label class="form-label fw-bold">
-          Donneur
-        </label>
+        <label class="form-label fw-bold"> Donneur </label>
 
         <input
           type="text"
@@ -125,119 +87,98 @@
             ' ' +
             (donneur.Prenom || '') +
             ' - ' +
-            (donneur.DateNaissance | date:'dd/MM/yyyy')
+            (donneur.DateNaissance | date: 'dd/MM/yyyy')
           "
-          readonly>
-
+          readonly
+        />
       </div>
 
       <div class="col-md-6">
+        <div class="alert alert-warning py-2 mb-2">
+          Vérifiez que la collecte sélectionnée ci-dessus correspond bien à la collecte du don avant
+          d'utiliser « Enregistrer don ».
+        </div>
 
         <div class="d-flex gap-2">
-
           <button
             type="button"
             class="btn btn-success"
-            [disabled]="
-              !donneur.eligible ||
-              !collecteModifiable()
-            "
-            (click)="enregistrerDon()">
+            [disabled]="!donneur.eligible || !collecteModifiable()"
+            (click)="enregistrerDon()"
+          >
             Enregistrer don
           </button>
 
           <button
             type="button"
             class="btn btn-danger"
-            [disabled]="
-              !donSelectionne() ||
-              !collecteModifiable()
-            "
-            (click)="supprimerDon()">
+            [disabled]="!donSelectionne() || !collecteModifiable()"
+            title="Sélectionnez un don dans la liste avant de pouvoir le supprimer."
+            (click)="supprimerDon()"
+          >
             Supprimer don
           </button>
-
         </div>
-
       </div>
-
     </div>
 
     <div class="row g-3 mb-3">
-
       <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="text-muted">
-              Nb dons avant 2013
-            </div>
-            <div class="fs-4 fw-bold">
-              {{ nbDonsAvant2013() }}
+        <div class="card">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted">Nb dons avant 2013</span>
+              <span class="fs-4 fw-bold">{{ nbDonsAvant2013() }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="text-muted">
-              Nb dons après 2013
-            </div>
-            <div class="fs-4 fw-bold">
-              {{ nbDonsApres2013() }}
+        <div class="card">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted">Nb dons après 2013</span>
+              <span class="fs-4 fw-bold">{{ nbDonsApres2013() }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="text-muted">
-              Nb total de dons
-            </div>
-            <div class="fs-4 fw-bold">
-              {{ nbDonsTotal() }}
+        <div class="card">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted">Nb total de dons</span>
+              <span class="fs-4 fw-bold">{{ nbDonsTotal() }}</span>
             </div>
           </div>
         </div>
       </div>
-
     </div>
 
     <div class="col-md-4 mb-3">
-
-      <label for="filtreAnnee" class="form-label fw-bold">
-        Année
-      </label>
+      <label for="filtreAnnee" class="form-label fw-bold"> Année </label>
 
       <select
         id="filtreAnnee"
         class="form-select"
         [value]="anneeFiltre()"
-        (change)="changerFiltreAnnee($any($event.target).value)">
-
-        <option value="Toutes">
-          Toutes
-        </option>
+        (change)="changerFiltreAnnee($any($event.target).value)"
+      >
+        <option value="Toutes">Toutes</option>
 
         @for (annee of anneesDons(); track annee) {
           <option [value]="annee">
             {{ annee }}
           </option>
         }
-
       </select>
-
     </div>
 
     <div class="col-md-8 rounded border mb-3 p-0">
-
       <div class="table-responsive">
-
         <table class="table table-bordered table-hover table-sm mb-0">
-
           <thead>
             <tr>
               <th>Année</th>
@@ -247,14 +188,12 @@
           </thead>
 
           <tbody>
-
             @for (don of donsFiltres(); track don.IdDon) {
-
               <tr
                 [class.table-primary]="donSelectionne()?.IdDon === don.IdDon"
                 (click)="selectionnerDon(don)"
-                style="cursor: pointer;">
-
+                style="cursor: pointer"
+              >
                 <td>
                   {{ don.annee }}
                 </td>
@@ -264,35 +203,19 @@
                 </td>
 
                 <td>
-                  {{ don.DateDon | date:'dd/MM/yyyy' }}
+                  {{ don.DateDon | date: 'dd/MM/yyyy' }}
                 </td>
-
               </tr>
-
             } @empty {
-
               <tr>
-                <td colspan="3" class="text-center text-muted">
-                  Aucun don à afficher.
-                </td>
+                <td colspan="3" class="text-center text-muted">Aucun don à afficher.</td>
               </tr>
-
             }
-
           </tbody>
-
         </table>
-
       </div>
-
     </div>
-
   } @else {
-
-    <div class="alert alert-info">
-      Aucun donneur sélectionné.
-    </div>
-
+    <div class="alert alert-info">Aucun donneur sélectionné.</div>
   }
-
 </div>
