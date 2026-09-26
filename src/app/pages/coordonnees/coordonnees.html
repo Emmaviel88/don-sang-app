@@ -1,40 +1,25 @@
 <div class="container-fluid mt-4 pt-2">
-
   <div class="row mb-4">
-
     <div class="col-12">
-
       <div class="d-flex align-items-center gap-2">
-
-        <label
-          for="rechercheDonneur"
-          class="form-label mb-0">
-          Recherche
-        </label>
+        <label for="rechercheDonneur" class="form-label mb-0"> Recherche </label>
 
         <input
           #controleRecherche
           id="rechercheDonneur"
           type="text"
           class="form-control"
-          style="width: 500px;"
+          style="width: 500px"
           [(ngModel)]="recherche"
           (ngModelChange)="rechercherDonneurs()"
-          autocomplete="off">
+          autocomplete="off"
+        />
 
         @if (rechercheEnCours) {
-
-          <span
-            class="spinner-border spinner-border-sm"
-            aria-hidden="true">
-          </span>
-
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"> </span>
         }
 
-        <button
-          type="button"
-          class="btn btn-primary btn-sm ms-2"
-          [disabled]="modeEdition">
+        <button type="button" class="btn btn-primary btn-sm ms-2" [disabled]="modeEdition">
           Nouveau donneur
         </button>
 
@@ -42,7 +27,8 @@
           type="button"
           class="btn btn-secondary btn-sm"
           [disabled]="!donneur || modeEdition"
-          (click)="modifier()">
+          (click)="modifier()"
+        >
           Modifier donneur
         </button>
 
@@ -50,119 +36,81 @@
           type="button"
           class="btn btn-success btn-sm"
           [disabled]="!modeEdition || enregistrementEnCours"
-          (click)="enregistrer()">
-
+          (click)="enregistrer()"
+        >
           @if (enregistrementEnCours) {
-            <span
-              class="spinner-border spinner-border-sm me-1"
-              aria-hidden="true">
-            </span>
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"> </span>
           }
 
           Enregistrer donneur
-
         </button>
 
         <button
           type="button"
           class="btn btn-secondary btn-sm"
           [disabled]="!modeEdition || enregistrementEnCours"
-          (click)="annuler()">
+          (click)="annuler()"
+        >
           Annuler modifs
         </button>
-
       </div>
 
       @if (resultats.length > 0) {
-
-        <div
-          class="list-group mt-1"
-          style="width: 500px;">
-
-          @for (
-            resultat of resultats;
-            track resultat.IdContact
-          ) {
-
+        <div class="list-group mt-1" style="width: 500px">
+          @for (resultat of resultats; track resultat.IdContact) {
             <button
               type="button"
               class="list-group-item list-group-item-action"
-              (click)="selectionnerDonneur(resultat.IdContact)">
-
+              (click)="selectionnerDonneur(resultat.IdContact)"
+            >
               {{ afficherResultat(resultat) }}
 
               @if (resultat.DateNaissance) {
-
                 <span class="text-muted ms-2">
                   {{ afficherDate(resultat.DateNaissance) }}
                 </span>
-
               }
-
             </button>
-
           }
-
         </div>
-
       }
-
     </div>
-
   </div>
 
   @if (erreur) {
-
     <div class="alert alert-danger py-1 mb-2">
       {{ erreur }}
     </div>
-
   }
 
   <div class="row g-2">
-
     <!-- ÉTAT CIVIL -->
 
     <div class="col-md-8">
-
       <div class="card h-100">
-
-        <div class="card-header py-1 fw-bold">
-          État civil
-        </div>
+        <div class="card-header py-1 fw-bold">État civil</div>
 
         @if (donneur) {
-
           <div class="card-body py-2">
-
             <div class="row g-2">
-
               <div class="col-md-2">
-
-                <label class="form-label mb-1">
-                  Civilité
-                </label>
+                <label class="form-label mb-1"> Civilité </label>
 
                 <select
                   class="form-select form-select-sm"
                   [(ngModel)]="donneur.Civilite"
                   [disabled]="!modeEdition"
-                  [class.bg-success-subtle]="modeEdition">
-
+                  [class.bg-success-subtle]="modeEdition"
+                >
                   <option value="Mme">Mme</option>
                   <option value="Mr">Mr</option>
                   <option value="Dr">Dr</option>
                   <option value="Pr">Pr</option>
-
                 </select>
-
               </div>
 
               <div class="col-md-4">
-
-                <label class="form-label mb-1">
-                  Nom d'usage
-                </label>
+                <label class="form-label mb-1"> Nom d'usage </label>
 
                 <input
                   type="text"
@@ -170,15 +118,12 @@
                   [ngModel]="donneur.NomUsage"
                   (ngModelChange)="donneur.NomUsage = $event"
                   [disabled]="!modeEdition"
-                  [class.bg-success-subtle]="modeEdition">
-
+                  [class.bg-success-subtle]="modeEdition"
+                />
               </div>
 
               <div class="col-md-4">
-
-                <label class="form-label mb-1">
-                  Nom de naissance
-                </label>
+                <label class="form-label mb-1"> Nom de naissance </label>
 
                 <input
                   type="text"
@@ -186,31 +131,25 @@
                   [ngModel]="donneur.NomdeNaissance"
                   (ngModelChange)="donneur.NomdeNaissance = $event"
                   [disabled]="!modeEdition"
-                  [class.bg-success-subtle]="modeEdition">
-
+                  [class.bg-success-subtle]="modeEdition"
+                />
               </div>
 
               <div class="col-md-2">
-
-                <label class="form-label mb-1 d-block text-center">
-                  IdContact
-                </label>
+                <label class="form-label mb-1 d-block text-center"> IdContact </label>
 
                 <input
                   type="text"
                   class="form-control form-control-sm id-contact mx-auto"
-                  style="width: 80px;"
+                  style="width: 80px"
                   [value]="donneur.IdContact"
                   readonly
-                  tabindex="-1">
-
+                  tabindex="-1"
+                />
               </div>
 
               <div class="col-md-4">
-
-                <label class="form-label mb-1">
-                  Prénom
-                </label>
+                <label class="form-label mb-1"> Prénom </label>
 
                 <input
                   type="text"
@@ -218,34 +157,26 @@
                   [ngModel]="donneur.Prenom"
                   (ngModelChange)="donneur.Prenom = $event"
                   [disabled]="!modeEdition"
-                  [class.bg-success-subtle]="modeEdition">
-
+                  [class.bg-success-subtle]="modeEdition"
+                />
               </div>
 
               <div class="col-md-2">
-
-                <label class="form-label mb-1">
-                  Sexe
-                </label>
+                <label class="form-label mb-1"> Sexe </label>
 
                 <select
                   class="form-select form-select-sm"
                   [(ngModel)]="donneur.Sexe"
                   [disabled]="!modeEdition"
-                  [class.bg-success-subtle]="modeEdition">
-
+                  [class.bg-success-subtle]="modeEdition"
+                >
                   <option value="F">F</option>
                   <option value="M">M</option>
-
                 </select>
-
               </div>
 
               <div class="col-md-3">
-
-                <label class="form-label mb-1">
-                  Date de naissance
-                </label>
+                <label class="form-label mb-1"> Date de naissance </label>
 
                 <input
                   type="date"
@@ -253,165 +184,115 @@
                   [ngModel]="donneur.DateNaissance"
                   (ngModelChange)="modifierDateNaissance($event)"
                   [disabled]="!modeEdition"
-                  [class.bg-success-subtle]="modeEdition">
-
+                  [class.bg-success-subtle]="modeEdition"
+                />
               </div>
 
               <div class="col-md-3">
-
-                <label class="form-label mb-1">
-                  Âge à la collecte
-                </label>
+                <label class="form-label mb-1"> Âge à la collecte </label>
 
                 <input
                   type="text"
                   class="form-control form-control-sm text-center"
                   [value]="age"
-                  readonly>
-
+                  readonly
+                />
               </div>
-
             </div>
-
           </div>
-
         }
-
       </div>
-
     </div>
 
     <!-- ÉTAT / STATUT -->
 
     <div class="col-md-4">
-
       <div class="card h-100">
-
-        <div class="card-header py-1 fw-bold">
-          État / Statut
-        </div>
+        <div class="card-header py-1 fw-bold">État / Statut</div>
 
         @if (donneur) {
-
           <div class="card-body py-2">
-
             <div class="form-check mb-1 etat-statut-check">
-
               <input
                 id="actif"
                 type="checkbox"
                 class="form-check-input"
                 [ngModel]="donneur.Actif"
                 (ngModelChange)="donneur.Actif = $event"
-                [disabled]="!modeEdition">
+                [disabled]="!modeEdition"
+              />
 
-              <label
-                for="actif"
-                class="form-check-label">
-                Actif
-              </label>
-
+              <label for="actif" class="form-check-label"> Actif </label>
             </div>
 
             <div class="form-check mb-1 etat-statut-check">
-
               <input
                 id="primoDon"
                 type="checkbox"
                 class="form-check-input"
                 [ngModel]="donneur.PrimoDon"
                 (ngModelChange)="donneur.PrimoDon = $event"
-                [disabled]="!modeEdition">
+                [disabled]="!modeEdition"
+              />
 
-              <label
-                for="primoDon"
-                class="form-check-label">
-                Primo-don
-              </label>
-
+              <label for="primoDon" class="form-check-label"> Primo-don </label>
             </div>
 
             <div class="form-check mb-1 etat-statut-check">
-
               <input
                 id="volontairePlasma"
                 type="checkbox"
                 class="form-check-input"
                 [ngModel]="donneur.VolontairePlasma"
                 (ngModelChange)="donneur.VolontairePlasma = $event"
-                [disabled]="!modeEdition">
+                [disabled]="!modeEdition"
+              />
 
-              <label
-                for="volontairePlasma"
-                class="form-check-label">
-                Volontaire plasma
-              </label>
-
+              <label for="volontairePlasma" class="form-check-label"> Volontaire plasma </label>
             </div>
 
             <div class="form-check mb-1 etat-statut-check">
-
               <input
                 id="nePeutVeutPlusDonner"
                 type="checkbox"
                 class="form-check-input"
                 [ngModel]="donneur.NePeutVeutPlusDonner"
                 (ngModelChange)="donneur.NePeutVeutPlusDonner = $event"
-                [disabled]="!modeEdition">
+                [disabled]="!modeEdition"
+              />
 
-              <label
-                for="nePeutVeutPlusDonner"
-                class="form-check-label">
+              <label for="nePeutVeutPlusDonner" class="form-check-label">
                 Ne peut/veut plus donner
               </label>
-
             </div>
 
             <div class="form-check mb-1 etat-statut-check">
-
               <input
                 id="estDecede"
                 type="checkbox"
                 class="form-check-input"
                 [ngModel]="donneur.EstDecede"
                 (ngModelChange)="donneur.EstDecede = $event"
-                [disabled]="!modeEdition">
+                [disabled]="!modeEdition"
+              />
 
-              <label
-                for="estDecede"
-                class="form-check-label">
-                Décédé
-              </label>
-
+              <label for="estDecede" class="form-check-label"> Décédé </label>
             </div>
-
           </div>
-
         }
-
       </div>
-
     </div>
 
     <!-- COORDONNÉES -->
 
     <div class="col-md-8">
-
       <div class="card h-100">
-
-        <div class="card-header py-1 fw-bold">
-          Coordonnées
-        </div>
+        <div class="card-header py-1 fw-bold">Coordonnées</div>
 
         <div class="card-body py-2">
-
           <div class="row g-2">
-
             <div class="col-md-6">
-
-              <label class="form-label mb-1">
-                Adresse
-              </label>
+              <label class="form-label mb-1"> Adresse </label>
 
               <input
                 type="text"
@@ -419,15 +300,12 @@
                 [ngModel]="adresse?.Adresse1"
                 (ngModelChange)="adresse && (adresse.Adresse1 = $event)"
                 [disabled]="!modeEdition"
-                [class.bg-success-subtle]="modeEdition">
-
+                [class.bg-success-subtle]="modeEdition"
+              />
             </div>
 
             <div class="col-md-6">
-
-              <label class="form-label mb-1">
-                Complément d'adresse
-              </label>
+              <label class="form-label mb-1"> Complément d'adresse </label>
 
               <input
                 type="text"
@@ -435,72 +313,52 @@
                 [ngModel]="adresse?.Adresse2"
                 (ngModelChange)="adresse && (adresse.Adresse2 = $event)"
                 [disabled]="!modeEdition"
-                [class.bg-success-subtle]="modeEdition">
-
+                [class.bg-success-subtle]="modeEdition"
+              />
             </div>
 
             <div class="col-md-3">
-
-              <label class="form-label mb-1">
-                Code postal
-              </label>
+              <label class="form-label mb-1"> Code postal </label>
 
               <input
                 type="text"
                 class="form-control form-control-sm"
                 [value]="formaterCodePostal(adresse?.CodePostal)"
-                readonly>
-
+                readonly
+              />
             </div>
 
             <div class="col-md-5">
-
-              <label class="form-label mb-1">
-                Commune
-              </label>
+              <label class="form-label mb-1"> Commune </label>
 
               <input
                 type="text"
                 class="form-control form-control-sm"
                 [value]="adresse?.Commune ?? ''"
-                readonly>
-
+                readonly
+              />
             </div>
 
             <div class="col-md-4">
-
-              <label class="form-label mb-1">
-                Pays
-              </label>
+              <label class="form-label mb-1"> Pays </label>
 
               <select
                 class="form-select form-select-sm"
                 [ngModel]="adresse?.IdPays"
                 (ngModelChange)="modifierPays($event)"
                 [disabled]="!modeEdition"
-                [class.bg-success-subtle]="modeEdition">
-
-                @for (
-                  paysDisponible of paysDisponibles;
-                  track paysDisponible.IdPays
-                ) {
-
-                  <option
-                    [ngValue]="paysDisponible.IdPays">
+                [class.bg-success-subtle]="modeEdition"
+              >
+                @for (paysDisponible of paysDisponibles; track paysDisponible.IdPays) {
+                  <option [ngValue]="paysDisponible.IdPays">
                     {{ paysDisponible.NomPays }}
                   </option>
-
                 }
-
               </select>
-
             </div>
 
             <div class="col-12">
-
-              <label class="form-label mb-1">
-                Commentaire
-              </label>
+              <label class="form-label mb-1"> Commentaire </label>
 
               <textarea
                 class="form-control form-control-sm"
@@ -508,33 +366,23 @@
                 [ngModel]="adresse?.Commentaire"
                 (ngModelChange)="adresse && (adresse.Commentaire = $event)"
                 [disabled]="!modeEdition"
-                [class.bg-success-subtle]="modeEdition">
+                [class.bg-success-subtle]="modeEdition"
+              >
               </textarea>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
 
     <!-- MOYENS DE CONTACT -->
 
     <div class="col-md-4">
-
       <div class="card h-100">
-
-        <div class="card-header py-1 fw-bold">
-          Moyens de contact
-        </div>
+        <div class="card-header py-1 fw-bold">Moyens de contact</div>
 
         <div class="card-body py-2">
-
           <div class="mb-2">
-
             <label class="form-label mb-1 fs-4 text-dark">
               <i class="bi bi-telephone"></i>
             </label>
@@ -543,43 +391,31 @@
               type="text"
               class="form-control form-control-sm"
               [value]="telephonePortable"
-              readonly>
-
+              readonly
+            />
           </div>
 
           <div>
-
             <label class="form-label mb-1 fs-4 text-dark">
               <i class="bi bi-envelope"></i>
             </label>
 
-            <input
-              type="email"
-              class="form-control form-control-sm"
-              [value]="email"
-              readonly>
-
+            <input type="email" class="form-control form-control-sm" [value]="email" readonly />
           </div>
-
         </div>
-
       </div>
-
     </div>
 
     <!-- ÉLIGIBILITÉ -->
 
     <div class="col-12">
-
       <div class="card">
-
         <div class="card-header py-1 fw-bold">
-
           Éligibilité à la collecte
 
           @if (selection) {
-            du {{ afficherDate(selection.DateCollecte) }}
-            (N° {{ selection.NumCollecte }} / {{ selection.annee }})
+            du {{ afficherDate(selection.DateCollecte) }} (N° {{ selection.NumCollecte }} /
+            {{ selection.annee }})
           }
 
           <span
@@ -589,155 +425,108 @@
             [class.bg-success-subtle]="eligible"
             [class.text-danger]="!eligible"
             [class.border-danger]="!eligible"
-            [class.bg-danger-subtle]="!eligible">
-
+            [class.bg-danger-subtle]="!eligible"
+          >
             @if (eligible) {
               ✓ ÉLIGIBLE
             } @else {
               ✕ NON ÉLIGIBLE
             }
-
           </span>
-
         </div>
 
         <div class="card-body py-2">
-
           <div class="row g-2">
-
             <div class="col-md-3">
-
-              <label class="form-label mb-1">
-                Âge
-              </label>
+              <label class="form-label mb-1"> Âge </label>
 
               <input
                 type="text"
                 class="form-control form-control-sm bg-light"
                 [value]="age"
-                readonly>
-
+                readonly
+              />
             </div>
 
             <div class="col-md-3">
-
-              <label class="form-label mb-1">
-                Dernier don
-              </label>
+              <label class="form-label mb-1"> Dernier don </label>
 
               <input
                 type="text"
                 class="form-control form-control-sm bg-light"
-                [value]="
-                  dernierDon
-                    ? afficherDate(dernierDon)
-                    : 'Aucun'
-                "
-                readonly>
-
+                [value]="dernierDon ? afficherDate(dernierDon) : 'Aucun'"
+                readonly
+              />
             </div>
 
             <div class="col-md-3">
-
-              <label class="form-label mb-1">
-                Délai depuis le dernier don
-              </label>
+              <label class="form-label mb-1"> Délai depuis le dernier don </label>
 
               <input
                 type="text"
                 class="form-control form-control-sm bg-light"
                 [value]="delaiDernierDon"
-                readonly>
-
+                readonly
+              />
             </div>
 
             <div class="col-md-3">
-
-              <label class="form-label mb-1">
-                Dons dans les 365 derniers jours
-              </label>
+              <label class="form-label mb-1"> Dons dans les 365 derniers jours </label>
 
               <input
                 type="text"
                 class="form-control form-control-sm bg-light"
                 [value]="nombreDons365"
-                readonly>
-
+                readonly
+              />
             </div>
-
           </div>
 
           <div class="row g-2 mt-1 align-items-stretch">
-
             <div class="col-md-3">
-
               <div
                 class="border border-3 rounded p-2 h-100"
                 [class.border-success]="ageOK"
-                [class.border-danger]="!ageOK">
-
-                <strong>
-                  Âge
-                </strong>
+                [class.border-danger]="!ageOK"
+              >
+                <strong> Âge </strong>
 
                 <span class="ms-2">
-
                   @if (ageOK) {
-                    <span class="text-success fs-5 fw-bold">
-                      ✓
-                    </span>
+                    <span class="text-success fs-5 fw-bold"> ✓ </span>
                   } @else {
-                    <span class="text-danger fs-5 fw-bold">
-                      ✕
-                    </span>
+                    <span class="text-danger fs-5 fw-bold"> ✕ </span>
                   }
-
                 </span>
-
               </div>
-
             </div>
 
-            <div class="col-md-3">
-
-            </div>
+            <div class="col-md-3"></div>
 
             <div class="col-md-3">
-
               <div
                 class="border border-3 rounded p-2 h-100"
                 [class.border-success]="delaiDernierDonOK"
-                [class.border-danger]="!delaiDernierDonOK">
-
-                <strong>
-                  Délai mini entre 2 dons (56 jours)
-                </strong>
+                [class.border-danger]="!delaiDernierDonOK"
+              >
+                <strong> Délai mini entre 2 dons (56 jours) </strong>
 
                 <span class="ms-2">
-
                   @if (delaiDernierDonOK) {
-                    <span class="text-success fs-5 fw-bold">
-                      ✓
-                    </span>
+                    <span class="text-success fs-5 fw-bold"> ✓ </span>
                   } @else {
-                    <span class="text-danger fs-5 fw-bold">
-                      ✕
-                    </span>
+                    <span class="text-danger fs-5 fw-bold"> ✕ </span>
                   }
-
                 </span>
-
               </div>
-
             </div>
 
             <div class="col-md-3">
-
               <div
                 class="border border-3 rounded p-2 h-100"
                 [class.border-success]="nombreDons365OK"
-                [class.border-danger]="!nombreDons365OK">
-
+                [class.border-danger]="!nombreDons365OK"
+              >
                 <strong>
                   Maximum
                   {{ donneur?.Sexe === 'M' ? 6 : 4 }}
@@ -745,31 +534,17 @@
                 </strong>
 
                 <span class="ms-2">
-
                   @if (nombreDons365OK) {
-                    <span class="text-success fs-5 fw-bold">
-                      ✓
-                    </span>
+                    <span class="text-success fs-5 fw-bold"> ✓ </span>
                   } @else {
-                    <span class="text-danger fs-5 fw-bold">
-                      ✕
-                    </span>
+                    <span class="text-danger fs-5 fw-bold"> ✕ </span>
                   }
-
                 </span>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
-
   </div>
-
 </div>

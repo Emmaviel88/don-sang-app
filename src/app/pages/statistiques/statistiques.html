@@ -1,1 +1,97 @@
-<p>statistiques works!</p>
+<div class="container-fluid py-3">
+  <h2 class="mb-3">Statistiques</h2>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label for="collecte" class="form-label fw-bold"> Collecte </label>
+
+        <select
+          id="collecte"
+          class="form-select"
+          [value]="collecteSelectionnee()?.IdCollecte ?? ''"
+          (change)="changerCollecte($any($event.target).value)"
+        >
+          @for (collecte of collectes(); track collecte.IdCollecte) {
+            <option [value]="collecte.IdCollecte">
+              {{ collecte.annee }}
+              — collecte {{ collecte.NumCollecte }} —
+              {{ collecte.DateCollecte | date: 'dd/MM/yyyy' }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold"> Nb total de donneurs </label>
+        <div class="form-control bg-light">
+          {{ nbTotalDonneurs() }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold"> Nb de primo-dons </label>
+        <div class="form-control bg-light">
+          {{ nbPrimoDons() }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold"> Âge moyen </label>
+        <div class="form-control bg-light">
+          {{ formaterAgeMoyen() }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold"> Donneur le plus jeune </label>
+        <div class="form-control bg-light">
+          {{ formaterPlusJeuneDonneur() }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold"> Donneur le plus sage </label>
+        <div class="form-control bg-light">
+          {{ formaterPlusAgeDonneur() }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold"> Nombre de femmes </label>
+        <div class="form-control bg-light">
+          {{ nbFemmes() }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold"> Nombre d'hommes </label>
+        <div class="form-control bg-light">
+          {{ nbHommes() }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="table-responsive rounded border">
+        <table class="table table-bordered table-hover table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Commune</th>
+              <th>Nb de donneurs</th>
+              <th>% par rapport au total</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
