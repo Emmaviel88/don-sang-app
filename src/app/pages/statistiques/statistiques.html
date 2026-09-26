@@ -1,5 +1,5 @@
-<div class="container-fluid py-3">
-  <h2 class="mb-3">Statistiques</h2>
+<div class="container-fluid py-1">
+  <h2 class="mb-1">Statistiques</h2>
 
   <div class="row g-3">
     <div class="col-md-4">
@@ -27,21 +27,21 @@
 
       <div class="mb-3">
         <label class="form-label fw-bold"> Nb total de donneurs </label>
-        <div class="form-control bg-light">
+        <div class="form-control" style="background-color: var(--bs-secondary-bg)">
           {{ nbTotalDonneurs() }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label fw-bold"> Nb de primo-dons (1er dons et nouveaux donneurs) </label>
-        <div class="form-control bg-light">
+        <div class="form-control" style="background-color: var(--bs-secondary-bg)">
           {{ nbPrimoDons() }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label fw-bold"> Âge moyen des donneurs de la collecte </label>
-        <div class="form-control bg-light">
+        <div class="form-control" style="background-color: var(--bs-secondary-bg)">
           {{ formaterAgeMoyen() }}
         </div>
       </div>
@@ -50,7 +50,7 @@
         <label class="form-label fw-bold">
           {{ libellePlusJeuneDonneur() }}
         </label>
-        <div class="form-control bg-light">
+        <div class="form-control" style="background-color: var(--bs-secondary-bg)">
           {{ formaterPlusJeuneDonneur() }}
         </div>
       </div>
@@ -59,21 +59,21 @@
         <label class="form-label fw-bold">
           {{ libellePlusAgeDonneur() }}
         </label>
-        <div class="form-control bg-light">
+        <div class="form-control" style="background-color: var(--bs-secondary-bg)">
           {{ formaterPlusAgeDonneur() }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label fw-bold"> Nombre de femmes </label>
-        <div class="form-control bg-light">
+        <div class="form-control" style="background-color: var(--bs-secondary-bg)">
           {{ nbFemmes() }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label fw-bold"> Nombre d'hommes </label>
-        <div class="form-control bg-light">
+        <div class="form-control" style="background-color: var(--bs-secondary-bg)">
           {{ nbHommes() }}
         </div>
       </div>

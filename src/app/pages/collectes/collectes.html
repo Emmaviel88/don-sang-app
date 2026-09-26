@@ -1,5 +1,5 @@
-<div class="container-fluid py-3">
-  <h2 class="mb-3">Collectes</h2>
+<div class="container-fluid py-1">
+  <h2 class="mb-3">Collectes et enregistrement des dons</h2>
 
   @if (message()) {
     <div class="alert alert-danger py-2">
@@ -125,7 +125,7 @@
     <div class="row g-3 mb-3">
       <div class="col-md-4">
         <div class="card">
-          <div class="card-body py-2">
+          <div class="card-body py-2 bg-light">
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-muted">Nb dons avant 2013</span>
               <span class="fs-4 fw-bold">{{ nbDonsAvant2013() }}</span>
@@ -136,7 +136,7 @@
 
       <div class="col-md-4">
         <div class="card">
-          <div class="card-body py-2">
+          <div class="card-body py-2 bg-light">
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-muted">Nb dons après 2013</span>
               <span class="fs-4 fw-bold">{{ nbDonsApres2013() }}</span>
@@ -147,7 +147,7 @@
 
       <div class="col-md-4">
         <div class="card">
-          <div class="card-body py-2">
+          <div class="card-body py-2 bg-light">
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-muted">Nb total de dons</span>
               <span class="fs-4 fw-bold">{{ nbDonsTotal() }}</span>
@@ -168,8 +168,8 @@
       >
         <option value="Toutes">Toutes</option>
 
-        @for (annee of anneesDons(); track annee) {
-          <option [value]="annee">
+        @for (annee of anneesDons(); track annee; let index = $index) {
+          <option [value]="annee" [class.bg-light]="index % 2 === 1">
             {{ annee }}
           </option>
         }
@@ -188,9 +188,10 @@
           </thead>
 
           <tbody>
-            @for (don of donsFiltres(); track don.IdDon) {
+            @for (don of donsFiltres(); track don.IdDon; let index = $index) {
               <tr
                 [class.table-primary]="donSelectionne()?.IdDon === don.IdDon"
+                [class.table-light]="donSelectionne()?.IdDon !== don.IdDon && index % 2 === 1"
                 (click)="selectionnerDon(don)"
                 style="cursor: pointer"
               >
