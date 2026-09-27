@@ -1,8 +1,18 @@
-import { Component, effect, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SupabaseService } from '../../services/supabase';
 import { SessionService } from '../../services/session';
+
+interface ResultatRecherche {
+  IdContact: number;
+  Civilite: string | null;
+  NomUsage: string | null;
+  NomdeNaissance: string | null;
+  Prenom: string | null;
+  DateNaissance: string | null;
+}
 
 interface Adhesion {
   IdAdhesion: number;
@@ -16,13 +26,21 @@ interface Adhesion {
 @Component({
   selector: 'app-adhesion-amicale',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   templateUrl: './adhesion-amicale.html',
   styleUrl: './adhesion-amicale.css',
 })
 export class AdhesionAmicale {
   donneurSelectionne = signal<DonneurSelectionne | null>(null);
   adhesions = signal<Adhesion[]>([]);
+
+  recherche = '';
+  resultats: ResultatRecherche[] = [];
+  rechercheEnCours = false;
+  rechercheEffectuee = false;
+
+  private minuterieRecherche: ReturnType<typeof setTimeout> | null = null;
+  private numeroRecherche = 0;
 
   anneeAEditer = signal(new Date().getFullYear() + 1);
   nbTotalAdherents = signal(0);
@@ -32,6 +50,7 @@ export class AdhesionAmicale {
     private donneurSelection: DonneurSelectionService,
     private supabase: SupabaseService,
     private session: SessionService,
+    private cdr: ChangeDetectorRef,
   ) {
     effect(() => {
       const donneur = this.donneurSelection.donneur();
@@ -39,13 +58,150 @@ export class AdhesionAmicale {
       this.donneurSelectionne.set(donneur);
 
       if (donneur) {
-        this.chargerAdhesions(donneur.IdContact);
+        void this.chargerAdhesions(donneur.IdContact);
       } else {
         this.adhesions.set([]);
       }
     });
 
-    this.chargerNbAdherents(this.anneeAEditer());
+    void this.chargerNbAdherents(this.anneeAEditer());
+  }
+
+  rechercherDonneurs(): void {
+    if (this.minuterieRecherche !== null) {
+      clearTimeout(this.minuterieRecherche);
+      this.minuterieRecherche = null;
+    }
+
+    this.resultats = [];
+    this.rechercheEffectuee = false;
+
+    const texte = this.recherche.trim();
+
+    if (texte.length < 2) {
+      this.rechercheEnCours = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.rechercheEnCours = true;
+
+    this.cdr.detectChanges();
+
+    const numeroRechercheActuelle = ++this.numeroRecherche;
+
+    this.minuterieRecherche = setTimeout(() => {
+      this.minuterieRecherche = null;
+      void this.executerRecherche(texte, numeroRechercheActuelle);
+    }, 250);
+  }
+
+  private async executerRecherche(texte: string, numeroRechercheActuelle: number): Promise<void> {
+    try {
+      const terme = `${texte}%`;
+
+      const { data, error } = await this.supabase.client
+        .from('t_Contacts')
+        .select(
+          `
+          IdContact,
+          Civilite,
+          NomUsage,
+          NomdeNaissance,
+          Prenom,
+          DateNaissance
+        `,
+        )
+        .or(`NomUsage.ilike.${terme},NomdeNaissance.ilike.${terme}`)
+        .order('NomUsage', { ascending: true })
+        .order('Prenom', { ascending: true })
+        .order('DateNaissance', { ascending: true })
+        .limit(20);
+
+      if (error) {
+        throw error;
+      }
+
+      if (numeroRechercheActuelle !== this.numeroRecherche) {
+        return;
+      }
+
+      this.resultats = (data ?? []) as ResultatRecherche[];
+      this.rechercheEffectuee = true;
+
+      this.cdr.detectChanges();
+    } catch (error) {
+      if (numeroRechercheActuelle !== this.numeroRecherche) {
+        return;
+      }
+
+      console.error('ERREUR RECHERCHE DONNEUR :', error);
+      this.message.set('Erreur pendant la recherche.');
+
+      this.cdr.detectChanges();
+    } finally {
+      if (numeroRechercheActuelle === this.numeroRecherche) {
+        this.rechercheEnCours = false;
+
+        this.cdr.detectChanges();
+      }
+    }
+  }
+
+  async selectionnerDonneur(idContact: number): Promise<void> {
+    try {
+      this.message.set('');
+
+      const { data, error } = await this.supabase.client
+        .from('t_Contacts')
+        .select(
+          `
+          IdContact,
+          NomUsage,
+          Prenom,
+          DateNaissance,
+          NbDonsAvant2013
+        `,
+        )
+        .eq('IdContact', idContact)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        this.message.set('Donneur introuvable.');
+        return;
+      }
+
+      this.donneurSelection.definirDonneur({
+        IdContact: data.IdContact,
+        NomUsage: data.NomUsage,
+        Prenom: data.Prenom,
+        DateNaissance: data.DateNaissance,
+        NbDonsAvant2013: data.NbDonsAvant2013 ?? 0,
+        eligible: false,
+      });
+
+      this.recherche = '';
+      this.resultats = [];
+      this.rechercheEffectuee = false;
+      this.rechercheEnCours = false;
+
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('ERREUR SÉLECTION DONNEUR :', error);
+      this.message.set('Impossible de sélectionner le donneur.');
+
+      this.cdr.detectChanges();
+    }
+  }
+
+  afficherResultat(resultat: ResultatRecherche): string {
+    return [resultat.NomUsage, resultat.Prenom]
+      .filter((valeur) => valeur !== null && valeur !== '')
+      .join(' ');
   }
 
   async chargerAdhesions(IdContact: number): Promise<void> {

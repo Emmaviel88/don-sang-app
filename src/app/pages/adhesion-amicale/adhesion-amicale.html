@@ -1,10 +1,58 @@
 <div class="container-fluid py-2">
   <h2 class="mb-2">Adhésion amicale</h2>
 
-  <!-- Première ligne -->
+  <!-- Recherche -->
+  <div class="row mb-2">
+    <div class="col-12">
+      <div class="d-flex align-items-center gap-2">
+        <label for="rechercheDonneur" class="form-label fw-bold mb-0"> Recherche </label>
+
+        <div class="position-relative">
+          <input
+            id="rechercheDonneur"
+            type="text"
+            class="form-control form-control-sm"
+            style="width: 500px"
+            [(ngModel)]="recherche"
+            (ngModelChange)="rechercherDonneurs()"
+            autocomplete="off"
+          />
+
+          @if (rechercheEnCours) {
+            <span
+              class="spinner-border spinner-border-sm position-absolute top-50 end-0 translate-middle-y me-2"
+              aria-hidden="true"
+            ></span>
+          }
+
+          @if (resultats.length > 0) {
+            <div class="list-group mt-1" style="width: 500px">
+              @for (resultat of resultats; track resultat.IdContact) {
+                <button
+                  type="button"
+                  class="list-group-item list-group-item-action"
+                  (click)="selectionnerDonneur(resultat.IdContact)"
+                >
+                  {{ afficherResultat(resultat) }}
+
+                  @if (resultat.DateNaissance) {
+                    <span class="text-muted ms-2">
+                      {{ resultat.DateNaissance | date: 'dd/MM/yyyy' }}
+                    </span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Donneur / année / nombre d'adhérents -->
   <div class="row align-items-end g-2 mb-2">
     <div class="col-md-6">
-      <label class="form-label fw-bold mb-1">Donneur</label>
+      <label class="form-label fw-bold mb-1">Donneur sélectionné</label>
 
       <input
         type="text"
@@ -51,7 +99,7 @@
     </div>
   }
 
-  <!-- Deuxième ligne : tableaux des adhésions + commandes -->
+  <!-- Tableaux des adhésions + commandes -->
   <div class="d-flex gap-2">
     <!-- 1994 à 2010 -->
     <div>
@@ -79,6 +127,7 @@
                 [class.table-secondary]="annee !== anneeAEditer() && index % 2 === 1"
               >
                 <td>{{ annee }}</td>
+
                 <td class="text-center">
                   @if (adhesions().some((adhesion) => adhesion.annee === annee)) {
                     <span class="text-success fw-bold">✓</span>
@@ -119,6 +168,7 @@
                 [class.table-secondary]="annee !== anneeAEditer() && index % 2 === 1"
               >
                 <td>{{ annee }}</td>
+
                 <td class="text-center">
                   @if (adhesions().some((adhesion) => adhesion.annee === annee)) {
                     <span class="text-success fw-bold">✓</span>
@@ -159,6 +209,7 @@
                 [class.table-secondary]="annee !== anneeAEditer() && index % 2 === 1"
               >
                 <td>{{ annee }}</td>
+
                 <td class="text-center">
                   @if (adhesions().some((adhesion) => adhesion.annee === annee)) {
                     <span class="text-success fw-bold">✓</span>
