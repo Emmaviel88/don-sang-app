@@ -43,8 +43,6 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-# Environment files
-/src/environments/
 .vercel
 
 # Internal workbooks must stay out of public app assets.
