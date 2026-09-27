@@ -1,19 +1,9 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RechercheContactComponent } from '../../components/recherche-contact/recherche-contact';
 import { SupabaseService } from '../../services/supabase';
 import { CollecteSelectionService, CollecteSelectionnee } from '../../services/collecte-selection';
 import { DonneurSelectionService } from '../../services/donneur-selection';
-import {
-  RechercheContactController,
-  ResultatRechercheContact,
-} from '../../services/recherche-contact';
 
 interface Donneur {
   IdContact: number;
@@ -59,18 +49,15 @@ interface MoyenContact {
 @Component({
   selector: 'app-coordonnees',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RechercheContactComponent],
   templateUrl: './coordonnees.html',
   styleUrl: './coordonnees.css',
 })
-export class Coordonnees implements OnDestroy, OnInit {
-  @ViewChild('controleRecherche')
-  controleRecherche!: ElementRef<HTMLInputElement>;
+export class Coordonnees implements OnInit {
+  @ViewChild(RechercheContactComponent)
+  controleRecherche?: RechercheContactComponent;
 
   donneur: Donneur | null = null;
-
-  recherche = '';
-  readonly rechercheContacts: RechercheContactController;
 
   erreur = '';
 
@@ -103,16 +90,7 @@ export class Coordonnees implements OnDestroy, OnInit {
     private collecteSelection: CollecteSelectionService,
     private donneurSelection: DonneurSelectionService,
     private changeDetectorRef: ChangeDetectorRef,
-  ) {
-    this.rechercheContacts = new RechercheContactController(
-      this.supabase.client,
-      this.changeDetectorRef,
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.rechercheContacts.detruire();
-  }
+  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.chargerCollecteSelectionnee();
@@ -206,11 +184,9 @@ export class Coordonnees implements OnDestroy, OnInit {
   }
 
   async selectionnerDonneur(idContact: number): Promise<void> {
-    this.rechercheContacts.annuler();
+    this.controleRecherche?.clear();
     this.erreur = '';
     this.modeEdition = false;
-
-    this.recherche = '';
 
     try {
       const { data, error } = await this.supabase.client
@@ -310,7 +286,7 @@ export class Coordonnees implements OnDestroy, OnInit {
 
       if (!this.modeEdition) {
         setTimeout(() => {
-          this.controleRecherche?.nativeElement.focus();
+          this.controleRecherche?.focus();
         });
       }
     } catch (error) {
@@ -320,11 +296,10 @@ export class Coordonnees implements OnDestroy, OnInit {
     }
   }
 
-  rechercherDonneurs(): void {
-    this.rechercheContacts.rechercher(this.recherche, (error) => {
-      console.error('ERREUR RECHERCHE DONNEUR :', error);
-      this.erreur = 'Erreur pendant la recherche.';
-    });
+  gererErreurRecherche(error: unknown): void {
+    console.error('ERREUR RECHERCHE DONNEUR :', error);
+    this.erreur = 'Erreur pendant la recherche.';
+    this.changeDetectorRef.detectChanges();
   }
 
   private async chargerAdresse(): Promise<void> {
@@ -561,10 +536,6 @@ export class Coordonnees implements OnDestroy, OnInit {
       this.donneur.Actif && !this.donneur.EstDecede && !this.donneur.NePeutVeutPlusDonner;
 
     this.eligible = this.ageOK && this.delaiDernierDonOK && this.nombreDons365OK && this.statutOK;
-  }
-
-  afficherResultat(resultat: ResultatRechercheContact): string {
-    return this.rechercheContacts.afficherNom(resultat);
   }
 
   libelleDonneur(): string {

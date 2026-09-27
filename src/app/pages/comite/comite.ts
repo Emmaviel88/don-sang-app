@@ -1,20 +1,18 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RechercheContactComponent } from '../../components/recherche-contact/recherche-contact';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { AffectationComite, FonctionComite, SupabaseService } from '../../services/supabase';
-import {
-  RechercheContactController,
-  ResultatRechercheContact,
-} from '../../services/recherche-contact';
+import { ResultatRechercheContact } from '../../services/recherche-contact';
 
 @Component({
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, RechercheContactComponent],
   selector: 'app-comite',
   styleUrl: './comite.css',
   templateUrl: './comite.html',
 })
-export class Comite implements OnDestroy, OnInit {
+export class Comite implements OnInit {
   private readonly fonctionsUniques = new Set([
     'Président(e)',
     'Trésorière',
@@ -23,8 +21,6 @@ export class Comite implements OnDestroy, OnInit {
     'Secrétaire Adjoint(e)',
   ]);
 
-  recherche = '';
-  readonly rechercheContacts: RechercheContactController;
   fonctions: FonctionComite[] = [];
   affectations: AffectationComite[] = [];
   membreSelectionne: DonneurSelectionne | null = null;
@@ -41,7 +37,6 @@ export class Comite implements OnDestroy, OnInit {
     private selectionDonneur: DonneurSelectionService,
     private cdr: ChangeDetectorRef,
   ) {
-    this.rechercheContacts = new RechercheContactController(this.supabase.client, this.cdr);
     this.membreSelectionne = this.selectionDonneur.donneur();
   }
 
@@ -75,17 +70,14 @@ export class Comite implements OnDestroy, OnInit {
     }
   }
 
-  rechercherMembres(): void {
+  gererErreurRecherche(error: unknown): void {
     this.message = '';
-    this.rechercheContacts.rechercher(this.recherche, (error) => {
-      console.error('ERREUR RECHERCHE MEMBRE DU COMITÉ :', error);
-      this.message = 'Erreur pendant la recherche.';
-    });
+    console.error('ERREUR RECHERCHE MEMBRE DU COMITÉ :', error);
+    this.message = 'Erreur pendant la recherche.';
+    this.cdr.detectChanges();
   }
 
   async selectionnerMembre(resultat: ResultatRechercheContact): Promise<void> {
-    this.rechercheContacts.annuler();
-    this.recherche = '';
     this.message = '';
 
     try {
@@ -645,9 +637,5 @@ export class Comite implements OnDestroy, OnInit {
     const [annee, mois, jour] = date.split('-').map(Number);
 
     return new Date(annee, mois - 1, jour);
-  }
-
-  ngOnDestroy(): void {
-    this.rechercheContacts.detruire();
   }
 }

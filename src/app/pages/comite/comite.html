@@ -1,55 +1,10 @@
 <main class="comite-page">
   <div class="comite-barre-haute">
-    <section class="comite-recherche" aria-label="Recherche d'un membre">
-      <label for="rechercheMembre" class="form-label fw-bold">Rechercher un membre</label>
-
-      <div class="comite-recherche-controle">
-        <input
-          id="rechercheMembre"
-          type="search"
-          class="form-control"
-          [(ngModel)]="recherche"
-          (ngModelChange)="rechercherMembres()"
-          autocomplete="off"
-          aria-controls="resultatsMembres"
-          [attr.aria-expanded]="rechercheContacts.resultats.length > 0"
-        />
-
-        @if (rechercheContacts.rechercheEnCours) {
-          <span
-            class="spinner-border spinner-border-sm"
-            role="status"
-            aria-label="Recherche en cours"
-          ></span>
-        }
-      </div>
-
-      @if (rechercheContacts.resultats.length > 0) {
-        <div id="resultatsMembres" class="list-group comite-resultats" role="listbox">
-          @for (membre of rechercheContacts.resultats; track membre.IdContact) {
-            <button
-              type="button"
-              class="list-group-item list-group-item-action"
-              role="option"
-              [attr.aria-selected]="false"
-              (click)="selectionnerMembre(membre)"
-            >
-              {{ rechercheContacts.afficherNom(membre) }}
-
-              @if (membre.DateNaissance) {
-                <span class="text-muted ms-2">
-                  {{ membre.DateNaissance | date: 'dd/MM/yyyy' }}
-                </span>
-              }
-            </button>
-          }
-        </div>
-      } @else if (rechercheContacts.rechercheEffectuee && recherche.trim().length >= 2) {
-        <div class="list-group comite-resultats">
-          <div class="list-group-item text-muted">Aucun membre trouvé.</div>
-        </div>
-      }
-    </section>
+    <app-recherche-contact
+      inputId="rechercheMembre"
+      (searchError)="gererErreurRecherche($event)"
+      (contactSelected)="selectionnerMembre($event)"
+    />
 
     <section class="comite-contact-selectionne" aria-live="polite">
       @if (membreSelectionne; as membre) {

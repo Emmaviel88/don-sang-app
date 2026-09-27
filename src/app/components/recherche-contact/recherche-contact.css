@@ -1,0 +1,39 @@
+:host {
+  position: relative;
+  z-index: 4;
+  display: block;
+  width: min(500px, 100%);
+  min-width: 0;
+}
+
+.contact-recherche {
+  position: relative;
+}
+
+.contact-recherche-champ {
+  position: relative;
+}
+
+.contact-recherche-champ input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.contact-recherche-champ .spinner-border {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.contact-recherche-resultats {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  left: 0;
+  max-height: min(71.5vh, 31.2rem);
+  overflow-y: auto;
+  background: #fff;
+  box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 14%);
+}

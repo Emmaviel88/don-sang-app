@@ -1,79 +1,50 @@
-<div class="container-fluid mt-4 pt-2">
+<div class="container-fluid py-1">
   <div class="row mb-4">
     <div class="col-12">
-      <div class="d-flex align-items-center gap-2">
-        <label for="rechercheDonneur" class="form-label mb-0"> Recherche </label>
-
-        <input
-          #controleRecherche
-          id="rechercheDonneur"
-          type="text"
-          class="form-control"
-          style="width: 500px"
-          [(ngModel)]="recherche"
-          (ngModelChange)="rechercherDonneurs()"
-          autocomplete="off"
+      <div class="d-flex flex-wrap align-items-end gap-2">
+        <app-recherche-contact
+          inputId="rechercheDonneur"
+          (searchError)="gererErreurRecherche($event)"
+          (contactSelected)="selectionnerDonneur($event.IdContact)"
         />
 
-        @if (rechercheContacts.rechercheEnCours) {
-          <span class="spinner-border spinner-border-sm" aria-hidden="true"> </span>
-        }
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <button type="button" class="btn btn-primary btn-sm ms-2" [disabled]="modeEdition">
+            Nouveau donneur
+          </button>
 
-        <button type="button" class="btn btn-primary btn-sm ms-2" [disabled]="modeEdition">
-          Nouveau donneur
-        </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            [disabled]="!donneur || modeEdition"
+            (click)="modifier()"
+          >
+            Modifier donneur
+          </button>
 
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          [disabled]="!donneur || modeEdition"
-          (click)="modifier()"
-        >
-          Modifier donneur
-        </button>
+          <button
+            type="button"
+            class="btn btn-success btn-sm"
+            [disabled]="!modeEdition || enregistrementEnCours"
+            (click)="enregistrer()"
+          >
+            @if (enregistrementEnCours) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"> </span>
+            }
 
-        <button
-          type="button"
-          class="btn btn-success btn-sm"
-          [disabled]="!modeEdition || enregistrementEnCours"
-          (click)="enregistrer()"
-        >
-          @if (enregistrementEnCours) {
-            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"> </span>
-          }
+            Enregistrer donneur
+          </button>
 
-          Enregistrer donneur
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          [disabled]="!modeEdition || enregistrementEnCours"
-          (click)="annuler()"
-        >
-          Annuler modifs
-        </button>
-      </div>
-
-      @if (rechercheContacts.resultats.length > 0) {
-        <div class="list-group mt-1" style="width: 500px">
-          @for (resultat of rechercheContacts.resultats; track resultat.IdContact) {
-            <button
-              type="button"
-              class="list-group-item list-group-item-action"
-              (click)="selectionnerDonneur(resultat.IdContact)"
-            >
-              {{ afficherResultat(resultat) }}
-
-              @if (resultat.DateNaissance) {
-                <span class="text-muted ms-2">
-                  {{ afficherDate(resultat.DateNaissance) }}
-                </span>
-              }
-            </button>
-          }
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            [disabled]="!modeEdition || enregistrementEnCours"
+            (click)="annuler()"
+          >
+            Annuler modifs
+          </button>
         </div>
-      }
+      </div>
     </div>
   </div>
 

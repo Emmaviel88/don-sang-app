@@ -1,0 +1,48 @@
+<section class="contact-recherche" aria-label="Recherche de contact">
+  <label [for]="inputId" class="form-label fw-bold">{{ label }}</label>
+
+  <div class="contact-recherche-champ">
+    <input
+      #searchInput
+      [id]="inputId"
+      type="search"
+      class="form-control"
+      [(ngModel)]="query"
+      (ngModelChange)="onQueryChange($event)"
+      autocomplete="off"
+      [attr.aria-controls]="inputId + 'Resultats'"
+      [attr.aria-expanded]="controller.resultats.length > 0"
+    />
+
+    @if (controller.rechercheEnCours) {
+      <span
+        class="spinner-border spinner-border-sm"
+        role="status"
+        aria-label="Recherche en cours"
+      ></span>
+    }
+  </div>
+
+  @if (controller.resultats.length > 0) {
+    <div [id]="inputId + 'Resultats'" class="list-group contact-recherche-resultats" role="listbox">
+      @for (contact of controller.resultats; track contact.IdContact) {
+        <button
+          type="button"
+          class="list-group-item list-group-item-action"
+          role="option"
+          [attr.aria-selected]="false"
+          (click)="selectionnerContact(contact)"
+        >
+          {{ controller.afficherNom(contact) }}
+          @if (contact.DateNaissance) {
+            <span class="text-muted ms-2">{{ contact.DateNaissance | date: 'dd/MM/yyyy' }}</span>
+          }
+        </button>
+      }
+    </div>
+  } @else if (controller.rechercheEffectuee && query.trim().length >= 2) {
+    <div [id]="inputId + 'Resultats'" class="list-group contact-recherche-resultats">
+      <div class="list-group-item text-muted">Aucun contact trouvé.</div>
+    </div>
+  }
+</section>
