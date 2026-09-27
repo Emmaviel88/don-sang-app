@@ -209,6 +209,18 @@ export class SupabaseService {
     return data.logins;
   }
 
+  async gererUtilisateurs<TResponse>(requete: Record<string, unknown>): Promise<TResponse> {
+    const { data, error } = await this.supabase.functions.invoke('gestion-users', {
+      body: requete,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data as TResponse;
+  }
+
   async testerLectureContacts(): Promise<number> {
     const { data, error } = await this.supabase.from('t_Contacts').select('IdContact');
 

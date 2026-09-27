@@ -1,65 +1,60 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-
   {
     path: 'login',
-    loadComponent: () =>
-      import('./pages/login/login').then(m => m.LoginComponent)
+    loadComponent: () => import('./pages/login/login').then((m) => m.LoginComponent),
   },
 
   {
     path: 'changer-mot-de-passe',
     loadComponent: () =>
-      import('./pages/changer-mot-de-passe/changer-mot-de-passe')
-        .then(m => m.ChangerMotDePasseComponent)
+      import('./pages/changer-mot-de-passe/changer-mot-de-passe').then(
+        (m) => m.ChangerMotDePasseComponent,
+      ),
   },
 
   {
     path: 'accueil',
     redirectTo: 'coordonnees',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
 
   {
     path: 'collectes',
-    loadComponent: () =>
-      import('./pages/collectes/collectes')
-        .then(m => m.CollectesComponent)
+    loadComponent: () => import('./pages/collectes/collectes').then((m) => m.CollectesComponent),
   },
 
   {
     path: 'coordonnees',
-    loadComponent: () =>
-      import('./pages/coordonnees/coordonnees')
-        .then(m => m.Coordonnees)
+    loadComponent: () => import('./pages/coordonnees/coordonnees').then((m) => m.Coordonnees),
   },
 
   {
     path: 'statistiques',
-    loadComponent: () =>
-      import('./pages/statistiques/statistiques')
-        .then(m => m.Statistiques)
+    loadComponent: () => import('./pages/statistiques/statistiques').then((m) => m.Statistiques),
   },
 
   {
     path: 'adhesion-amicale',
     loadComponent: () =>
-      import('./pages/adhesion-amicale/adhesion-amicale')
-        .then(m => m.AdhesionAmicale)
+      import('./pages/adhesion-amicale/adhesion-amicale').then((m) => m.AdhesionAmicale),
   },
 
   {
     path: 'comite',
+    loadComponent: () => import('./pages/comite/comite').then((m) => m.Comite),
+  },
+
+  {
+    path: 'utilisateurs',
     loadComponent: () =>
-      import('./pages/comite/comite')
-        .then(m => m.Comite)
+      import('./pages/utilisateurs/utilisateurs').then((m) => m.UtilisateursComponent),
   },
 
   {
     path: '',
     redirectTo: 'login',
-    pathMatch: 'full'
-  }
-
+    pathMatch: 'full',
+  },
 ];

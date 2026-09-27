@@ -10,13 +10,13 @@ import { SessionService } from './services/session';
   templateUrl: './app.html',
 })
 export class App {
+  menuNavigationOuvert = false;
 
   constructor(
     public session: SessionService,
     private supabase: SupabaseService,
-    private router: Router
-  ) {
-  }
+    private router: Router,
+  ) {}
 
   afficherApplication(): boolean {
     return (
@@ -24,6 +24,14 @@ export class App {
       this.router.url !== '/changer-mot-de-passe' &&
       this.router.url !== '/login'
     );
+  }
+
+  basculerMenuNavigation(): void {
+    this.menuNavigationOuvert = !this.menuNavigationOuvert;
+  }
+
+  fermerMenuNavigation(): void {
+    this.menuNavigationOuvert = false;
   }
 
   async seDeconnecter(): Promise<void> {

@@ -1,8 +1,8 @@
 @if (afficherApplication()) {
   <div class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg navbar-association">
-      <div class="container-fluid">
-        <div class="d-flex align-items-center">
+    <nav class="navbar navbar-association app-navbar">
+      <div class="container-fluid app-navbar-inner">
+        <div class="d-flex align-items-center app-navbar-brand">
           <img src="Logo Amicale.png" alt="Logo de l'association" height="80" class="me-2" />
 
           <span class="navbar-brand text-white px-3 fw-bold fs-4">
@@ -10,12 +10,33 @@
           </span>
         </div>
 
-        <div class="d-flex align-items-center">
-          <div class="navbar-nav me-4 d-flex flex-row gap-2 align-items-stretch">
+        <button
+          type="button"
+          class="btn btn-outline-light app-navbar-toggle"
+          [attr.aria-expanded]="menuNavigationOuvert"
+          aria-controls="navigationAssociation"
+          aria-label="Afficher ou masquer la navigation"
+          (click)="basculerMenuNavigation()"
+        >
+          <i
+            class="bi"
+            [class.bi-list]="!menuNavigationOuvert"
+            [class.bi-x-lg]="menuNavigationOuvert"
+            aria-hidden="true"
+          ></i>
+        </button>
+
+        <div
+          id="navigationAssociation"
+          class="app-navbar-content"
+          [class.app-navbar-content-open]="menuNavigationOuvert"
+        >
+          <div class="navbar-nav app-navbar-links">
             <a
               class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
               routerLink="/coordonnees"
               routerLinkActive="active fw-bold"
+              (click)="fermerMenuNavigation()"
             >
               Coordonnées Donneurs
             </a>
@@ -24,6 +45,7 @@
               class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
               routerLink="/collectes"
               routerLinkActive="active fw-bold"
+              (click)="fermerMenuNavigation()"
             >
               Collectes & Dons
             </a>
@@ -32,6 +54,7 @@
               class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
               routerLink="/statistiques"
               routerLinkActive="active fw-bold"
+              (click)="fermerMenuNavigation()"
             >
               Statistiques collectes
             </a>
@@ -41,6 +64,7 @@
                 class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
                 routerLink="/adhesion-amicale"
                 routerLinkActive="active fw-bold"
+                (click)="fermerMenuNavigation()"
               >
                 Adhésion amicale
               </a>
@@ -49,16 +73,25 @@
                 class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
                 routerLink="/comite"
                 routerLinkActive="active fw-bold"
+                (click)="fermerMenuNavigation()"
               >
-                Comité
+                Membres<br />Comité
+              </a>
+
+              <a
+                class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
+                routerLink="/utilisateurs"
+                routerLinkActive="active fw-bold"
+                (click)="fermerMenuNavigation()"
+              >
+                Comptes<br />Utilisateurs
               </a>
             }
           </div>
 
           <button
             type="button"
-            class="btn btn-outline-light rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center align-self-stretch"
-            style="width: 150px"
+            class="btn btn-outline-light rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center app-navbar-logout"
             (click)="seDeconnecter()"
           >
             Déconnexion

@@ -1,0 +1,261 @@
+<main class="utilisateurs-page">
+  <header class="utilisateurs-entete">
+    <div>
+      <h1 class="h4 mb-1">Gestion des utilisateurs</h1>
+      <p class="text-muted mb-0">Comptes applicatifs et accès à l’association</p>
+    </div>
+    @if (peutGerer()) {
+      <button type="button" class="btn btn-primary btn-sm" (click)="commencerCreation()">
+        <i class="bi bi-person-plus me-1" aria-hidden="true"></i>
+        Nouvel utilisateur
+      </button>
+    }
+  </header>
+
+  @if (messageErreur()) {
+    <div class="alert alert-danger py-2" role="alert">{{ messageErreur() }}</div>
+  }
+  @if (messageSucces()) {
+    <div class="alert alert-success py-2" role="status">{{ messageSucces() }}</div>
+  }
+
+  @if (!peutGerer()) {
+    <div class="alert alert-warning" role="alert">Accès réservé aux administrateurs.</div>
+  } @else {
+    <div class="utilisateurs-disposition">
+      <section class="utilisateurs-liste" aria-label="Liste des utilisateurs">
+        <div class="utilisateurs-filtre">
+          <label for="filtreUtilisateurs" class="form-label mb-1">Rechercher</label>
+          <input
+            id="filtreUtilisateurs"
+            type="search"
+            class="form-control form-control-sm"
+            [(ngModel)]="recherche"
+            placeholder="Login, contact ou rôle"
+          />
+          <span class="small text-muted">{{ utilisateurs().length }} compte(s)</span>
+        </div>
+
+        <div class="table-responsive utilisateurs-tableau-defilant">
+          <table class="table table-sm table-striped table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Login</th>
+                <th scope="col">Contact</th>
+                <th scope="col">Rôle</th>
+                <th scope="col">État</th>
+                <th scope="col">Dernière connexion</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (chargement()) {
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-3">Chargement…</td>
+                </tr>
+              } @else {
+                @for (utilisateur of utilisateursFiltres(); track utilisateur.IdUser) {
+                  <tr [class.table-primary]="selection()?.IdUser === utilisateur.IdUser">
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn-link btn-sm p-0 text-start"
+                        (click)="selectionner(utilisateur)"
+                      >
+                        {{ utilisateur.Login || '(sans login)' }}
+                      </button>
+                    </td>
+                    <td>{{ afficherNom(utilisateur.Contact) }}</td>
+                    <td>{{ utilisateur.Role }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [class.text-bg-success]="utilisateur.Actif"
+                        [class.text-bg-secondary]="!utilisateur.Actif"
+                      >
+                        {{ utilisateur.Actif ? 'Actif' : 'Inactif' }}
+                      </span>
+                    </td>
+                    <td>
+                      {{
+                        utilisateur.DerniereCnx
+                          ? (utilisateur.DerniereCnx | date: 'dd/MM/yyyy HH:mm')
+                          : 'Jamais'
+                      }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-3">
+                      Aucun utilisateur trouvé.
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="utilisateurs-edition" aria-label="Détail utilisateur">
+        @if (creation()) {
+          <h2 class="h6">Créer un compte</h2>
+          <form (ngSubmit)="creerUtilisateur()">
+            <app-recherche-contact
+              inputId="rechercheContactUtilisateur"
+              label="Contact associé"
+              (contactSelected)="selectionnerContact($event)"
+              (searchError)="gererErreurRecherche($event)"
+            />
+            @if (contactCreation) {
+              <p class="small text-success mb-2">Contact : {{ afficherNom(contactCreation) }}</p>
+            }
+
+            <label for="loginUtilisateur" class="form-label">Login</label>
+            <input
+              id="loginUtilisateur"
+              name="loginUtilisateur"
+              type="text"
+              class="form-control form-control-sm mb-2"
+              maxlength="50"
+              autocomplete="off"
+              required
+              [(ngModel)]="loginCreation"
+            />
+
+            <label for="roleCreation" class="form-label">Rôle</label>
+            <select
+              id="roleCreation"
+              name="roleCreation"
+              class="form-select form-select-sm mb-2"
+              [(ngModel)]="roleCreation"
+            >
+              @for (role of rolesCreation(); track role) {
+                <option [value]="role">{{ role }}</option>
+              }
+            </select>
+
+            <label for="motDePasseInitial" class="form-label">Mot de passe initial</label>
+            <input
+              id="motDePasseInitial"
+              name="motDePasseInitial"
+              type="password"
+              class="form-control form-control-sm"
+              autocomplete="new-password"
+              required
+              [(ngModel)]="motDePasseInitial"
+            />
+            <p class="small text-muted mt-1 mb-2">
+              L’utilisateur devra le changer à sa première connexion. Remettez-le-lui par un canal
+              sûr.
+            </p>
+            <p class="small mb-3">
+              <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>Changement du mot de passe
+              exigé à la première connexion.
+            </p>
+
+            <div class="utilisateurs-actions">
+              <button
+                type="submit"
+                class="btn btn-primary btn-sm"
+                [disabled]="chargement() || !contactCreation"
+              >
+                @if (chargement()) {
+                  <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                }
+                Créer le compte
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="annulerEdition()"
+              >
+                Annuler
+              </button>
+            </div>
+          </form>
+        } @else if (selection(); as utilisateur) {
+          <h2 class="h6">{{ utilisateur.Login || 'Utilisateur sans login' }}</h2>
+          <p class="small text-muted mb-3">
+            {{ afficherNom(utilisateur.Contact) }} · ID {{ utilisateur.IdUser }}
+          </p>
+
+          @if (peutModifierSelection()) {
+            <form (ngSubmit)="enregistrerModifications()">
+              <label for="roleModifie" class="form-label">Rôle</label>
+              <select
+                id="roleModifie"
+                name="roleModifie"
+                class="form-select form-select-sm mb-3"
+                [(ngModel)]="roleModifie"
+              >
+                @if (estSA()) {
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                  <option value="SA">SA</option>
+                } @else {
+                  <option value="User">User</option>
+                }
+              </select>
+
+              <div class="form-check mb-2">
+                <input
+                  id="utilisateurActif"
+                  name="utilisateurActif"
+                  class="form-check-input"
+                  type="checkbox"
+                  [(ngModel)]="actifModifie"
+                />
+                <label class="form-check-label" for="utilisateurActif">Compte actif</label>
+              </div>
+              <div class="form-check mb-3">
+                <input
+                  id="changementMotDePasse"
+                  name="changementMotDePasse"
+                  class="form-check-input"
+                  type="checkbox"
+                  [(ngModel)]="changementMotDePasseModifie"
+                />
+                <label class="form-check-label" for="changementMotDePasse"
+                  >Exiger un changement de mot de passe</label
+                >
+              </div>
+
+              <div class="utilisateurs-actions">
+                <button type="submit" class="btn btn-primary btn-sm" [disabled]="chargement()">
+                  @if (chargement()) {
+                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                  }
+                  Enregistrer
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  (click)="annulerEdition()"
+                >
+                  Annuler
+                </button>
+              </div>
+              @if (peutSupprimerSelection()) {
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm mt-3"
+                  [disabled]="chargement()"
+                  (click)="supprimerUtilisateur()"
+                >
+                  <i class="bi bi-trash me-1" aria-hidden="true"></i>
+                  Supprimer définitivement le compte
+                </button>
+              }
+            </form>
+          } @else {
+            <p class="text-muted small mb-0">
+              La modification des comptes Admin et SA est réservée au rôle SA.
+            </p>
+          }
+        } @else {
+          <p class="text-muted mb-0">Sélectionnez un compte ou créez un nouvel utilisateur.</p>
+        }
+      </aside>
+    </div>
+  }
+</main>
