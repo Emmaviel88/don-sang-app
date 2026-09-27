@@ -2,6 +2,28 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
+export interface FonctionComite {
+  IdFonction: number;
+  Libelle: string;
+  OrdreAffichage: number | null;
+}
+
+export interface AffectationComite {
+  IdContactFonction: number;
+  IdContact: number;
+  IdFonction: number;
+  DateDebut: string | null;
+  Contact: {
+    IdContact: number;
+    NomUsage: string | null;
+    NomdeNaissance: string | null;
+    Prenom: string | null;
+    DateNaissance: string | null;
+    NbDonsAvant2013: number | null;
+  };
+  Fonction: FonctionComite;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,6 +36,167 @@ export class SupabaseService {
 
   get client(): SupabaseClient {
     return this.supabase;
+  }
+
+  async getFonctionsComite(): Promise<FonctionComite[]> {
+    const { data, error } = await this.supabase
+      .from('t_Fonctions')
+      .select('IdFonction, Libelle, OrdreAffichage')
+      .eq('Actif', true)
+      .order('OrdreAffichage', { ascending: true })
+      .order('IdFonction', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []) as FonctionComite[];
+  }
+
+  async getAffectationsComiteActuelles(): Promise<AffectationComite[]> {
+    const { data, error } = await this.supabase
+      .from('t_ContactsFonctions')
+      .select(
+        `
+          IdContactFonction,
+          IdContact,
+          IdFonction,
+          "DateDébut",
+          Contact:t_Contacts!t_ContactsFonctions_IdContact_fkey (
+            IdContact,
+            NomUsage,
+            NomdeNaissance,
+            Prenom,
+            DateNaissance,
+            NbDonsAvant2013
+          ),
+          Fonction:t_Fonctions!t_ContactsFonctions_IdFonction_fkey (
+            IdFonction,
+            Libelle,
+            OrdreAffichage
+          )
+        `,
+      )
+      .is('DateFin', null);
+
+    if (error) {
+      throw error;
+    }
+
+    const lignes = (data ?? []) as unknown as Array<
+      Omit<AffectationComite, 'DateDebut'> & { DateDébut: string | null }
+    >;
+    const affectations = lignes.map((ligne) => ({
+      IdContactFonction: ligne.IdContactFonction,
+      IdContact: ligne.IdContact,
+      IdFonction: ligne.IdFonction,
+      DateDebut: ligne['DateDébut'],
+      Contact: ligne.Contact,
+      Fonction: ligne.Fonction,
+    }));
+
+    return affectations.sort((a, b) => {
+      const ordre =
+        (a.Fonction?.OrdreAffichage ?? Number.MAX_SAFE_INTEGER) -
+        (b.Fonction?.OrdreAffichage ?? Number.MAX_SAFE_INTEGER);
+
+      if (ordre !== 0) {
+        return ordre;
+      }
+
+      return this.nomComplet(a.Contact).localeCompare(this.nomComplet(b.Contact), 'fr');
+    });
+  }
+
+  async ajouterMembreComite(
+    idContact: number,
+    idFonction: number,
+    dateDebut: string,
+  ): Promise<number> {
+    const { data, error } = await this.supabase.rpc('ajouter_membre_comite', {
+      p_id_contact: idContact,
+      p_id_fonction: idFonction,
+      p_date_debut: dateDebut,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data as number;
+  }
+
+  async ajouterFonctionComite(
+    idContact: number,
+    idFonction: number,
+    dateDebut: string,
+  ): Promise<number> {
+    const { data, error } = await this.supabase.rpc('ajouter_fonction_comite', {
+      p_id_contact: idContact,
+      p_id_fonction: idFonction,
+      p_date_debut: dateDebut,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data as number;
+  }
+
+  async modifierFonctionComite(
+    idContactFonction: number,
+    idFonction: number,
+    dateEffet: string,
+  ): Promise<number> {
+    const { data, error } = await this.supabase.rpc('modifier_fonction_comite', {
+      p_id_contact_fonction: idContactFonction,
+      p_id_fonction: idFonction,
+      p_date_effet: dateEffet,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data as number;
+  }
+
+  async enleverFonctionComite(idContactFonction: number, dateFin: string): Promise<void> {
+    const { data, error } = await this.supabase
+      .from('t_ContactsFonctions')
+      .update({ DateFin: dateFin })
+      .eq('IdContactFonction', idContactFonction)
+      .is('DateFin', null)
+      .select('IdContactFonction')
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error('La fonction sélectionnée n’est plus active. Actualisez le tableau.');
+    }
+  }
+
+  async enleverMembreComite(idContact: number, dateFin: string): Promise<number> {
+    const { data, error } = await this.supabase.rpc('enlever_membre_comite', {
+      p_id_contact: idContact,
+      p_date_fin: dateFin,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data as number;
+  }
+
+  private nomComplet(contact: AffectationComite['Contact']): string {
+    return [contact.NomUsage || contact.NomdeNaissance, contact.Prenom]
+      .filter((valeur) => valeur !== null && valeur !== '')
+      .join(' ');
   }
 
   async getLogins(): Promise<string[]> {

@@ -1,0 +1,168 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.comite-page {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  min-height: 0;
+  overflow: visible;
+  padding: 0.5rem;
+}
+
+.comite-barre-haute {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: minmax(16rem, 1.6fr) minmax(12rem, 1fr) 11rem;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.comite-recherche {
+  position: relative;
+  z-index: 4;
+  min-width: 0;
+}
+
+.comite-recherche-controle {
+  position: relative;
+}
+
+.comite-recherche-controle input {
+  padding-right: 2.5rem;
+}
+
+.comite-recherche-controle .spinner-border {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.comite-resultats {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  left: 0;
+  max-height: min(40vh, 18rem);
+  overflow-y: auto;
+  background: #fff;
+  box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 14%);
+}
+
+.comite-contact-selectionne {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.comite-date {
+  min-width: 0;
+}
+
+.comite-contenu {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 0.9fr);
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.comite-tableau-zone,
+.comite-panneau-membre {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #ced4da;
+  padding: 0.5rem;
+}
+
+.comite-tableau-defilant {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.comite-tableau {
+  white-space: nowrap;
+}
+
+.comite-tableau thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.comite-tableau th {
+  background: #212529;
+  color: #fff;
+}
+
+.comite-tableau th,
+.comite-tableau td {
+  padding: 0.12rem 0.35rem;
+  line-height: 1.15;
+}
+
+.comite-tableau tbody tr {
+  cursor: pointer;
+}
+
+.comite-tableau tbody tr:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: -2px;
+}
+
+.comite-panneau-membre {
+  gap: 0.4rem;
+}
+
+.comite-panneau-membre .alert {
+  font-size: 0.8rem;
+}
+
+.comite-panneau-membre .btn {
+  min-height: 2rem;
+}
+
+.comite-select-fonction {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .comite-barre-haute {
+    grid-template-columns: minmax(0, 1fr) 10rem;
+  }
+
+  .comite-recherche {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .comite-page {
+    padding: 0.25rem;
+  }
+
+  .comite-barre-haute {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .comite-contenu {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .comite-date {
+    width: 9rem;
+  }
+}

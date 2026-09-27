@@ -1,1 +1,295 @@
-<p>comite works!</p>
+<main class="comite-page">
+  <div class="comite-barre-haute">
+    <section class="comite-recherche" aria-label="Recherche d'un membre">
+      <label for="rechercheMembre" class="form-label fw-bold">Rechercher un membre</label>
+
+      <div class="comite-recherche-controle">
+        <input
+          id="rechercheMembre"
+          type="search"
+          class="form-control"
+          [(ngModel)]="recherche"
+          (ngModelChange)="rechercherMembres()"
+          autocomplete="off"
+          aria-controls="resultatsMembres"
+          [attr.aria-expanded]="rechercheContacts.resultats.length > 0"
+        />
+
+        @if (rechercheContacts.rechercheEnCours) {
+          <span
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-label="Recherche en cours"
+          ></span>
+        }
+      </div>
+
+      @if (rechercheContacts.resultats.length > 0) {
+        <div id="resultatsMembres" class="list-group comite-resultats" role="listbox">
+          @for (membre of rechercheContacts.resultats; track membre.IdContact) {
+            <button
+              type="button"
+              class="list-group-item list-group-item-action"
+              role="option"
+              [attr.aria-selected]="false"
+              (click)="selectionnerMembre(membre)"
+            >
+              {{ rechercheContacts.afficherNom(membre) }}
+
+              @if (membre.DateNaissance) {
+                <span class="text-muted ms-2">
+                  {{ membre.DateNaissance | date: 'dd/MM/yyyy' }}
+                </span>
+              }
+            </button>
+          }
+        </div>
+      } @else if (rechercheContacts.rechercheEffectuee && recherche.trim().length >= 2) {
+        <div class="list-group comite-resultats">
+          <div class="list-group-item text-muted">Aucun membre trouvé.</div>
+        </div>
+      }
+    </section>
+
+    <section class="comite-contact-selectionne" aria-live="polite">
+      @if (membreSelectionne; as membre) {
+        <span class="text-muted small">Contact sélectionné</span>
+        <h1 class="h5 mb-0">
+          {{ afficherNom(membre) }}
+          @if (membre.DateNaissance) {
+            <span class="fw-normal">· {{ membre.DateNaissance | date: 'dd/MM/yyyy' }}</span>
+          }
+        </h1>
+        <span
+          class="badge"
+          [class.text-bg-success]="membreEstAuComite()"
+          [class.text-bg-secondary]="!membreEstAuComite()"
+        >
+          {{ membreEstAuComite() ? 'Membre du comité' : 'Hors comité' }}
+        </span>
+      } @else {
+        <span class="text-muted">Aucun contact sélectionné</span>
+      }
+    </section>
+
+    <div class="comite-date">
+      <label for="dateEffet" class="form-label mb-1">Date d’effet</label>
+      <input
+        id="dateEffet"
+        type="date"
+        class="form-control form-control-sm"
+        [(ngModel)]="dateEffet"
+      />
+    </div>
+  </div>
+
+  @if (message) {
+    <div class="alert alert-danger py-2 mb-0" role="alert">
+      {{ message }}
+    </div>
+  }
+  @if (messageSucces) {
+    <div class="alert alert-success py-2 mb-0" role="status">
+      {{ messageSucces }}
+    </div>
+  }
+
+  <div class="comite-contenu">
+    <section class="comite-tableau-zone" aria-label="Composition actuelle du comité">
+      <h2 class="h6 mb-2">
+        Composition actuelle ({{ nombreMembresComite }} membre{{
+          nombreMembresComite === 1 ? '' : 's'
+        }})
+      </h2>
+
+      <div class="comite-tableau-defilant">
+        <table class="table table-sm table-striped table-bordered table-hover mb-0 comite-tableau">
+          <thead>
+            <tr>
+              <th scope="col">Fonction</th>
+              <th scope="col">Membre</th>
+              <th scope="col">Date début</th>
+              <th scope="col">Durée fonction</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (chargement) {
+              <tr>
+                <td colspan="4" class="text-center text-muted">Chargement…</td>
+              </tr>
+            } @else {
+              @for (
+                affectation of affectations;
+                track affectation.IdContactFonction;
+                let index = $index
+              ) {
+                <tr
+                  data-affectation-row
+                  [class.table-primary]="estAffectationSelectionnee(affectation)"
+                  [attr.aria-selected]="estAffectationSelectionnee(affectation)"
+                  [attr.tabindex]="
+                    estAffectationSelectionnee(affectation) ||
+                    (idAffectationSelectionnee === null && index === 0)
+                      ? 0
+                      : -1
+                  "
+                  (click)="selectionnerAffectation(affectation)"
+                  (keydown)="naviguerDansAffectations($event, index)"
+                >
+                  <td>{{ affectation.Fonction.Libelle }}</td>
+                  <td>{{ afficherNom(affectation.Contact) }}</td>
+                  <td>{{ affectation.DateDebut | date: 'dd/MM/yyyy' }}</td>
+                  <td class="text-end">{{ dureeFonction(affectation.DateDebut) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center text-muted">Aucune fonction active.</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="comite-panneau-membre">
+      <div class="comite-select-fonction">
+        <label for="fonctionSelectionnee" class="form-label mb-1">Fonction</label>
+        <select
+          id="fonctionSelectionnee"
+          class="form-select form-select-sm"
+          [(ngModel)]="idFonctionSelectionnee"
+        >
+          <option [ngValue]="null">Choisir une fonction</option>
+          @for (fonction of fonctions; track fonction.IdFonction) {
+            <option [ngValue]="fonction.IdFonction">{{ fonction.Libelle }}</option>
+          }
+        </select>
+      </div>
+
+      @if (messageEtatAjoutMembre(); as messageEtat) {
+        <div class="alert alert-warning py-2 mb-0" role="status">
+          {{ messageEtat }}
+        </div>
+      }
+
+      <button
+        type="button"
+        class="btn btn-success btn-sm"
+        [disabled]="!peutAjouterMembre()"
+        (click)="ajouterMembre()"
+      >
+        @if (enregistrementEnCours) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Ajouter membre
+      </button>
+
+      @if (messageEtatModificationFonction(); as messageEtat) {
+        <div class="alert alert-warning py-2 mb-0" role="status">
+          {{ messageEtat }}
+        </div>
+      }
+
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        [disabled]="!peutModifierFonction()"
+        (click)="modifierFonction()"
+      >
+        @if (enregistrementEnCours) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Modifier fonction
+      </button>
+
+      @if (messageEtatAjoutFonction(); as messageEtat) {
+        <div class="alert alert-warning py-2 mb-0" role="status">
+          {{ messageEtat }}
+        </div>
+      }
+
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="!peutAjouterFonction()"
+        (click)="ajouterFonction()"
+      >
+        @if (enregistrementEnCours) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Ajouter fonction
+      </button>
+
+      @if (idAffectationSelectionnee === null) {
+        <p class="text-muted small mb-0">
+          Sélectionnez une ligne du comité pour retirer une fonction.
+        </p>
+      }
+
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        [disabled]="!peutEnleverFonction()"
+        (click)="enleverFonction()"
+      >
+        @if (enregistrementEnCours) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Enlever fonction
+      </button>
+
+      @if (messageEtatEnleverMembre(); as messageEtat) {
+        <div class="alert alert-warning py-2 mb-0" role="status">
+          {{ messageEtat }}
+        </div>
+      }
+
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        [disabled]="!peutEnleverMembre()"
+        (click)="enleverMembre()"
+      >
+        @if (enregistrementEnCours) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Enlever membre
+      </button>
+
+      <section
+        class="comite-fonctions-membre"
+        aria-label="Fonctions actives du contact sélectionné"
+      >
+        <h2 class="h6 mb-2">Fonctions du contact</h2>
+
+        @if (membreSelectionne) {
+          <div class="comite-tableau-defilant">
+            <table class="table table-sm table-striped table-bordered mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">Fonction</th>
+                  <th scope="col">Date début</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (affectation of affectationsDuMembre(); track affectation.IdContactFonction) {
+                  <tr>
+                    <td>{{ affectation.Fonction.Libelle }}</td>
+                    <td>{{ affectation.DateDebut | date: 'dd/MM/yyyy' }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="2" class="text-center text-muted">Aucune fonction active.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="text-muted small mb-0">Sélectionnez un contact ou une ligne du comité.</p>
+        }
+      </section>
+    </aside>
+  </div>
+</main>

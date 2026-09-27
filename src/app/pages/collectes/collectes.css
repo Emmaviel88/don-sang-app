@@ -1,3 +1,10 @@
 :host {
   display: block;
 }
+
+table th,
+table td {
+  padding-top: 0.12rem;
+  padding-bottom: 0.12rem;
+  line-height: 1.15;
+}

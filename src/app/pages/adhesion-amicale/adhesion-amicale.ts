@@ -1,18 +1,13 @@
-import { ChangeDetectorRef, Component, effect, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, OnDestroy, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SupabaseService } from '../../services/supabase';
 import { SessionService } from '../../services/session';
-
-interface ResultatRecherche {
-  IdContact: number;
-  Civilite: string | null;
-  NomUsage: string | null;
-  NomdeNaissance: string | null;
-  Prenom: string | null;
-  DateNaissance: string | null;
-}
+import {
+  RechercheContactController,
+  ResultatRechercheContact,
+} from '../../services/recherche-contact';
 
 interface Adhesion {
   IdAdhesion: number;
@@ -30,17 +25,12 @@ interface Adhesion {
   templateUrl: './adhesion-amicale.html',
   styleUrl: './adhesion-amicale.css',
 })
-export class AdhesionAmicale {
+export class AdhesionAmicale implements OnDestroy {
   donneurSelectionne = signal<DonneurSelectionne | null>(null);
   adhesions = signal<Adhesion[]>([]);
 
   recherche = '';
-  resultats: ResultatRecherche[] = [];
-  rechercheEnCours = false;
-  rechercheEffectuee = false;
-
-  private minuterieRecherche: ReturnType<typeof setTimeout> | null = null;
-  private numeroRecherche = 0;
+  readonly rechercheContacts: RechercheContactController;
 
   anneeAEditer = signal(new Date().getFullYear() + 1);
   nbTotalAdherents = signal(0);
@@ -52,6 +42,8 @@ export class AdhesionAmicale {
     private session: SessionService,
     private cdr: ChangeDetectorRef,
   ) {
+    this.rechercheContacts = new RechercheContactController(this.supabase.client, this.cdr);
+
     effect(() => {
       const donneur = this.donneurSelection.donneur();
 
@@ -67,88 +59,20 @@ export class AdhesionAmicale {
     void this.chargerNbAdherents(this.anneeAEditer());
   }
 
-  rechercherDonneurs(): void {
-    if (this.minuterieRecherche !== null) {
-      clearTimeout(this.minuterieRecherche);
-      this.minuterieRecherche = null;
-    }
-
-    this.resultats = [];
-    this.rechercheEffectuee = false;
-
-    const texte = this.recherche.trim();
-
-    if (texte.length < 2) {
-      this.rechercheEnCours = false;
-      this.cdr.detectChanges();
-      return;
-    }
-
-    this.rechercheEnCours = true;
-
-    this.cdr.detectChanges();
-
-    const numeroRechercheActuelle = ++this.numeroRecherche;
-
-    this.minuterieRecherche = setTimeout(() => {
-      this.minuterieRecherche = null;
-      void this.executerRecherche(texte, numeroRechercheActuelle);
-    }, 250);
+  ngOnDestroy(): void {
+    this.rechercheContacts.detruire();
   }
 
-  private async executerRecherche(texte: string, numeroRechercheActuelle: number): Promise<void> {
-    try {
-      const terme = `${texte}%`;
-
-      const { data, error } = await this.supabase.client
-        .from('t_Contacts')
-        .select(
-          `
-          IdContact,
-          Civilite,
-          NomUsage,
-          NomdeNaissance,
-          Prenom,
-          DateNaissance
-        `,
-        )
-        .or(`NomUsage.ilike.${terme},NomdeNaissance.ilike.${terme}`)
-        .order('NomUsage', { ascending: true })
-        .order('Prenom', { ascending: true })
-        .order('DateNaissance', { ascending: true })
-        .limit(20);
-
-      if (error) {
-        throw error;
-      }
-
-      if (numeroRechercheActuelle !== this.numeroRecherche) {
-        return;
-      }
-
-      this.resultats = (data ?? []) as ResultatRecherche[];
-      this.rechercheEffectuee = true;
-
-      this.cdr.detectChanges();
-    } catch (error) {
-      if (numeroRechercheActuelle !== this.numeroRecherche) {
-        return;
-      }
-
+  rechercherDonneurs(): void {
+    this.rechercheContacts.rechercher(this.recherche, (error) => {
       console.error('ERREUR RECHERCHE DONNEUR :', error);
       this.message.set('Erreur pendant la recherche.');
-
-      this.cdr.detectChanges();
-    } finally {
-      if (numeroRechercheActuelle === this.numeroRecherche) {
-        this.rechercheEnCours = false;
-
-        this.cdr.detectChanges();
-      }
-    }
+    });
   }
 
   async selectionnerDonneur(idContact: number): Promise<void> {
+    this.rechercheContacts.annuler();
+
     try {
       this.message.set('');
 
@@ -185,9 +109,6 @@ export class AdhesionAmicale {
       });
 
       this.recherche = '';
-      this.resultats = [];
-      this.rechercheEffectuee = false;
-      this.rechercheEnCours = false;
 
       this.cdr.detectChanges();
     } catch (error) {
@@ -198,10 +119,8 @@ export class AdhesionAmicale {
     }
   }
 
-  afficherResultat(resultat: ResultatRecherche): string {
-    return [resultat.NomUsage, resultat.Prenom]
-      .filter((valeur) => valeur !== null && valeur !== '')
-      .join(' ');
+  afficherResultat(resultat: ResultatRechercheContact): string {
+    return this.rechercheContacts.afficherNom(resultat);
   }
 
   async chargerAdhesions(IdContact: number): Promise<void> {

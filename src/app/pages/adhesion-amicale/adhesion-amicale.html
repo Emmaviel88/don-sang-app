@@ -18,16 +18,16 @@
             autocomplete="off"
           />
 
-          @if (rechercheEnCours) {
+          @if (rechercheContacts.rechercheEnCours) {
             <span
               class="spinner-border spinner-border-sm position-absolute top-50 end-0 translate-middle-y me-2"
               aria-hidden="true"
             ></span>
           }
 
-          @if (resultats.length > 0) {
+          @if (rechercheContacts.resultats.length > 0) {
             <div class="list-group mt-1" style="width: 500px">
-              @for (resultat of resultats; track resultat.IdContact) {
+              @for (resultat of rechercheContacts.resultats; track resultat.IdContact) {
                 <button
                   type="button"
                   class="list-group-item list-group-item-action"

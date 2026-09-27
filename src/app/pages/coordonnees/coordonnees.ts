@@ -1,17 +1,19 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase';
 import { CollecteSelectionService, CollecteSelectionnee } from '../../services/collecte-selection';
 import { DonneurSelectionService } from '../../services/donneur-selection';
-
-interface ResultatRecherche {
-  IdContact: number;
-  Civilite: string | null;
-  NomUsage: string | null;
-  NomdeNaissance: string | null;
-  Prenom: string | null;
-  DateNaissance: string | null;
-}
+import {
+  RechercheContactController,
+  ResultatRechercheContact,
+} from '../../services/recherche-contact';
 
 interface Donneur {
   IdContact: number;
@@ -61,16 +63,14 @@ interface MoyenContact {
   templateUrl: './coordonnees.html',
   styleUrl: './coordonnees.css',
 })
-export class Coordonnees implements OnInit {
+export class Coordonnees implements OnDestroy, OnInit {
   @ViewChild('controleRecherche')
   controleRecherche!: ElementRef<HTMLInputElement>;
 
   donneur: Donneur | null = null;
 
   recherche = '';
-  resultats: ResultatRecherche[] = [];
-  rechercheEnCours = false;
-  rechercheEffectuee = false;
+  readonly rechercheContacts: RechercheContactController;
 
   erreur = '';
 
@@ -98,14 +98,21 @@ export class Coordonnees implements OnInit {
   modeEdition = false;
   enregistrementEnCours = false;
 
-  private minuterieRecherche: ReturnType<typeof setTimeout> | null = null;
-
   constructor(
     private supabase: SupabaseService,
     private collecteSelection: CollecteSelectionService,
     private donneurSelection: DonneurSelectionService,
     private changeDetectorRef: ChangeDetectorRef,
-  ) {}
+  ) {
+    this.rechercheContacts = new RechercheContactController(
+      this.supabase.client,
+      this.changeDetectorRef,
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.rechercheContacts.detruire();
+  }
 
   async ngOnInit(): Promise<void> {
     await this.chargerCollecteSelectionnee();
@@ -199,11 +206,10 @@ export class Coordonnees implements OnInit {
   }
 
   async selectionnerDonneur(idContact: number): Promise<void> {
+    this.rechercheContacts.annuler();
     this.erreur = '';
     this.modeEdition = false;
 
-    this.resultats = [];
-    this.rechercheEffectuee = false;
     this.recherche = '';
 
     try {
@@ -315,75 +321,10 @@ export class Coordonnees implements OnInit {
   }
 
   rechercherDonneurs(): void {
-    if (this.minuterieRecherche !== null) {
-      clearTimeout(this.minuterieRecherche);
-    }
-
-    this.resultats = [];
-    this.rechercheEffectuee = false;
-    this.rechercheEnCours = false;
-
-    const texte = this.recherche.trim();
-
-    if (texte.length < 2) {
-      return;
-    }
-
-    this.rechercheEnCours = true;
-
-    this.minuterieRecherche = setTimeout(() => {
-      void this.executerRecherche(texte);
-    }, 300);
-  }
-
-  private async executerRecherche(texte: string): Promise<void> {
-    const debutRecherche = performance.now();
-
-    try {
-      const terme = `${texte}%`;
-
-      const { data, error } = await this.supabase.client
-        .from('t_Contacts')
-        .select(
-          `
-            IdContact,
-            Civilite,
-            NomUsage,
-            NomdeNaissance,
-            Prenom,
-            DateNaissance
-          `,
-        )
-        .or(`NomUsage.ilike.${terme},NomdeNaissance.ilike.${terme}`)
-        .order('NomUsage', {
-          ascending: true,
-        })
-        .order('Prenom', {
-          ascending: true,
-        })
-        .order('DateNaissance', {
-          ascending: true,
-        })
-        .limit(50);
-
-      console.log('Temps requête Supabase :', performance.now() - debutRecherche, 'ms');
-
-      if (error) {
-        throw error;
-      }
-
-      this.resultats = (data ?? []) as ResultatRecherche[];
-
-      this.rechercheEffectuee = true;
-    } catch (error) {
+    this.rechercheContacts.rechercher(this.recherche, (error) => {
       console.error('ERREUR RECHERCHE DONNEUR :', error);
-
       this.erreur = 'Erreur pendant la recherche.';
-    } finally {
-      this.rechercheEnCours = false;
-
-      this.changeDetectorRef.detectChanges();
-    }
+    });
   }
 
   private async chargerAdresse(): Promise<void> {
@@ -622,10 +563,8 @@ export class Coordonnees implements OnInit {
     this.eligible = this.ageOK && this.delaiDernierDonOK && this.nombreDons365OK && this.statutOK;
   }
 
-  afficherResultat(resultat: ResultatRecherche): string {
-    return [resultat.NomUsage, resultat.Prenom]
-      .filter((valeur) => valeur !== null && valeur !== '')
-      .join(' ');
+  afficherResultat(resultat: ResultatRechercheContact): string {
+    return this.rechercheContacts.afficherNom(resultat);
   }
 
   libelleDonneur(): string {
