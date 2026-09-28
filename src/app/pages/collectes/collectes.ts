@@ -49,7 +49,7 @@ export class CollectesComponent {
   choixOuvert = signal(false);
   message = signal('');
   exportEnCours = signal(false);
-  //sessionUtilisateur: import("@angular/core").WritableSignal<import("../../services/session").UtilisateurConnecte | null>;
+  // Ajout pour gestion verrouillage bouton export liste vers Excel en fonction du rôle de session
   sessionRole: import('@angular/core').WritableSignal<string | undefined>;
 
   constructor(
@@ -59,7 +59,7 @@ export class CollectesComponent {
     private session: SessionService,
     private exportExcel: ExportDonneursExcelService,
   ) {
-    //this.sessionUtilisateur = signal(this.session.utilisateur());
+    // Initialisation du signal pour le rôle de session
     this.sessionRole = signal(this.session.utilisateur()?.Role);
 
     this.collecteSelectionnee.set(this.selection.collecte());
