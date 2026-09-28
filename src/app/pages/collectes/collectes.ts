@@ -1,15 +1,10 @@
 import { Component, effect, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { SupabaseService } from '../../services/supabase';
-import {
-  CollecteSelectionService,
-  CollecteSelectionnee
-} from '../../services/collecte-selection';
-import {
-  DonneurSelectionService,
-  DonneurSelectionne
-} from '../../services/donneur-selection';
+import { CollecteSelectionService, CollecteSelectionnee } from '../../services/collecte-selection';
+import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SessionService } from '../../services/session';
+import { ExportDonneursExcelService } from '../../services/export-donneurs-excel';
 
 interface Collecte {
   IdCollecte: number;
@@ -32,10 +27,9 @@ interface Don {
   standalone: true,
   imports: [DatePipe],
   templateUrl: './collectes.html',
-  styleUrl: './collectes.css'
+  styleUrl: './collectes.css',
 })
 export class CollectesComponent {
-
   collectes = signal<Collecte[]>([]);
   annees = signal<number[]>([]);
   collecteSelectionnee = signal<CollecteSelectionnee | null>(null);
@@ -54,12 +48,14 @@ export class CollectesComponent {
 
   choixOuvert = signal(false);
   message = signal('');
+  exportEnCours = signal(false);
 
   constructor(
     private supabase: SupabaseService,
     private selection: CollecteSelectionService,
     private donneurSelection: DonneurSelectionService,
-    private session: SessionService
+    private session: SessionService,
+    private exportExcel: ExportDonneursExcelService,
   ) {
     this.collecteSelectionnee.set(this.selection.collecte());
     this.donneurSelectionne.set(this.donneurSelection.donneur());
@@ -92,31 +88,44 @@ export class CollectesComponent {
 
       this.collectes.set(collectes);
 
-      const annees = [...new Set(
-        collectes.map(collecte => collecte.annee)
-      )].sort((a, b) => b - a);
+      const annees = [...new Set(collectes.map((collecte) => collecte.annee))].sort(
+        (a, b) => b - a,
+      );
 
       this.annees.set(annees);
 
       const maintenant = new Date();
 
       const prochaines = collectes
-        .filter(collecte => new Date(collecte.DateCollecte) >= maintenant)
-        .sort((a, b) =>
-          new Date(a.DateCollecte).getTime() -
-          new Date(b.DateCollecte).getTime()
-        );
+        .filter((collecte) => new Date(collecte.DateCollecte) >= maintenant)
+        .sort((a, b) => new Date(a.DateCollecte).getTime() - new Date(b.DateCollecte).getTime());
 
-      if (
-        prochaines.length > 0 &&
-        !this.selection.collecte()
-      ) {
+      if (prochaines.length > 0 && !this.selection.collecte()) {
         this.selectionnerCollecte(prochaines[0]);
       }
-
     } catch (error) {
       console.error('ERREUR CHARGEMENT COLLECTES :', error);
       this.message.set('Impossible de charger les collectes.');
+    }
+  }
+
+  async exporterDonneursEligibles(): Promise<void> {
+    const collecte = this.collecteSelectionnee();
+
+    if (!collecte || this.exportEnCours()) {
+      return;
+    }
+
+    this.exportEnCours.set(true);
+    this.message.set('');
+
+    try {
+      await this.exportExcel.exporterDonneursEligibles(collecte);
+    } catch (error) {
+      console.error('ERREUR EXPORT DONNEURS :', error);
+      this.message.set("Impossible d'exporter la liste des donneurs éligibles.");
+    } finally {
+      this.exportEnCours.set(false);
     }
   }
 
@@ -130,22 +139,17 @@ export class CollectesComponent {
 
       const nbAvant2013 = donneur?.NbDonsAvant2013 ?? 0;
 
-      const nbApres2013 = dons.filter(
-        don => don.annee >= 2013
-      ).length;
+      const nbApres2013 = dons.filter((don) => don.annee >= 2013).length;
 
       this.nbDonsAvant2013.set(nbAvant2013);
       this.nbDonsApres2013.set(nbApres2013);
       this.nbDonsTotal.set(nbAvant2013 + nbApres2013);
 
-      const annees = [...new Set(
-        dons.map(don => don.annee)
-      )].sort((a, b) => b - a);
+      const annees = [...new Set(dons.map((don) => don.annee))].sort((a, b) => b - a);
 
       this.anneesDons.set(annees);
 
       this.appliquerFiltreAnnee();
-
     } catch (error) {
       console.error('ERREUR CHARGEMENT DONS :', error);
       this.message.set('Impossible de charger les dons du donneur.');
@@ -166,9 +170,7 @@ export class CollectesComponent {
       return;
     }
 
-    this.donsFiltres.set(
-      this.dons().filter(don => don.annee === filtre)
-    );
+    this.donsFiltres.set(this.dons().filter((don) => don.annee === filtre));
   }
 
   changerFiltreAnnee(valeur: string): void {
@@ -196,9 +198,7 @@ export class CollectesComponent {
 
   getCollecte(annee: number, numero: number): Collecte | undefined {
     return this.collectes().find(
-      collecte =>
-        collecte.annee === annee &&
-        collecte.NumCollecte === numero
+      (collecte) => collecte.annee === annee && collecte.NumCollecte === numero,
     );
   }
 
@@ -207,7 +207,7 @@ export class CollectesComponent {
       IdCollecte: collecte.IdCollecte,
       annee: collecte.annee,
       NumCollecte: collecte.NumCollecte,
-      DateCollecte: collecte.DateCollecte
+      DateCollecte: collecte.DateCollecte,
     };
 
     this.selection.definirCollecte(selection);
@@ -242,10 +242,7 @@ export class CollectesComponent {
       return true;
     }
 
-    return (
-      utilisateur.Role === 'SA' ||
-      utilisateur.Role === 'Admin'
-    );
+    return utilisateur.Role === 'SA' || utilisateur.Role === 'Admin';
   }
 
   async enregistrerDon(): Promise<void> {
@@ -271,13 +268,12 @@ export class CollectesComponent {
         donneur.IdContact,
         collecte.annee,
         collecte.NumCollecte,
-        collecte.DateCollecte
+        collecte.DateCollecte,
       );
 
       await this.chargerDons(donneur.IdContact);
 
       this.donSelectionne.set(null);
-
     } catch (error) {
       console.error('ERREUR ENREGISTREMENT DON :', error);
       this.message.set('Impossible d’enregistrer le don.');
@@ -304,7 +300,6 @@ export class CollectesComponent {
       await this.chargerDons(donneur.IdContact);
 
       this.donSelectionne.set(null);
-
     } catch (error) {
       console.error('ERREUR SUPPRESSION DON :', error);
       this.message.set('Impossible de supprimer le don.');

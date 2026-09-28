@@ -23,6 +23,18 @@
         Changer de collecte
       </button>
 
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm ms-2"
+        [disabled]="exportEnCours()"
+        (click)="exporterDonneursEligibles()"
+      >
+        @if (exportEnCours()) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Exporter la liste des donneurs éligibles (Excel)
+      </button>
+
       @if (choixOuvert()) {
         <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="fermerChoixCollecte()">
           Annuler
