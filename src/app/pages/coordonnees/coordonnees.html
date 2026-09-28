@@ -299,7 +299,8 @@
                 type="text"
                 class="form-control form-control-sm"
                 [value]="formaterCodePostal(adresse?.CodePostal)"
-                disabled
+                [disabled]="!modeEdition"
+                [class.bg-success-subtle]="modeEdition"
               />
             </div>
 
@@ -310,7 +311,8 @@
                 type="text"
                 class="form-control form-control-sm"
                 [value]="adresse?.Commune ?? ''"
-                disabled
+                [disabled]="!modeEdition"
+                [class.bg-success-subtle]="modeEdition"
               />
             </div>
 
@@ -366,7 +368,8 @@
               type="text"
               class="form-control form-control-sm"
               [value]="telephonePortable"
-              disabled
+              [disabled]="!modeEdition"
+              [class.bg-success-subtle]="modeEdition"
             />
           </div>
 
@@ -375,7 +378,13 @@
               <i class="bi bi-envelope"></i>
             </label>
 
-            <input type="email" class="form-control form-control-sm" [value]="email" disabled />
+            <input
+              type="email"
+              class="form-control form-control-sm"
+              [value]="email"
+              [disabled]="!modeEdition"
+              [class.bg-success-subtle]="modeEdition"
+            />
           </div>
         </div>
       </div>
