@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SupabaseService } from './services/supabase';
 import { SessionService } from './services/session';
+import { ThemeService } from './services/theme';
 
 @Component({
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
@@ -14,6 +15,7 @@ export class App {
 
   constructor(
     public session: SessionService,
+    public theme: ThemeService,
     private supabase: SupabaseService,
     private router: Router,
   ) {}

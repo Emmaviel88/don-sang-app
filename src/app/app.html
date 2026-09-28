@@ -10,21 +10,42 @@
           </span>
         </div>
 
-        <button
-          type="button"
-          class="btn btn-outline-light app-navbar-toggle"
-          [attr.aria-expanded]="menuNavigationOuvert"
-          aria-controls="navigationAssociation"
-          aria-label="Afficher ou masquer la navigation"
-          (click)="basculerMenuNavigation()"
-        >
-          <i
-            class="bi"
-            [class.bi-list]="!menuNavigationOuvert"
-            [class.bi-x-lg]="menuNavigationOuvert"
-            aria-hidden="true"
-          ></i>
-        </button>
+        <div class="d-flex align-items-center gap-2 app-navbar-controls">
+          <button
+            type="button"
+            class="btn btn-outline-light app-theme-toggle"
+            [attr.aria-label]="
+              theme.mode() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+            "
+            [attr.title]="
+              theme.mode() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+            "
+            (click)="theme.basculer()"
+          >
+            <i
+              class="bi"
+              [class.bi-moon-stars]="theme.mode() === 'light'"
+              [class.bi-sun]="theme.mode() === 'dark'"
+              aria-hidden="true"
+            ></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-light app-navbar-toggle"
+            [attr.aria-expanded]="menuNavigationOuvert"
+            aria-controls="navigationAssociation"
+            aria-label="Afficher ou masquer la navigation"
+            (click)="basculerMenuNavigation()"
+          >
+            <i
+              class="bi"
+              [class.bi-list]="!menuNavigationOuvert"
+              [class.bi-x-lg]="menuNavigationOuvert"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </div>
 
         <div
           id="navigationAssociation"
@@ -100,7 +121,10 @@
       </div>
     </nav>
 
-    <main class="container-fluid pt-1 pb-4 flex-grow-1">
+    <main
+      class="container-fluid pt-1 pb-4 flex-grow-1 bg-body text-body"
+      [attr.data-bs-theme]="theme.mode()"
+    >
       <router-outlet />
     </main>
 

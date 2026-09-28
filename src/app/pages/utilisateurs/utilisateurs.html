@@ -54,16 +54,12 @@
                 </tr>
               } @else {
                 @for (utilisateur of utilisateursFiltres(); track utilisateur.IdUser) {
-                  <tr [class.table-primary]="selection()?.IdUser === utilisateur.IdUser">
-                    <td>
-                      <button
-                        type="button"
-                        class="btn btn-link btn-sm p-0 text-start"
-                        (click)="selectionner(utilisateur)"
-                      >
-                        {{ utilisateur.Login || '(sans login)' }}
-                      </button>
-                    </td>
+                  <tr
+                    [class.table-primary]="selection()?.IdUser === utilisateur.IdUser"
+                    (click)="selectionner(utilisateur)"
+                    style="cursor: pointer"
+                  >
+                    <td>{{ utilisateur.Login || '(sans login)' }}</td>
                     <td>{{ afficherNom(utilisateur.Contact) }}</td>
                     <td>{{ utilisateur.Role }}</td>
                     <td>

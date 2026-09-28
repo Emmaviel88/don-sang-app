@@ -10,7 +10,8 @@
   width: min(500px, calc(100vw - 2rem));
   max-height: min(71.5vh, 31.2rem);
   overflow-y: auto;
-  background: #fff;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
   box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 14%);
 }
 
@@ -42,7 +43,7 @@
 }
 
 .table-adhesions th {
-  background-color: #212529;
-  color: #ffffff;
+  background-color: var(--bs-emphasis-color);
+  color: var(--bs-body-bg);
   text-align: center;
 }

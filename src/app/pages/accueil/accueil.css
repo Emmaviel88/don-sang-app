@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: #f2f4f7;
+  background: var(--bs-secondary-bg);
 }
 
 h1 {

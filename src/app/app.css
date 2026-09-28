@@ -56,6 +56,16 @@
   border-color: white !important;
 }
 
+.app-theme-toggle {
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
 .app-navbar-toggle {
   display: none;
   width: 3rem;
