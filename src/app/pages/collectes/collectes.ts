@@ -49,6 +49,8 @@ export class CollectesComponent {
   choixOuvert = signal(false);
   message = signal('');
   exportEnCours = signal(false);
+  //sessionUtilisateur: import("@angular/core").WritableSignal<import("../../services/session").UtilisateurConnecte | null>;
+  sessionRole: import('@angular/core').WritableSignal<string | undefined>;
 
   constructor(
     private supabase: SupabaseService,
@@ -57,6 +59,9 @@ export class CollectesComponent {
     private session: SessionService,
     private exportExcel: ExportDonneursExcelService,
   ) {
+    //this.sessionUtilisateur = signal(this.session.utilisateur());
+    this.sessionRole = signal(this.session.utilisateur()?.Role);
+
     this.collecteSelectionnee.set(this.selection.collecte());
     this.donneurSelectionne.set(this.donneurSelection.donneur());
 
