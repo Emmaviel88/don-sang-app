@@ -25,7 +25,7 @@ import {
 })
 export class RechercheContactComponent implements OnDestroy {
   @Input() inputId = 'rechercheContact';
-  @Input() label = 'Recherche';
+  @Input() label = "Rechercher par nom d'usage ou nom de naissance";
 
   @Output() contactSelected = new EventEmitter<ResultatRechercheContact>();
   @Output() searchError = new EventEmitter<unknown>();

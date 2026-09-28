@@ -45,7 +45,7 @@
 }
 
 .navbar .navbar-nav .commande-navbar {
-  width: 150px;
+  width: 135px;
   color: #d3d3d3 !important;
   border: 1px solid rgba(255, 255, 255, 0.75);
 }
@@ -78,6 +78,7 @@
 
 .app-navbar-logout {
   width: 150px;
+  height: 4.8rem;
   flex: 0 0 auto;
 }
 

@@ -490,7 +490,6 @@ export class Coordonnees implements OnInit {
         `,
       )
       .eq('IdDonneur', this.donneur.IdContact)
-      .gte('DateDon', this.dateToString(dateLimite365))
       .lte('DateDon', this.dateToString(dateCollecte))
       .order('DateDon', {
         ascending: false,
@@ -502,7 +501,11 @@ export class Coordonnees implements OnInit {
 
     const dons = data ?? [];
 
-    this.nombreDons365 = dons.length;
+    this.nombreDons365 = dons.filter((don) => {
+      const dateDon = this.creerDateLocale(don['DateDon'] ?? '');
+
+      return dateDon !== null && dateDon >= dateLimite365;
+    }).length;
 
     const maximumDons365 = this.donneur.Sexe === 'M' ? 6 : 4;
 
@@ -527,7 +530,7 @@ export class Coordonnees implements OnInit {
     } else {
       this.dernierDon = null;
 
-      this.delaiDernierDon = 'Aucun don dans les 365 derniers jours';
+      this.delaiDernierDon = 'Aucun don';
 
       this.delaiDernierDonOK = true;
     }
