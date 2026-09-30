@@ -1,3 +1,0 @@
-# Do not publish internal Excel workbooks.
-**/*.xls
-**/*.xlsx
