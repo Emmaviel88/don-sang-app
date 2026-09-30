@@ -46,7 +46,7 @@ Thumbs.db
 .vercel
 
 # Internal workbooks must stay out of public app assets.
-/public/*.xls
-/public/*.xlsx
-/public/**/*.xls
-/public/**/*.xlsx
+#/public/*.xls
+#/public/*.xlsx
+#/public/**/*.xls
+#/public/**/*.xlsx

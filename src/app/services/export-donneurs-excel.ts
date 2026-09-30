@@ -3,7 +3,7 @@ import ExcelJS from 'exceljs';
 import { SupabaseService } from './supabase';
 import { CollecteSelectionnee } from './collecte-selection';
 
-const CHEMIN_MODELE = '/Modèle liste xls/Liste donneurs collecte 2026-09-18.xlsx';
+const CHEMIN_MODELE = '/Modèle liste xls/Modèle Liste donneurs collecte 2026-09-18.xlsx';
 const NOM_FEUILLE = 'Donneurs';
 const PREMIERE_LIGNE_DONNEES = 3;
 const PREMIERE_ANNEE_COLONNE = 11;
