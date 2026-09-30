@@ -128,7 +128,7 @@ export class CollectesComponent {
       await this.exportExcel.exporterDonneursEligibles(collecte);
     } catch (error) {
       console.error('ERREUR EXPORT DONNEURS :', error);
-      this.message.set("Impossible d'exporter la liste des donneurs éligibles.");
+      this.message.set("Impossible d'exporter la liste des donneurs éligibles :" + error);
     } finally {
       this.exportEnCours.set(false);
     }
