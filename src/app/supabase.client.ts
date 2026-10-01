@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { environment } from '../environments/environment';
 
-export const supabase = createClient(
-  environment.supabaseUrl,
-  environment.supabaseKey
-);
+// Choix de la configuration selon l'environnement
+const config = environment.production ? environment.productionConfig : environment.local;
+
+export const supabase = createClient(config.supabaseUrl, config.supabaseKey);

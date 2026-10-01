@@ -31,7 +31,10 @@ export class SupabaseService {
   private supabase: SupabaseClient;
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+    // Selection automatique des identifiants selon la variable production
+    const config = environment.production ? environment.productionConfig : environment.local;
+    // Créé le client Supabase avec la configuration appropriée selon l'environnement
+    this.supabase = createClient(config.supabaseUrl, config.supabaseKey);
   }
 
   get client(): SupabaseClient {
