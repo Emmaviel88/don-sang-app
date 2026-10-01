@@ -9,7 +9,12 @@
         />
 
         <div class="d-flex flex-wrap align-items-center gap-2">
-          <button type="button" class="btn btn-primary btn-sm ms-2" [disabled]="modeEdition">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm ms-2"
+            [disabled]="modeEdition || enregistrementEnCours"
+            (click)="nouveauDonneur()"
+          >
             Nouveau donneur
           </button>
 
@@ -21,6 +26,17 @@
           >
             Modifier donneur
           </button>
+
+          @if (peutSupprimerDonneur()) {
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              [disabled]="enregistrementEnCours"
+              (click)="supprimerDonneur()"
+            >
+              Supprimer donneur
+            </button>
+          }
 
           <button
             type="button"
@@ -51,6 +67,12 @@
   @if (erreur) {
     <div class="alert alert-danger py-1 mb-2">
       {{ erreur }}
+    </div>
+  }
+
+  @if (succes) {
+    <div class="alert alert-success py-1 mb-2">
+      {{ succes }}
     </div>
   }
 
@@ -117,7 +139,7 @@
                   type="text"
                   class="form-control form-control-sm id-contact mx-auto"
                   style="width: 80px"
-                  [value]="donneur.IdContact"
+                  [value]="donneur.IdContact || 'À attribuer'"
                   readonly
                   tabindex="-1"
                 />
@@ -298,7 +320,12 @@
               <input
                 type="text"
                 class="form-control form-control-sm"
-                [value]="formaterCodePostal(adresse?.CodePostal)"
+                [ngModel]="
+                  modeEdition
+                    ? (adresse?.CodePostal ?? '')
+                    : formaterCodePostal(adresse?.CodePostal)
+                "
+                (ngModelChange)="modifierCodePostal($event)"
                 [disabled]="!modeEdition"
                 [class.bg-success-subtle]="modeEdition"
               />
@@ -310,7 +337,8 @@
               <input
                 type="text"
                 class="form-control form-control-sm"
-                [value]="adresse?.Commune ?? ''"
+                [ngModel]="adresse?.Commune ?? ''"
+                (ngModelChange)="modifierCommune($event)"
                 [disabled]="!modeEdition"
                 [class.bg-success-subtle]="modeEdition"
               />
@@ -326,6 +354,7 @@
                 [disabled]="!modeEdition"
                 [class.bg-success-subtle]="modeEdition"
               >
+                <option [ngValue]="null">Choisir un pays</option>
                 @for (paysDisponible of paysDisponibles; track paysDisponible.IdPays) {
                   <option [ngValue]="paysDisponible.IdPays">
                     {{ paysDisponible.NomPays }}
@@ -367,7 +396,7 @@
             <input
               type="text"
               class="form-control form-control-sm"
-              [value]="telephonePortable"
+              [(ngModel)]="telephonePortable"
               [disabled]="!modeEdition"
               [class.bg-success-subtle]="modeEdition"
             />
@@ -381,7 +410,7 @@
             <input
               type="email"
               class="form-control form-control-sm"
-              [value]="email"
+              [(ngModel)]="email"
               [disabled]="!modeEdition"
               [class.bg-success-subtle]="modeEdition"
             />

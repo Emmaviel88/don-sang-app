@@ -4,6 +4,7 @@ import { RechercheContactComponent } from '../../components/recherche-contact/re
 import { SupabaseService } from '../../services/supabase';
 import { CollecteSelectionService, CollecteSelectionnee } from '../../services/collecte-selection';
 import { DonneurSelectionService } from '../../services/donneur-selection';
+import { SessionService } from '../../services/session';
 
 interface Donneur {
   IdContact: number;
@@ -40,6 +41,7 @@ interface Pays {
 }
 
 interface MoyenContact {
+  IdMoyen: number;
   IdTypeMoyen: number;
   Valeur: string | null;
   EstPrincipal: boolean;
@@ -60,6 +62,7 @@ export class Coordonnees implements OnInit {
   donneur: Donneur | null = null;
 
   erreur = '';
+  succes = '';
 
   age = '—';
 
@@ -83,12 +86,18 @@ export class Coordonnees implements OnInit {
   eligible = false;
 
   modeEdition = false;
+  modeCreation = false;
   enregistrementEnCours = false;
+  private idContactAvantCreation: number | null = null;
+  private adresseExistante = false;
+  private idMoyenTelephone: number | null = null;
+  private idMoyenEmail: number | null = null;
 
   constructor(
     private supabase: SupabaseService,
     private collecteSelection: CollecteSelectionService,
     private donneurSelection: DonneurSelectionService,
+    private session: SessionService,
     private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
@@ -186,6 +195,7 @@ export class Coordonnees implements OnInit {
   async selectionnerDonneur(idContact: number): Promise<void> {
     this.controleRecherche?.clear();
     this.erreur = '';
+    this.succes = '';
     this.modeEdition = false;
 
     try {
@@ -250,10 +260,13 @@ export class Coordonnees implements OnInit {
       });
 
       this.adresse = null;
+      this.adresseExistante = false;
       this.pays = null;
 
       this.telephonePortable = '';
       this.email = '';
+      this.idMoyenTelephone = null;
+      this.idMoyenEmail = null;
 
       this.dernierDon = null;
       this.delaiDernierDon = '—';
@@ -331,6 +344,7 @@ export class Coordonnees implements OnInit {
     }
 
     this.adresse = data as Adresse | null;
+    this.adresseExistante = data !== null;
 
     this.pays = null;
 
@@ -366,6 +380,7 @@ export class Coordonnees implements OnInit {
       .from('t_MoyensContact')
       .select(
         `
+          IdMoyen,
           IdTypeMoyen,
           Valeur,
           EstPrincipal,
@@ -387,6 +402,8 @@ export class Coordonnees implements OnInit {
 
     const mail = moyens.find((moyen) => moyen.IdTypeMoyen === 3);
 
+    this.idMoyenTelephone = portable?.IdMoyen ?? null;
+    this.idMoyenEmail = mail?.IdMoyen ?? null;
     this.telephonePortable = this.formaterTelephone(portable?.Valeur ?? '');
 
     this.email = mail?.Valeur ?? '';
@@ -661,9 +678,84 @@ export class Coordonnees implements OnInit {
     }
 
     this.erreur = '';
+    if (!this.adresse) {
+      this.adresse = this.adresseVide();
+    }
     this.modeEdition = true;
 
     this.changeDetectorRef.detectChanges();
+  }
+
+  nouveauDonneur(): void {
+    if (this.modeEdition || this.enregistrementEnCours) {
+      return;
+    }
+
+    this.idContactAvantCreation = this.donneur?.IdContact ?? null;
+    this.controleRecherche?.clear();
+    this.donneurSelection.effacerDonneur();
+    this.erreur = '';
+    this.succes = '';
+    this.modeCreation = true;
+    this.modeEdition = true;
+    this.adresseExistante = false;
+    this.idMoyenTelephone = null;
+    this.idMoyenEmail = null;
+    this.donneur = {
+      IdContact: 0,
+      Civilite: 'Mme',
+      NomUsage: '',
+      NomdeNaissance: '',
+      Prenom: '',
+      Sexe: 'F',
+      DateNaissance: null,
+      NbDonsAvant2013: 0,
+      EstDecede: false,
+      Actif: true,
+      NePeutVeutPlusDonner: false,
+      VolontairePlasma: false,
+      PrimoDon: false,
+      Commentaire: null,
+    };
+    this.adresse = this.adresseVide();
+    this.pays = null;
+    this.telephonePortable = '';
+    this.email = '';
+    this.dernierDon = null;
+    this.delaiDernierDon = '—';
+    this.nombreDons365 = 0;
+    this.ageOK = false;
+    this.delaiDernierDonOK = false;
+    this.nombreDons365OK = false;
+    this.statutOK = false;
+    this.eligible = false;
+    this.calculerAge();
+    this.changeDetectorRef.detectChanges();
+  }
+
+  private adresseVide(): Adresse {
+    return {
+      Adresse1: null,
+      Adresse2: null,
+      CodePostal: null,
+      Commune: null,
+      IdPays: null,
+      Commentaire: null,
+      EstPrincipale: true,
+      EstValide: true,
+    };
+  }
+
+  modifierCodePostal(codePostal: string): void {
+    if (this.adresse && this.modeEdition) {
+      this.adresse.CodePostal = codePostal || null;
+    }
+  }
+
+  modifierCommune(commune: string): void {
+    if (this.adresse && this.modeEdition) {
+      this.adresse.Commune = commune || null;
+    }
   }
 
   modifierDateNaissance(date: string | null): void {
@@ -698,11 +790,90 @@ export class Coordonnees implements OnInit {
       return;
     }
 
+    if (this.modeCreation) {
+      const idContact = this.idContactAvantCreation;
+      this.modeCreation = false;
+      this.idContactAvantCreation = null;
+      this.modeEdition = false;
+
+      if (idContact !== null) {
+        void this.selectionnerDonneur(idContact);
+      } else {
+        this.donneur = null;
+        this.adresse = null;
+        this.pays = null;
+        this.donneurSelection.effacerDonneur();
+      }
+      return;
+    }
+
     const idContact = this.donneur.IdContact;
 
     this.modeEdition = false;
 
     void this.selectionnerDonneur(idContact);
+  }
+
+  peutSupprimerDonneur(): boolean {
+    const role = this.session.utilisateur()?.Role;
+    return (
+      !!this.donneur &&
+      !this.modeCreation &&
+      !this.modeEdition &&
+      !this.enregistrementEnCours &&
+      (role === 'Admin' || role === 'SA')
+    );
+  }
+
+  async supprimerDonneur(): Promise<void> {
+    if (!this.peutSupprimerDonneur() || !this.donneur) {
+      return;
+    }
+
+    const nom = this.libelleDonneur() || `contact ${this.donneur.IdContact}`;
+    const confirmation = window.confirm(
+      `Supprimer définitivement ${nom} et ses dons, adhésions, fonctions, adresses et moyens de contact ? Aucun compte utilisateur/Auth ne sera supprimé. Cette action est irréversible.`,
+    );
+    if (!confirmation) {
+      return;
+    }
+
+    this.enregistrementEnCours = true;
+    this.erreur = '';
+    this.succes = '';
+
+    try {
+      const { error } = await this.supabase.client.rpc('supprimer_donneur_complet', {
+        p_id_contact: this.donneur.IdContact,
+      });
+      if (error) {
+        throw error;
+      }
+
+      this.controleRecherche?.clear();
+      this.donneurSelection.effacerDonneur();
+      this.donneur = null;
+      this.adresse = null;
+      this.pays = null;
+      this.telephonePortable = '';
+      this.email = '';
+      this.idMoyenTelephone = null;
+      this.idMoyenEmail = null;
+      this.adresseExistante = false;
+      this.modeEdition = false;
+      this.modeCreation = false;
+      this.succes = 'Le donneur et toutes ses données ont été supprimés.';
+    } catch (error) {
+      console.error('ERREUR SUPPRESSION DONNEUR :', error);
+      const message =
+        error && typeof error === 'object' && 'message' in error
+          ? String(error.message)
+          : 'Erreur inconnue.';
+      this.erreur = `Impossible de supprimer le donneur. ${message}`;
+    } finally {
+      this.enregistrementEnCours = false;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   async enregistrer(): Promise<void> {
@@ -713,48 +884,75 @@ export class Coordonnees implements OnInit {
     this.enregistrementEnCours = true;
 
     this.erreur = '';
+    this.succes = '';
 
     try {
-      const { error: erreurContact } = await this.supabase.client
-        .from('t_Contacts')
-        .update({
-          Civilite: this.donneur.Civilite,
-          NomUsage: this.donneur.NomUsage,
-          NomdeNaissance: this.donneur.NomdeNaissance,
-          Prenom: this.donneur.Prenom,
-          Sexe: this.donneur.Sexe,
-          DateNaissance: this.donneur.DateNaissance,
-          EstDécédé: this.donneur.EstDecede,
-          Actif: this.donneur.Actif,
-          NePeutVeutPlusDonner: this.donneur.NePeutVeutPlusDonner,
-          VolontairePlasma: this.donneur.VolontairePlasma,
-          PrimoDon: this.donneur.PrimoDon,
-        })
-        .eq('IdContact', this.donneur.IdContact);
+      if (this.modeCreation) {
+        if (!this.donneur.NomUsage?.trim() || !this.donneur.Prenom?.trim()) {
+          this.erreur = 'Le nom et le prénom sont obligatoires.';
+          return;
+        }
 
-      if (erreurContact) {
-        throw erreurContact;
+        const { data, error } = await this.supabase.client
+          .from('t_Contacts')
+          .insert({
+            Civilite: this.donneur.Civilite,
+            NomUsage: this.donneur.NomUsage.trim(),
+            NomdeNaissance: this.donneur.NomdeNaissance?.trim() || null,
+            Prenom: this.donneur.Prenom.trim(),
+            Sexe: this.donneur.Sexe,
+            DateNaissance: this.donneur.DateNaissance,
+            NbDonsAvant2013: this.donneur.NbDonsAvant2013,
+            EstDécédé: this.donneur.EstDecede,
+            Actif: this.donneur.Actif,
+            NePeutVeutPlusDonner: this.donneur.NePeutVeutPlusDonner,
+            VolontairePlasma: this.donneur.VolontairePlasma,
+            PrimoDon: this.donneur.PrimoDon,
+            Commentaire: this.donneur.Commentaire,
+          })
+          .select('IdContact')
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        this.donneur.IdContact = data.IdContact;
+        this.modeCreation = false;
+        this.idContactAvantCreation = null;
+      } else {
+        const { error: erreurContact } = await this.supabase.client
+          .from('t_Contacts')
+          .update({
+            Civilite: this.donneur.Civilite,
+            NomUsage: this.donneur.NomUsage,
+            NomdeNaissance: this.donneur.NomdeNaissance,
+            Prenom: this.donneur.Prenom,
+            Sexe: this.donneur.Sexe,
+            DateNaissance: this.donneur.DateNaissance,
+            EstDécédé: this.donneur.EstDecede,
+            Actif: this.donneur.Actif,
+            NePeutVeutPlusDonner: this.donneur.NePeutVeutPlusDonner,
+            VolontairePlasma: this.donneur.VolontairePlasma,
+            PrimoDon: this.donneur.PrimoDon,
+          })
+          .eq('IdContact', this.donneur.IdContact);
+
+        if (erreurContact) {
+          throw erreurContact;
+        }
       }
 
       if (this.adresse) {
-        console.log('IdPays à enregistrer :', this.adresse.IdPays);
-
-        const { error: erreurAdresse } = await this.supabase.client
-          .from('t_Adresses')
-          .update({
-            Adresse1: this.adresse.Adresse1,
-            Adresse2: this.adresse.Adresse2,
-            IdPays: this.adresse.IdPays,
-            Commentaire: this.adresse.Commentaire,
-          })
-          .eq('IdContact', this.donneur.IdContact)
-          .eq('EstPrincipale', true)
-          .eq('EstValide', true);
-
-        if (erreurAdresse) {
-          throw erreurAdresse;
-        }
+        await this.enregistrerAdresse();
       }
+
+      this.idMoyenTelephone = await this.enregistrerMoyenContact(
+        2,
+        this.telephonePortable,
+        this.idMoyenTelephone,
+      );
+      this.idMoyenEmail = await this.enregistrerMoyenContact(3, this.email, this.idMoyenEmail);
 
       this.modeEdition = false;
 
@@ -779,6 +977,117 @@ export class Coordonnees implements OnInit {
 
       this.changeDetectorRef.detectChanges();
     }
+  }
+
+  private async enregistrerAdresse(): Promise<void> {
+    if (!this.donneur || !this.adresse) {
+      return;
+    }
+
+    const champsAdresse = [
+      this.adresse.Adresse1,
+      this.adresse.Adresse2,
+      this.adresse.CodePostal,
+      this.adresse.Commune,
+      this.adresse.Commentaire,
+    ];
+    const contientAdresse =
+      champsAdresse.some((valeur) => !!valeur?.trim()) || this.adresse.IdPays !== null;
+
+    if (!contientAdresse) {
+      if (this.adresseExistante) {
+        const { error } = await this.supabase.client
+          .from('t_Adresses')
+          .update({ EstPrincipale: false, EstValide: false })
+          .eq('IdContact', this.donneur.IdContact)
+          .eq('EstPrincipale', true)
+          .eq('EstValide', true);
+
+        if (error) {
+          throw error;
+        }
+        this.adresseExistante = false;
+      }
+      return;
+    }
+
+    const valeurs = {
+      Adresse1: this.adresse.Adresse1?.trim() || null,
+      Adresse2: this.adresse.Adresse2?.trim() || null,
+      CodePostal: this.adresse.CodePostal?.trim() || null,
+      Commune: this.adresse.Commune?.trim() || null,
+      IdPays: this.adresse.IdPays,
+      Commentaire: this.adresse.Commentaire?.trim() || null,
+      EstPrincipale: true,
+      EstValide: true,
+    };
+
+    const result = this.adresseExistante
+      ? await this.supabase.client
+          .from('t_Adresses')
+          .update(valeurs)
+          .eq('IdContact', this.donneur.IdContact)
+          .eq('EstPrincipale', true)
+          .eq('EstValide', true)
+      : await this.supabase.client
+          .from('t_Adresses')
+          .insert({ ...valeurs, IdContact: this.donneur.IdContact });
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    this.adresseExistante = true;
+  }
+
+  private async enregistrerMoyenContact(
+    idTypeMoyen: number,
+    valeur: string,
+    idMoyen: number | null,
+  ): Promise<number | null> {
+    if (!this.donneur) {
+      return idMoyen;
+    }
+
+    const valeurNettoyee = valeur.trim();
+    if (idMoyen !== null) {
+      const { error } = await this.supabase.client
+        .from('t_MoyensContact')
+        .update(
+          valeurNettoyee
+            ? { Valeur: valeurNettoyee, EstPrincipal: true, EstValide: true }
+            : { EstPrincipal: false, EstValide: false },
+        )
+        .eq('IdMoyen', idMoyen);
+
+      if (error) {
+        throw error;
+      }
+
+      return valeurNettoyee ? idMoyen : null;
+    }
+
+    if (!valeurNettoyee) {
+      return null;
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('t_MoyensContact')
+      .insert({
+        IdContact: this.donneur.IdContact,
+        IdTypeMoyen: idTypeMoyen,
+        Valeur: valeurNettoyee,
+        EstPrincipal: true,
+        EstValide: true,
+      })
+      .select('IdMoyen')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data.IdMoyen;
   }
 
   formaterCodePostal(codePostal: string | null | undefined): string {

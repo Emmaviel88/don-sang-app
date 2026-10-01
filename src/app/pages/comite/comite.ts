@@ -5,6 +5,7 @@ import { RechercheContactComponent } from '../../components/recherche-contact/re
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { AffectationComite, FonctionComite, SupabaseService } from '../../services/supabase';
 import { ResultatRechercheContact } from '../../services/recherche-contact';
+import { SessionService } from '../../services/session';
 
 @Component({
   imports: [DatePipe, FormsModule, RechercheContactComponent],
@@ -35,9 +36,15 @@ export class Comite implements OnInit {
   constructor(
     private supabase: SupabaseService,
     private selectionDonneur: DonneurSelectionService,
+    private session: SessionService,
     private cdr: ChangeDetectorRef,
   ) {
     this.membreSelectionne = this.selectionDonneur.donneur();
+  }
+
+  peutGerer(): boolean {
+    const role = this.session.utilisateur()?.Role;
+    return role === 'Admin' || role === 'SA';
   }
 
   async ngOnInit(): Promise<void> {
@@ -278,6 +285,7 @@ export class Comite implements OnInit {
     const affectation = this.affectationSelectionnee();
 
     return (
+      this.peutGerer() &&
       affectation !== undefined &&
       this.idFonctionSelectionnee !== null &&
       this.idFonctionSelectionnee !== affectation.IdFonction &&
@@ -344,6 +352,7 @@ export class Comite implements OnInit {
 
   peutAjouterMembre(): boolean {
     return (
+      this.peutGerer() &&
       this.membreSelectionne !== null &&
       !this.membreEstAuComite() &&
       this.idFonctionSelectionnee !== null &&
@@ -355,6 +364,7 @@ export class Comite implements OnInit {
 
   peutAjouterFonction(): boolean {
     return (
+      this.peutGerer() &&
       this.membreSelectionne !== null &&
       this.membreEstAuComite() &&
       this.idFonctionSelectionnee !== null &&
@@ -537,6 +547,7 @@ export class Comite implements OnInit {
 
   peutEnleverFonction(): boolean {
     return (
+      this.peutGerer() &&
       this.affectationSelectionnee() !== undefined &&
       !this.chargement &&
       !this.enregistrementEnCours
@@ -570,6 +581,7 @@ export class Comite implements OnInit {
 
   peutEnleverMembre(): boolean {
     return (
+      this.peutGerer() &&
       this.membreSelectionne !== null &&
       this.membreEstAuComite() &&
       !this.chargement &&

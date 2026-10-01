@@ -108,6 +108,12 @@
     </section>
 
     <aside class="comite-panneau-membre">
+      @if (!peutGerer()) {
+        <div class="alert alert-secondary py-2 mb-0" role="status">
+          Consultation seule : la gestion du comité est réservée aux administrateurs.
+        </div>
+      }
+
       <div class="comite-select-fonction">
         <label for="fonctionSelectionnee" class="form-label mb-1">Fonction</label>
         <select
