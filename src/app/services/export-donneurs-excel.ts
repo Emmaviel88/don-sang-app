@@ -141,6 +141,23 @@ export class ExportDonneursExcelService {
     }));
   }
 
+  // Les requêtes .in() avec trop d'ids génèrent une URL trop longue pour Kong (stack Supabase locale).
+  private async chargerParLotsDIds<T>(
+    idsContacts: number[],
+    executerLot: (lotIds: number[]) => Promise<T[]>,
+  ): Promise<T[]> {
+    const TAILLE_LOT = 200;
+    const resultat: T[] = [];
+
+    for (let i = 0; i < idsContacts.length; i += TAILLE_LOT) {
+      const lotIds = idsContacts.slice(i, i + TAILLE_LOT);
+
+      resultat.push(...(await executerLot(lotIds)));
+    }
+
+    return resultat;
+  }
+
   private async chargerToutesLesPages<T>(
     executerPage: (
       from: number,
@@ -188,14 +205,16 @@ export class ExportDonneursExcelService {
       return carte;
     }
 
-    const donnees = await this.chargerToutesLesPages((from, to) =>
-      this.supabase.client
-        .from('t_Adresses')
-        .select('IdContact, Adresse1, CodePostal, Commune, EstPrincipale, EstValide')
-        .in('IdContact', idsContacts)
-        .eq('EstPrincipale', true)
-        .eq('EstValide', true)
-        .range(from, to),
+    const donnees = await this.chargerParLotsDIds(idsContacts, (lotIds) =>
+      this.chargerToutesLesPages((from, to) =>
+        this.supabase.client
+          .from('t_Adresses')
+          .select('IdContact, Adresse1, CodePostal, Commune, EstPrincipale, EstValide')
+          .in('IdContact', lotIds)
+          .eq('EstPrincipale', true)
+          .eq('EstValide', true)
+          .range(from, to),
+      ),
     );
 
     for (const ligne of donnees) {
@@ -218,15 +237,17 @@ export class ExportDonneursExcelService {
       return carte;
     }
 
-    const donnees = await this.chargerToutesLesPages((from, to) =>
-      this.supabase.client
-        .from('t_MoyensContact')
-        .select('IdContact, IdTypeMoyen, Valeur, EstPrincipal, EstValide')
-        .in('IdContact', idsContacts)
-        .eq('EstPrincipal', true)
-        .eq('EstValide', true)
-        .in('IdTypeMoyen', [2, 3])
-        .range(from, to),
+    const donnees = await this.chargerParLotsDIds(idsContacts, (lotIds) =>
+      this.chargerToutesLesPages((from, to) =>
+        this.supabase.client
+          .from('t_MoyensContact')
+          .select('IdContact, IdTypeMoyen, Valeur, EstPrincipal, EstValide')
+          .in('IdContact', lotIds)
+          .eq('EstPrincipal', true)
+          .eq('EstValide', true)
+          .in('IdTypeMoyen', [2, 3])
+          .range(from, to),
+      ),
     );
 
     for (const ligne of donnees) {
@@ -251,12 +272,14 @@ export class ExportDonneursExcelService {
       return carte;
     }
 
-    const donnees = await this.chargerToutesLesPages((from, to) =>
-      this.supabase.client
-        .from('t_Dons')
-        .select('IdDonneur, DateDon')
-        .in('IdDonneur', idsContacts)
-        .range(from, to),
+    const donnees = await this.chargerParLotsDIds(idsContacts, (lotIds) =>
+      this.chargerToutesLesPages((from, to) =>
+        this.supabase.client
+          .from('t_Dons')
+          .select('IdDonneur, DateDon')
+          .in('IdDonneur', lotIds)
+          .range(from, to),
+      ),
     );
 
     for (const ligne of donnees) {
