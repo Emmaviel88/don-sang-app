@@ -477,6 +477,27 @@ export class ExportDonneursExcelService {
     ligneFooter.getCell(1).value = `Nombre total de donneurs éligibles : ${lignes.length}`;
     feuille.mergeCells(`A${numeroLigneFooter}:U${numeroLigneFooter}`);
 
+    const derniereLigneDonnees = numeroLigneFooter - 1;
+    const feuilleAvecRegles = feuille as ExcelJS.Worksheet & {
+      conditionalFormattings: ExcelJS.ConditionalFormattingOptions[];
+    };
+    const reglesConditionnelles = [...feuilleAvecRegles.conditionalFormattings];
+
+    feuille.removeConditionalFormatting(() => false);
+
+    if (lignes.length > 0) {
+      for (const regle of reglesConditionnelles) {
+        const ref = regle.ref.replace(
+          /(:\$?[A-Z]{1,3}\$?)\d+$/,
+          (_correspondance, colonneFin: string) => `${colonneFin}${derniereLigneDonnees}`,
+        );
+
+        feuille.addConditionalFormatting({ ...regle, ref });
+      }
+    }
+
+    feuille.autoFilter = `A2:U${Math.max(PREMIERE_LIGNE_DONNEES - 1, derniereLigneDonnees)}`;
+
     // ExcelJS spliceRows ne tronque pas les lignes allouées en fin de feuille.
     const lignesAllouees = feuille as ExcelJS.Worksheet & { _rows: unknown[] };
     lignesAllouees._rows.length = numeroLigneFooter;
