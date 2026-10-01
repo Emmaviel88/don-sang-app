@@ -477,10 +477,9 @@ export class ExportDonneursExcelService {
     ligneFooter.getCell(1).value = `Nombre total de donneurs éligibles : ${lignes.length}`;
     feuille.mergeCells(`A${numeroLigneFooter}:U${numeroLigneFooter}`);
 
-    // Supprime toutes les lignes du modèle situées après le nouveau pied de page.
-    if (feuille.rowCount > numeroLigneFooter) {
-      feuille.spliceRows(numeroLigneFooter + 1, feuille.rowCount - numeroLigneFooter);
-    }
+    // ExcelJS spliceRows ne tronque pas les lignes allouées en fin de feuille.
+    const lignesAllouees = feuille as ExcelJS.Worksheet & { _rows: unknown[] };
+    lignesAllouees._rows.length = numeroLigneFooter;
   }
 
   private declencherTelechargement(buffer: ExcelJS.Buffer, nomFichier: string): void {
