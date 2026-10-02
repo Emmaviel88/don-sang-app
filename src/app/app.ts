@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { SupabaseService } from './services/supabase';
 import { SessionService } from './services/session';
 import { ThemeService } from './services/theme';
+import { environment } from '../environments/environment';
 
 @Component({
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
@@ -12,6 +13,7 @@ import { ThemeService } from './services/theme';
 })
 export class App {
   menuNavigationOuvert = false;
+  readonly typeConnexion = environment.production ? 'en ligne' : 'locale';
 
   constructor(
     public session: SessionService,

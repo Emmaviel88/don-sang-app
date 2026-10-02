@@ -947,6 +947,7 @@ export class Coordonnees implements OnInit {
         await this.enregistrerAdresse();
       }
 
+      this.telephonePortable = this.formaterTelephone(this.telephonePortable);
       this.idMoyenTelephone = await this.enregistrerMoyenContact(
         2,
         this.telephonePortable,
