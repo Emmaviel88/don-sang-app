@@ -131,10 +131,14 @@
     <footer class="navbar-association py-2">
       <div class="container-fluid d-flex justify-content-between text-white">
         <span>
-          {{ session.utilisateur()?.Login }}
+          Nb de contacts : {{ nombreContacts() ?? '…' }} (dont {{ nombreContactsActifs() ?? '…' }}
+          actifs)
         </span>
 
-        <span> {{ session.utilisateur()?.Role }} — Connecté — Session DB {{ typeConnexion }} </span>
+        <span>
+          {{ session.utilisateur()?.Login }} — {{ session.utilisateur()?.Role }} — Connecté —
+          Session DB {{ typeConnexion }}
+        </span>
       </div>
     </footer>
   </div>
