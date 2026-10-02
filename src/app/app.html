@@ -131,7 +131,7 @@
     <footer class="navbar-association py-2">
       <div class="container-fluid d-flex justify-content-between text-white">
         <span>
-          Nb de contacts : {{ nombreContacts() ?? '…' }} (dont {{ nombreContactsActifs() ?? '…' }}
+          Nb de contacts : {{ compteurs.total() ?? '…' }} (dont {{ compteurs.actifs() ?? '…' }}
           actifs)
         </span>
 

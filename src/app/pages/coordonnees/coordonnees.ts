@@ -5,6 +5,7 @@ import { SupabaseService } from '../../services/supabase';
 import { CollecteSelectionService, CollecteSelectionnee } from '../../services/collecte-selection';
 import { DonneurSelectionService } from '../../services/donneur-selection';
 import { SessionService } from '../../services/session';
+import { CompteursContactsService } from '../../services/compteurs-contacts';
 
 interface Donneur {
   IdContact: number;
@@ -98,6 +99,7 @@ export class Coordonnees implements OnInit {
     private collecteSelection: CollecteSelectionService,
     private donneurSelection: DonneurSelectionService,
     private session: SessionService,
+    private compteurs: CompteursContactsService,
     private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
@@ -863,6 +865,7 @@ export class Coordonnees implements OnInit {
       this.modeEdition = false;
       this.modeCreation = false;
       this.succes = 'Le donneur et toutes ses données ont été supprimés.';
+      void this.compteurs.rafraichir();
     } catch (error) {
       console.error('ERREUR SUPPRESSION DONNEUR :', error);
       const message =
@@ -956,6 +959,8 @@ export class Coordonnees implements OnInit {
       this.idMoyenEmail = await this.enregistrerMoyenContact(3, this.email, this.idMoyenEmail);
 
       this.modeEdition = false;
+
+      void this.compteurs.rafraichir();
 
       await this.calculerEligibilite();
 
