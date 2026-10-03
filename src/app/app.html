@@ -17,9 +17,10 @@
             [attr.aria-label]="
               theme.mode() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
             "
-            [attr.title]="
+            [appTooltip]="
               theme.mode() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
             "
+            placement="bottom"
             (click)="theme.basculer()"
           >
             <i
