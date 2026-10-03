@@ -1,1 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+.tooltip {
+  --bs-tooltip-font-size: 1.1rem; /* Police plus grande */
+  --bs-tooltip-max-width: 280px; /* Donne plus de largeur pour éviter que le texte ne passe trop à la ligne */
+}
