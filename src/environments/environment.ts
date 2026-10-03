@@ -1,5 +1,5 @@
 export const environment = {
-  production: false, //Mettre à true pour le push Vercel
+  production: true, //Mettre à true pour le push Vercel
 
   local: {
     supabaseUrl: 'http://127.0.0.1:54321',
