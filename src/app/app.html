@@ -58,6 +58,9 @@
               routerLink="/coordonnees"
               routerLinkActive="active fw-bold"
               (click)="fermerMenuNavigation()"
+              data-bs-toggle="tooltip"
+              appTooltip="Gérer les informations des donneurs"
+              placement="top"
             >
               Infos Donneurs
             </a>
@@ -67,6 +70,8 @@
               routerLink="/collectes"
               routerLinkActive="active fw-bold"
               (click)="fermerMenuNavigation()"
+              appTooltip="Gérer les Collectes & Dons"
+              placement="top"
             >
               Collectes & Dons
             </a>
@@ -76,6 +81,8 @@
               routerLink="/statistiques"
               routerLinkActive="active fw-bold"
               (click)="fermerMenuNavigation()"
+              appTooltip="Voir les statistiques des collectes"
+              placement="bottom"
             >
               Statistiques collectes
             </a>
@@ -86,6 +93,8 @@
                 routerLink="/adhesion-amicale"
                 routerLinkActive="active fw-bold"
                 (click)="fermerMenuNavigation()"
+                appTooltip="Gérer les adhésions à l'Amicale"
+                placement="bottom"
               >
                 Adhésion amicale
               </a>
@@ -95,6 +104,8 @@
                 routerLink="/comite"
                 routerLinkActive="active fw-bold"
                 (click)="fermerMenuNavigation()"
+                appTooltip="Gérer les membres du comité"
+                placement="bottom"
               >
                 Membres<br />Comité
               </a>
@@ -104,6 +115,8 @@
                 routerLink="/utilisateurs"
                 routerLinkActive="active fw-bold"
                 (click)="fermerMenuNavigation()"
+                appTooltip="Gérer les comptes utilisateurs"
+                placement="bottom"
               >
                 Comptes<br />Utilisateurs
               </a>
@@ -114,6 +127,8 @@
             type="button"
             class="btn btn-outline-light rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center app-navbar-logout"
             (click)="seDeconnecter()"
+            appTooltip="Se déconnecter"
+            placement="bottom"
           >
             Déconnexion
           </button>

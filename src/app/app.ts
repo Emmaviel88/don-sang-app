@@ -6,9 +6,10 @@ import { SessionService } from './services/session';
 import { ThemeService } from './services/theme';
 import { CompteursContactsService } from './services/compteurs-contacts';
 import { environment } from '../environments/environment';
+import { TooltipDirective } from './directives/tooltips.directive';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TooltipDirective],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
