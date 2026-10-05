@@ -4,7 +4,7 @@
   <div class="row g-3">
     <div class="col-md-4">
       <div class="mb-3">
-        <label for="collecte" class="form-label fw-bold"> Choix d'une collecte </label>
+        <!--<label for="collecte" class="form-label fw-bold"> Choix d'une collecte </label>-->
 
         <select
           id="collecte"
@@ -84,9 +84,9 @@
         <table class="table table-bordered table-hover table-striped table-sm mb-0">
           <thead class="table-dark">
             <tr>
-              <th>Commune</th>
-              <th>Nb de donneurs</th>
-              <th>% par rapport au total</th>
+              <th class="col-commune-largeur">Commune</th>
+              <th class="col-chiffre-largeur text-center">Nb de donneurs</th>
+              <th class="col-chiffre-largeur text-center">% du total</th>
             </tr>
           </thead>
 
@@ -94,14 +94,16 @@
             @for (commune of classementCommunes(); track commune.Commune) {
               <tr>
                 <td>{{ commune.Commune }}</td>
-                <td>{{ commune.NbDonneurs }}</td>
-                <td>{{ commune.Pourcentage | number: '1.1-1' }} %</td>
+                <td class="text-end col-number">{{ commune.NbDonneurs }}</td>
+                <td class="text-end col-pourcentage">
+                  {{ commune.Pourcentage | number: '1.2-2' }} %
+                </td>
               </tr>
             } @empty {
               <tr>
                 <td>—</td>
-                <td>—</td>
-                <td>—</td>
+                <td class="text-end col-number">—</td>
+                <td class="text-end col-pourcentage">—</td>
               </tr>
             }
           </tbody>

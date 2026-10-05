@@ -17,6 +17,7 @@ import { TooltipDirective } from './directives/tooltips.directive';
 export class App {
   menuNavigationOuvert = false;
   readonly typeConnexion = environment.production ? 'en ligne' : 'locale';
+  public appVersion = environment.version;
 
   constructor(
     public session: SessionService,

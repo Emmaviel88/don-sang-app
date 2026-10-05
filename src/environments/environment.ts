@@ -1,5 +1,8 @@
+import packageInfo from '../../package.json';
+
 export const environment = {
   production: true, //Mettre à true pour le push Vercel
+  version: packageInfo.version, // Récupère la version depuis package.json
 
   local: {
     supabaseUrl: 'http://127.0.0.1:54321',

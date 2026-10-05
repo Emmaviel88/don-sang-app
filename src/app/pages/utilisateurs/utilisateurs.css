@@ -48,12 +48,26 @@
 }
 
 .utilisateurs-tableau-defilant {
-  max-height: calc(100vh - 15rem);
+  max-height: calc(100vh - 16rem);
   overflow: auto;
 }
 
+.utilisateurs-page .small,
+.utilisateurs-page .btn-sm,
+.utilisateurs-page .form-control-sm,
+.utilisateurs-page .form-select-sm,
+.utilisateurs-page .badge {
+  font-size: 1rem;
+}
+
+.utilisateurs-page .badge {
+  display: inline-block;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
 .utilisateurs-tableau-defilant .table {
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1.15;
 }
 

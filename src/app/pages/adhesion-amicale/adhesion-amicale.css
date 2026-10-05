@@ -1,3 +1,8 @@
+.form-control-sm,
+.btn-sm {
+  font-size: 1rem;
+}
+
 .adhesion-recherche-input {
   width: min(500px, calc(100vw - 2rem));
 }

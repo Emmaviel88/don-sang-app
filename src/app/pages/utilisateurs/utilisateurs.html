@@ -2,7 +2,7 @@
   <header class="utilisateurs-entete">
     <div>
       <h1 class="h4 mb-1">Gestion des utilisateurs</h1>
-      <p class="text-muted mb-0">Comptes applicatifs et accès à l’association</p>
+      <!--<p class="text-muted mb-0">Comptes applicatifs et accès à l’association</p>-->
     </div>
     @if (peutGerer()) {
       <button type="button" class="btn btn-primary btn-sm" (click)="commencerCreation()">
@@ -43,7 +43,7 @@
                 <th scope="col">Login</th>
                 <th scope="col">Contact</th>
                 <th scope="col">Rôle</th>
-                <th scope="col">État</th>
+                <th scope="col">Secrétariat</th>
                 <th scope="col">Dernière connexion</th>
               </tr>
             </thead>
@@ -68,7 +68,7 @@
                         [class.text-bg-success]="utilisateur.Actif"
                         [class.text-bg-secondary]="!utilisateur.Actif"
                       >
-                        {{ utilisateur.Actif ? 'Actif' : 'Inactif' }}
+                        {{ utilisateur.Actif ? 'Oui' : 'Non' }}
                       </span>
                     </td>
                     <td>
@@ -201,7 +201,7 @@
                   type="checkbox"
                   [(ngModel)]="actifModifie"
                 />
-                <label class="form-check-label" for="utilisateurActif">Compte actif</label>
+                <label class="form-check-label" for="utilisateurActif">Compte activé</label>
               </div>
               <div class="form-check mb-3">
                 <input
@@ -212,7 +212,7 @@
                   [(ngModel)]="changementMotDePasseModifie"
                 />
                 <label class="form-check-label" for="changementMotDePasse"
-                  >Exiger un changement de mot de passe</label
+                  >Exiger le changement de mot de passe</label
                 >
               </div>
 

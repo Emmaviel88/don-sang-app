@@ -2,6 +2,10 @@
   display: block;
 }
 
+.btn-sm {
+  font-size: 1rem;
+}
+
 table th,
 table td {
   padding-top: 0.12rem;

@@ -1,0 +1,24 @@
+/* Définition exacte des largeurs des colonnes */
+.col-commune-largeur {
+  width: 80% !important;
+}
+
+.col-chiffre-largeur {
+  width: 10% !important;
+}
+
+/* Vos paddings de retrait à droite */
+.col-pourcentage {
+  padding-right: 35px !important;
+}
+
+.col-number {
+  padding-right: 35px !important;
+}
+
+.table-lignes-compact th,
+.table-lignes-compact td {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  vertical-align: middle; /* Aligne proprement le texte au centre verticalement */
+}
