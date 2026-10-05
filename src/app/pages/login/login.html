@@ -1,14 +1,21 @@
 <div class="login-container bg-dark">
   <h1>Connexion</h1>
 
-  <form (ngSubmit)="seConnecter()">
+  <form (ngSubmit)="seConnecter()" class="bg-dark text-white">
     <label for="login">Utilisateur</label>
 
-    <select id="login" name="login" [(ngModel)]="login" required [disabled]="chargement()">
-      <option value="">Sélectionnez votre nom</option>
+    <select
+      class="bg-dark text-white"
+      id="login"
+      name="login"
+      [(ngModel)]="login"
+      required
+      [disabled]="chargement()"
+    >
+      <option value="" class="bg-dark text-white">Sélectionnez votre nom</option>
 
       @for (nom of logins(); track $index) {
-        <option [value]="nom">{{ nom }}</option>
+        <option [value]="nom" class="bg-dark text-white">{{ nom }}</option>
       }
     </select>
 
@@ -22,6 +29,7 @@
       autocomplete="current-password"
       required
       [disabled]="chargement()"
+      class="bg-dark text-white"
     />
 
     <button type="submit" [disabled]="chargement()">

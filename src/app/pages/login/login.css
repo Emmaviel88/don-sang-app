@@ -32,7 +32,7 @@ form {
   width: 100%;
   max-width: 460px; /* AUGMENTÉ : Passage de 360px à 460px pour élargir le formulaire */
   padding: 44px; /* AUGMENTÉ : Plus d'espace interne dans la carte */
-  background: white;
+  /* background: white; */
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
@@ -51,7 +51,7 @@ label {
   margin: 0 0 10px; /* AUGMENTÉ : Plus d'espace sous le texte du label */
   font-size: 18px; /* AUGMENTÉ : Label plus lisible */
   font-weight: 500;
-  color: #374151;
+  /* color: #374151; */
 }
 
 select,
@@ -64,7 +64,7 @@ input {
   border: 1px solid #c8cdd3;
   border-radius: 6px;
   font-size: 18px; /* AUGMENTÉ : Texte saisi et options plus grands */
-  background: white;
+  /* background: white; */
   transition: all 0.2s ease;
 }
 
