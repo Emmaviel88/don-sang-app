@@ -105,6 +105,11 @@
   flex: 0 0 auto;
 }
 
+#fonctionSelectionnee option.bg-light {
+  background-color: rgb(192, 192, 192) !important;
+  color: rgb(55, 59, 69);
+}
+
 @media (max-width: 900px) {
   .comite-barre-haute {
     grid-template-columns: minmax(0, 1fr) 10rem;

@@ -123,7 +123,12 @@
         >
           <option [ngValue]="null">Choisir une fonction</option>
           @for (fonction of fonctions; track fonction.IdFonction) {
-            <option [ngValue]="fonction.IdFonction">{{ fonction.Libelle }}</option>
+            <option
+              [ngValue]="fonction.IdFonction"
+              [class.bg-light]="fonction.IdFonction % 2 === 1"
+            >
+              {{ fonction.Libelle }}
+            </option>
           }
         </select>
       </div>

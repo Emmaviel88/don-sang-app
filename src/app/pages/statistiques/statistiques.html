@@ -12,9 +12,10 @@
           [value]="collecteSelectionnee()?.IdCollecte ?? ''"
           (change)="changerCollecte($any($event.target).value)"
         >
-          @for (collecte of collectes(); track collecte.IdCollecte) {
+          @for (collecte of collectes(); track $index) {
             <option
               [value]="collecte.IdCollecte"
+              [class.bg-light]="$index % 2 === 1"
               [selected]="collecte.IdCollecte === collecteSelectionnee()?.IdCollecte"
             >
               {{ collecte.annee }}
