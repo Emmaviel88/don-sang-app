@@ -10,7 +10,7 @@
 :host::before {
   content: '';
   background-image: url('/don-de-sang.png');
-  background-size: contain; /* Le logo s'adapte sans jamais être coupé */
+  background-size: cover; /* Le logo s'adapte sans jamais être coupé */
   background-repeat: no-repeat; /* Un seul et unique logo */
   background-position: center; /* Centré verticalement et horizontalement */
   width: 100%;
