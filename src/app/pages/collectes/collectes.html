@@ -135,96 +135,100 @@
     </div>
 
     <div class="row g-3 mb-3">
-      <div class="col-md-4">
+      <div class="col-md-2">
         <div class="card">
-          <div class="card-body py-2 bg-body-secondary">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-muted">Nb dons avant 2013</span>
-              <span class="fs-4 fw-bold">{{ nbDonsAvant2013() }}</span>
+          <div class="card-body py-1 bg-body-secondary">
+            <div class="d-flex justify-content-center align-items-center fs-5 fw-bold">
+              <span>Dons avant 2013 : {{ nbDonsAvant2013() }}</span>
+              <!-- <span>{{ nbDonsAvant2013() }}</span> -->
             </div>
           </div>
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-2">
         <div class="card">
-          <div class="card-body py-2 bg-body-secondary">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-muted">Nb dons après 2013</span>
-              <span class="fs-4 fw-bold">{{ nbDonsApres2013() }}</span>
+          <div class="card-body py-1 bg-body-secondary">
+            <div class="d-flex justify-content-center align-items-center fs-5 fw-bold">
+              <span>Dons après 2013 : {{ nbDonsApres2013() }}</span>
+              <!-- <span>{{ nbDonsApres2013() }}</span> -->
             </div>
           </div>
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-2">
         <div class="card">
-          <div class="card-body py-2 bg-body-secondary">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-muted">Nb total de dons</span>
-              <span class="fs-4 fw-bold">{{ nbDonsTotal() }}</span>
+          <div class="card-body py-1 bg-body-secondary">
+            <div class="d-flex justify-content-center align-items-center fs-5 fw-bold">
+              <span>Nb total de dons : {{ nbDonsTotal() }}</span>
+              <!-- <span>{{ nbDonsTotal() }}</span> -->
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-md-4 mb-3">
-      <label for="filtreAnnee" class="form-label fw-bold"> Année </label>
+    <div class="row gx-3 mb-3">
+      <div class="col-md-1"></div>
+      <div class="col-md-1">
+        <label for="filtreAnnee" class="form-label fw-bold"> Filtrer par Année </label>
 
-      <select
-        id="filtreAnnee"
-        class="form-select"
-        [value]="anneeFiltre()"
-        (change)="changerFiltreAnnee($any($event.target).value)"
-      >
-        <option value="Toutes">Toutes</option>
+        <select
+          id="filtreAnnee"
+          class="form-select"
+          [value]="anneeFiltre()"
+          (change)="changerFiltreAnnee($any($event.target).value)"
+        >
+          <option value="Toutes">Toutes</option>
 
-        @for (annee of anneesDons(); track annee; let index = $index) {
-          <option [value]="annee" [class.bg-light]="index % 2 === 1">
-            {{ annee }}
-          </option>
-        }
-      </select>
-    </div>
+          @for (annee of anneesDons(); track annee; let index = $index) {
+            <option [value]="annee" [class.bg-light]="index % 2 === 1">
+              {{ annee }}
+            </option>
+          }
+        </select>
+      </div>
+      <div class="col-md-1"></div>
 
-    <div class="col-md-8 rounded border mb-3 p-0">
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover table-striped table-sm mb-0">
-          <thead class="table-dark">
-            <tr>
-              <th>Année</th>
-              <th>Collecte N°</th>
-              <th>Date don</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            @for (don of donsFiltres(); track don.IdDon) {
-              <tr
-                [class.table-primary]="donSelectionne()?.IdDon === don.IdDon"
-                (click)="selectionnerDon(don)"
-                style="cursor: pointer"
-              >
-                <td>
-                  {{ don.annee }}
-                </td>
-
-                <td>
-                  {{ don.NumCollecte }}
-                </td>
-
-                <td>
-                  {{ don.DateDon | date: 'dd/MM/yyyy' }}
-                </td>
-              </tr>
-            } @empty {
+      <div class="col-md-3 tableau-dons">
+        <div class="table-responsive rounded border">
+          <table class="table table-bordered table-hover table-striped table-sm mb-0 table-dons">
+            <thead class="table-dark">
               <tr>
-                <td colspan="3" class="text-center text-muted">Aucun don à afficher.</td>
+                <th class="text-center">Année</th>
+                <th class="text-center">Collecte N°</th>
+                <th class="text-center">Date don</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              @for (don of donsFiltres(); track don.IdDon) {
+                <tr
+                  [class.table-primary]="donSelectionne()?.IdDon === don.IdDon"
+                  (click)="selectionnerDon(don)"
+                  style="cursor: pointer"
+                >
+                  <td class="text-center">
+                    {{ don.annee }}
+                  </td>
+
+                  <td class="text-center">
+                    {{ don.NumCollecte }}
+                  </td>
+
+                  <td class="text-center">
+                    {{ don.DateDon | date: 'dd/MM/yyyy' }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3" class="text-center text-muted">Aucun don à afficher.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   } @else {

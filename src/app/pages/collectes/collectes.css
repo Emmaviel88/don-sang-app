@@ -11,6 +11,15 @@
   color: rgb(55, 59, 69);
 }
 
+/* Décale le tableau sous le niveau du libellé « Année » pour l'aligner sur le select. */
+.tableau-dons {
+  margin-top: 2rem;
+}
+
+.table-dons {
+  table-layout: fixed;
+}
+
 table th,
 table td {
   padding-top: 0.12rem;

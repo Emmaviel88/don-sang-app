@@ -1,18 +1,10 @@
-<div class="login-container">
-
+<div class="login-container bg-dark">
   <h1>Connexion</h1>
 
   <form (ngSubmit)="seConnecter()">
-
     <label for="login">Utilisateur</label>
 
-    <select
-      id="login"
-      name="login"
-      [(ngModel)]="login"
-      required
-      [disabled]="chargement()"
-    >
+    <select id="login" name="login" [(ngModel)]="login" required [disabled]="chargement()">
       <option value="">Sélectionnez votre nom</option>
 
       @for (nom of logins(); track $index) {
@@ -30,7 +22,7 @@
       autocomplete="current-password"
       required
       [disabled]="chargement()"
-    >
+    />
 
     <button type="submit" [disabled]="chargement()">
       @if (chargement()) {
@@ -40,11 +32,9 @@
         Se connecter
       }
     </button>
-
   </form>
 
   @if (message()) {
     <p>{{ message() }}</p>
   }
-
 </div>
