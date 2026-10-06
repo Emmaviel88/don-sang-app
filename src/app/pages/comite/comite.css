@@ -72,6 +72,8 @@
 .comite-tableau th {
   background: var(--bs-emphasis-color);
   color: var(--bs-body-bg);
+  background: var(--bs-emphasis-color);
+  color: var(--bs-body-bg);
 }
 
 .comite-tableau th,
