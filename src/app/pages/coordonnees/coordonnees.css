@@ -42,6 +42,16 @@
   min-width: 105px;
 }
 
+.tooltip-sombre {
+  --bs-tooltip-bg: #1a1a2e; /* Fond très sombre de votre choix */
+  --bs-tooltip-color: #ffffff; /* Texte blanc */
+}
+
+/* Force le tooltip à respecter les retours à la ligne réels ou les \n */
+.tooltip-inner {
+  white-space: pre-wrap !important;
+}
+
 .recherche-zone {
   position: relative;
 

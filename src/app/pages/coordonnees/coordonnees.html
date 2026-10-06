@@ -14,6 +14,11 @@
             class="btn btn-primary ms-2"
             [disabled]="modeEdition || enregistrementEnCours"
             (click)="nouveauDonneur()"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-custom-class="tooltip-sombre"
+            title="Pour ajouter un nouveau donneur
+si non trouvé dans la recherche"
           >
             Nouveau donneur
           </button>
@@ -23,6 +28,11 @@
             class="btn btn-secondary"
             [disabled]="!donneur || modeEdition"
             (click)="modifier()"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-custom-class="tooltip-sombre"
+            title="Pour modifier un donneur
+après recherche"
           >
             Modifier donneur
           </button>
@@ -33,6 +43,11 @@
               class="btn btn-danger"
               [disabled]="enregistrementEnCours"
               (click)="supprimerDonneur()"
+              data-bs-toggle="tooltip"
+              data-bs-placement="bottom"
+              data-bs-custom-class="tooltip-sombre"
+              title="Pour supprimer un  donneur
+ATTENTION : cette action est irréversible"
             >
               Supprimer donneur
             </button>
@@ -43,6 +58,11 @@
             class="btn btn-success"
             [disabled]="!modeEdition || enregistrementEnCours"
             (click)="enregistrer()"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-custom-class="tooltip-sombre"
+            title="Pour enregistrer les modifications 
+apportées au donneur"
           >
             @if (enregistrementEnCours) {
               <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"> </span>
@@ -56,6 +76,11 @@
             class="btn btn-secondary"
             [disabled]="!modeEdition || enregistrementEnCours"
             (click)="annuler()"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-custom-class="tooltip-sombre"
+            title="Pour annuler les modifications 
+apportées au donneur"
           >
             Annuler modifs
           </button>
