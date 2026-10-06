@@ -35,6 +35,12 @@
         Exporter la liste des donneurs éligibles (Excel)
       </button>
 
+      @if (!collecteModifiable()) {
+        <span class="alert alert-warning py-2 ms-2">
+          {{ collecteModifiable() ? '' : 'La collecte sélectionnée ne peut pas être modifiée !' }}
+        </span>
+      }
+
       @if (choixOuvert()) {
         <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="fermerChoixCollecte()">
           Annuler

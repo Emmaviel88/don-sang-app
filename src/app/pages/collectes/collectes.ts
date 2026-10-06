@@ -239,15 +239,36 @@ export class CollectesComponent {
     dateCollecte.setHours(0, 0, 0, 0);
     aujourdHui.setHours(0, 0, 0, 0);
 
+    // const moins3jours = new Date(aujourdHui);
+    // moins3jours.setDate(moins3jours.getDate() - 3);
+
+    // const plus3jours = new Date(aujourdHui);
+    // plus3jours.setDate(plus3jours.getDate() + 3);
+
+    /*
+    if (dateCollecte < moins3jours || dateCollecte > plus3jours) {
+      return false;
+    }
     if (dateCollecte > aujourdHui) {
       return false;
     }
+    */
 
-    if (dateCollecte.getTime() === aujourdHui.getTime()) {
-      return true;
+    // Cas d'un User : ne peut saisir un don que le jour de la collecte
+    if (utilisateur.Role === 'User') {
+      if (dateCollecte === aujourdHui) {
+        return true;
+      }
     }
+    // Cas d'un SA ou Admin : peut saisir un don dans une ancienne collecte ou celle du jour
+    if (utilisateur.Role === 'SA' || utilisateur.Role === 'Admin') {
+      if (dateCollecte <= aujourdHui) {
+        return true;
+      }
+    }
+    return false;
 
-    return utilisateur.Role === 'SA' || utilisateur.Role === 'Admin';
+    //return utilisateur.Role === 'SA' || utilisateur.Role === 'Admin';
   }
 
   async enregistrerDon(): Promise<void> {
