@@ -37,7 +37,11 @@
 
       @if (!collecteModifiable()) {
         <span class="alert alert-danger py-2 ms-2">
-          {{ collecteModifiable() ? '' : 'La collecte sélectionnée ne peut pas être modifiée !' }}
+          {{
+            collecteModifiable()
+              ? ''
+              : "La collecte sélectionnée ne vous permet pas d'y enregistrer des dons (Date non cohérente ou droits insuffisants)."
+          }}
         </span>
       }
 
@@ -234,6 +238,22 @@
               }
             </tbody>
           </table>
+        </div>
+      </div>
+      <div class="col-md-1"></div>
+      <div class="col-md-3">
+        <div class="fs-5 text-justify text-info">
+          Pour enregistrer un nouveau don pour le donneur sélectionné, choisir (ou vérifier) d'abord
+          la collecte. Cliquer ensuite sur &lt;Enregistrer Don&gt;.
+          <br />
+          Si le donneur sélectionné a déjà effectué un don pour cette collecte, il ne sera pas
+          possible d'en ajouter un second.
+          <br />
+          <br />
+          Pour supprimer un don existant (action réservée aux administrateurs), sélectionner d'abord
+          le don à supprimer dans le tableau ci-contre.
+          <br />
+          Cliquer ensuite sur &lt;Supprimer Don&gt;.
         </div>
       </div>
     </div>
