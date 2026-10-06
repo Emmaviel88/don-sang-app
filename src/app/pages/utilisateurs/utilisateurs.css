@@ -83,7 +83,8 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--bs-secondary-bg);
+  background: var(--bs-emphasis-color);
+  color: var(--bs-body-bg);
   white-space: nowrap;
 }
 
