@@ -95,12 +95,11 @@
   @if (donneurSelectionne(); as donneur) {
     <div class="row align-items-end mb-3">
       <div class="col-md-6">
-        <label class="form-label fw-bold"> Donneur </label>
-
         <input
           type="text"
           class="form-control fs-5 fw-bold"
           [value]="
+            'Donneur : ' +
             (donneur.NomUsage || '') +
             ' ' +
             (donneur.Prenom || '') +
