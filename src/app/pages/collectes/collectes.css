@@ -26,3 +26,8 @@ table td {
   padding-bottom: 0.12rem;
   line-height: 1.15;
 }
+
+.tooltip-sombre {
+  --bs-tooltip-bg: #1a1a2e; /* Fond très sombre de votre choix */
+  --bs-tooltip-color: #ffffff; /* Texte blanc */
+}

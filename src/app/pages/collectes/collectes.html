@@ -19,7 +19,15 @@
         </strong>
       </span>
 
-      <button type="button" class="btn btn-primary btn-sm ms-3" (click)="ouvrirChoixCollecte()">
+      <button
+        type="button"
+        class="btn btn-primary btn-sm ms-3"
+        (click)="ouvrirChoixCollecte()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        data-bs-custom-class="tooltip-sombre"
+        title="Sélectionner une autre collecte"
+      >
         Changer de collecte
       </button>
 
@@ -28,6 +36,11 @@
         class="btn btn-primary btn-sm ms-2"
         [disabled]="exportEnCours() || sessionRole() !== 'SA'"
         (click)="exporterDonneursEligibles()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        data-bs-custom-class="tooltip-sombre"
+        title="Exporter la liste des donneurs
+éligibles vers Excel"
       >
         @if (exportEnCours()) {
           <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
@@ -40,7 +53,7 @@
           {{
             collecteModifiable()
               ? ''
-              : "La collecte sélectionnée ne vous permet pas d'y enregistrer des dons !."
+              : "La collecte sélectionnée ne vous permet pas d'y enregistrer des dons !"
           }}
         </span>
       }
