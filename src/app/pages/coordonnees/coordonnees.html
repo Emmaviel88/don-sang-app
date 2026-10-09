@@ -217,7 +217,8 @@ apportées au donneur"
                 <input
                   type="text"
                   class="form-control form-control-sm text-center"
-                  [class.text-warning]="!donneur.DateNaissance"
+                  [class.text-danger]="!donneur.DateNaissance"
+                  [class.fw-bold]="!donneur.DateNaissance"
                   [value]="donneur.DateNaissance ? age : 'Renseigner la date de naissance'"
                   disabled
                 />
@@ -489,7 +490,7 @@ apportées au donneur"
               @if (!!donneur && !donneur.DateNaissance) {
                 <div class="form-control form-control-sm bg-body-secondary text-nowrap">
                   Âge à la collecte :
-                  <span class="text-warning">Renseigner la date de naissance</span>
+                  <span class="text-danger fw-bold">Renseigner la date de naissance</span>
                 </div>
               } @else {
                 <input
