@@ -49,6 +49,23 @@ interface MoyenContact {
   EstValide: boolean;
 }
 
+interface LigneContact {
+  IdContact: number;
+  Civilite: string | null;
+  NomUsage: string | null;
+  NomdeNaissance: string | null;
+  Prenom: string | null;
+  Sexe: string | null;
+  DateNaissance: string | null;
+  NbDonsAvant2013: number | null;
+  EstDécédé: boolean;
+  Actif: boolean;
+  NePeutVeutPlusDonner: boolean;
+  VolontairePlasma: boolean;
+  PrimoDon: boolean;
+  Commentaire: string | null;
+}
+
 @Component({
   selector: 'app-coordonnees',
   standalone: true,
@@ -85,6 +102,10 @@ export class Coordonnees implements OnInit {
   nombreDons365OK = false;
   statutOK = false;
   eligible = false;
+
+  idContactSaisi = '';
+  chargementEnCours = false;
+  private numeroSelection = 0;
 
   modeEdition = false;
   modeCreation = false;
@@ -194,38 +215,56 @@ export class Coordonnees implements OnInit {
     }
   }
 
-  async selectionnerDonneur(idContact: number): Promise<void> {
+  private requeteContact() {
+    return this.supabase.client.from('t_Contacts').select(
+      `
+        IdContact,
+        Civilite,
+        NomUsage,
+        NomdeNaissance,
+        Prenom,
+        Sexe,
+        DateNaissance,
+        NbDonsAvant2013,
+        "EstDécédé",
+        Actif,
+        NePeutVeutPlusDonner,
+        VolontairePlasma,
+        PrimoDon,
+        Commentaire
+      `,
+    );
+  }
+
+  // `ligne` : contact déjà lu par l'appelant, pour éviter une seconde lecture.
+  async selectionnerDonneur(
+    idContact: number,
+    options: { ligne?: LigneContact; focusRecherche?: boolean } = {},
+  ): Promise<void> {
+    const numero = ++this.numeroSelection;
+
     this.controleRecherche?.clear();
     this.erreur = '';
     this.succes = '';
     this.modeEdition = false;
+    this.chargementEnCours = true;
+    this.changeDetectorRef.detectChanges();
 
     try {
-      const { data, error } = await this.supabase.client
-        .from('t_Contacts')
-        .select(
-          `
-            IdContact,
-            Civilite,
-            NomUsage,
-            NomdeNaissance,
-            Prenom,
-            Sexe,
-            DateNaissance,
-            NbDonsAvant2013,
-            "EstDécédé",
-            Actif,
-            NePeutVeutPlusDonner,
-            VolontairePlasma,
-            PrimoDon,
-            Commentaire
-          `,
-        )
-        .eq('IdContact', idContact)
-        .maybeSingle();
+      let data: LigneContact | null = options.ligne ?? null;
 
-      if (error) {
-        throw error;
+      if (!data) {
+        const resultat = await this.requeteContact().eq('IdContact', idContact).maybeSingle();
+
+        if (numero !== this.numeroSelection) {
+          return;
+        }
+
+        if (resultat.error) {
+          throw resultat.error;
+        }
+
+        data = resultat.data as LigneContact | null;
       }
 
       if (!data) {
@@ -288,6 +327,10 @@ export class Coordonnees implements OnInit {
         this.calculerEligibilite(),
       ]);
 
+      if (numero !== this.numeroSelection) {
+        return;
+      }
+
       this.donneurSelection.definirDonneur({
         IdContact: this.donneur.IdContact,
         NomUsage: this.donneur.NomUsage,
@@ -297,17 +340,27 @@ export class Coordonnees implements OnInit {
         eligible: this.eligible,
       });
 
+      this.chargementEnCours = false;
       this.changeDetectorRef.detectChanges();
 
-      if (!this.modeEdition) {
+      if (!this.modeEdition && options.focusRecherche !== false) {
         setTimeout(() => {
           this.controleRecherche?.focus();
         });
       }
     } catch (error) {
+      if (numero !== this.numeroSelection) {
+        return;
+      }
+
       console.error('ERREUR CHARGEMENT DONNEUR :', error);
 
       this.erreur = 'Impossible de charger le donneur.';
+    } finally {
+      if (numero === this.numeroSelection && this.chargementEnCours) {
+        this.chargementEnCours = false;
+        this.changeDetectorRef.detectChanges();
+      }
     }
   }
 
@@ -318,7 +371,9 @@ export class Coordonnees implements OnInit {
   }
 
   private async chargerAdresse(): Promise<void> {
-    if (!this.donneur) {
+    const donneur = this.donneur;
+
+    if (!donneur) {
       return;
     }
 
@@ -336,7 +391,7 @@ export class Coordonnees implements OnInit {
           EstValide
         `,
       )
-      .eq('IdContact', this.donneur.IdContact)
+      .eq('IdContact', donneur.IdContact)
       .eq('EstPrincipale', true)
       .eq('EstValide', true)
       .maybeSingle();
@@ -345,36 +400,22 @@ export class Coordonnees implements OnInit {
       throw error;
     }
 
-    this.adresse = data as Adresse | null;
-    this.adresseExistante = data !== null;
-
-    this.pays = null;
-
-    if (!this.adresse?.IdPays) {
+    if (this.donneur !== donneur) {
       return;
     }
 
-    const { data: pays, error: erreurPays } = await this.supabase.client
-      .from('t_Pays')
-      .select(
-        `
-          IdPays,
-          NomPays,
-          CodeISO
-        `,
-      )
-      .eq('IdPays', this.adresse.IdPays)
-      .maybeSingle();
+    this.adresse = data as Adresse | null;
+    this.adresseExistante = data !== null;
 
-    if (erreurPays) {
-      throw erreurPays;
-    }
+    const idPays = this.adresse?.IdPays;
 
-    this.pays = pays as Pays | null;
+    this.pays = idPays ? (this.paysDisponibles.find((p) => p.IdPays === idPays) ?? null) : null;
   }
 
   private async chargerMoyensContact(): Promise<void> {
-    if (!this.donneur) {
+    const donneur = this.donneur;
+
+    if (!donneur) {
       return;
     }
 
@@ -389,13 +430,17 @@ export class Coordonnees implements OnInit {
           EstValide
         `,
       )
-      .eq('IdContact', this.donneur.IdContact)
+      .eq('IdContact', donneur.IdContact)
       .eq('EstPrincipal', true)
       .eq('EstValide', true)
       .in('IdTypeMoyen', [2, 3]);
 
     if (error) {
       throw error;
+    }
+
+    if (this.donneur !== donneur) {
+      return;
     }
 
     const moyens = (data ?? []) as MoyenContact[];
@@ -461,7 +506,9 @@ export class Coordonnees implements OnInit {
   }
 
   private async calculerEligibilite(): Promise<void> {
-    if (!this.donneur || !this.selection || !this.selection.DateCollecte) {
+    const donneur = this.donneur;
+
+    if (!donneur || !this.selection || !this.selection.DateCollecte) {
       return;
     }
 
@@ -473,9 +520,7 @@ export class Coordonnees implements OnInit {
 
     this.calculerAge();
 
-    const naissance = this.donneur.DateNaissance
-      ? this.creerDateLocale(this.donneur.DateNaissance)
-      : null;
+    const naissance = donneur.DateNaissance ? this.creerDateLocale(donneur.DateNaissance) : null;
 
     if (!naissance) {
       this.ageOK = false;
@@ -508,7 +553,7 @@ export class Coordonnees implements OnInit {
           DateDon
         `,
       )
-      .eq('IdDonneur', this.donneur.IdContact)
+      .eq('IdDonneur', donneur.IdContact)
       .lte('DateDon', this.dateToString(dateCollecte))
       .order('DateDon', {
         ascending: false,
@@ -516,6 +561,10 @@ export class Coordonnees implements OnInit {
 
     if (error) {
       throw error;
+    }
+
+    if (this.donneur !== donneur) {
+      return;
     }
 
     const dons = data ?? [];
@@ -526,7 +575,7 @@ export class Coordonnees implements OnInit {
       return dateDon !== null && dateDon >= dateLimite365;
     }).length;
 
-    const maximumDons365 = this.donneur.Sexe === 'M' ? 6 : 4;
+    const maximumDons365 = donneur.Sexe === 'M' ? 6 : 4;
 
     this.nombreDons365OK = this.nombreDons365 < maximumDons365;
 
@@ -554,8 +603,7 @@ export class Coordonnees implements OnInit {
       this.delaiDernierDonOK = true;
     }
 
-    this.statutOK =
-      this.donneur.Actif && !this.donneur.EstDecede && !this.donneur.NePeutVeutPlusDonner;
+    this.statutOK = donneur.Actif && !donneur.EstDecede && !donneur.NePeutVeutPlusDonner;
 
     this.eligible = this.ageOK && this.delaiDernierDonOK && this.nombreDons365OK && this.statutOK;
   }
@@ -582,6 +630,96 @@ export class Coordonnees implements OnInit {
     }
 
     return valeur.toLocaleDateString('fr-FR');
+  }
+
+  async parcourirDonneurs(
+    sens: 'premier' | 'precedent' | 'suivant' | 'dernier',
+    pas = 1,
+  ): Promise<void> {
+    if (!this.donneur || this.modeEdition || this.enregistrementEnCours || this.chargementEnCours) {
+      return;
+    }
+
+    try {
+      const ascendant = sens === 'premier' || sens === 'suivant';
+
+      let requete = this.requeteContact();
+
+      if (sens === 'suivant') {
+        requete = requete.gt('IdContact', this.donneur.IdContact);
+      } else if (sens === 'precedent') {
+        requete = requete.lt('IdContact', this.donneur.IdContact);
+      }
+
+      const { data, error } = await requete
+        .order('IdContact', { ascending: ascendant })
+        .range(pas - 1, pas - 1);
+
+      if (error) {
+        throw error;
+      }
+
+      const ligne = (data?.[0] ?? null) as LigneContact | null;
+
+      if (!ligne) {
+        // Moins de `pas` donneurs dans ce sens : aller à l'extrémité.
+        if (pas > 1) {
+          await this.parcourirDonneurs(sens === 'suivant' ? 'dernier' : 'premier');
+        }
+
+        return;
+      }
+
+      if (ligne.IdContact !== this.donneur.IdContact) {
+        await this.selectionnerDonneur(ligne.IdContact, { ligne, focusRecherche: false });
+      }
+    } catch (error) {
+      console.error('ERREUR PARCOURS DONNEURS :', error);
+
+      this.erreur = 'Impossible de charger le donneur.';
+    }
+  }
+
+  async allerAIdContact(): Promise<void> {
+    if (this.modeEdition || this.enregistrementEnCours || this.chargementEnCours) {
+      return;
+    }
+
+    const texte = this.idContactSaisi.trim();
+
+    if (!texte) {
+      return;
+    }
+
+    const idContact = Number(texte);
+
+    if (!Number.isInteger(idContact) || idContact <= 0) {
+      this.erreur = 'IdContact invalide.';
+      return;
+    }
+
+    try {
+      const { data, error } = await this.requeteContact().eq('IdContact', idContact).maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        this.erreur = `Aucun donneur avec l'IdContact ${idContact}.`;
+        return;
+      }
+
+      this.idContactSaisi = '';
+      await this.selectionnerDonneur(idContact, {
+        ligne: data as LigneContact,
+        focusRecherche: false,
+      });
+    } catch (error) {
+      console.error('ERREUR RECHERCHE IDCONTACT :', error);
+
+      this.erreur = 'Impossible de charger le donneur.';
+    }
   }
 
   calculerAge(): void {

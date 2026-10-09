@@ -106,7 +106,107 @@ apportées au donneur"
 
     <div class="col-md-8">
       <div class="card h-100">
-        <div class="card-header py-1 fw-bold">État civil</div>
+        <div class="card-header py-1 fw-bold d-flex align-items-center gap-2">
+          <span>État civil</span>
+
+          <div
+            class="btn-group btn-group-sm parcours-donneurs ms-4"
+            role="group"
+            aria-label="Parcours des donneurs"
+          >
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('premier')"
+              title="Premier donneur"
+              aria-label="Premier donneur"
+            >
+              <i class="bi bi-chevron-bar-left"></i>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('precedent', 50)"
+              title="50 donneurs en arrière"
+              aria-label="50 donneurs en arrière"
+            >
+              -50
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('precedent')"
+              title="Donneur précédent"
+              aria-label="Donneur précédent"
+            >
+              <i class="bi bi-chevron-left"></i>
+            </button>
+
+            <input
+              type="text"
+              inputmode="numeric"
+              class="form-control form-control-sm parcours-id text-center"
+              placeholder="•"
+              title="Saisir un IdContact puis Entrée"
+              aria-label="IdContact à afficher"
+              [(ngModel)]="idContactSaisi"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              (keydown.enter)="allerAIdContact()"
+            />
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('suivant')"
+              title="Donneur suivant"
+              aria-label="Donneur suivant"
+            >
+              <i class="bi bi-chevron-right"></i>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('suivant', 50)"
+              title="50 donneurs en avant"
+              aria-label="50 donneurs en avant"
+            >
+              +50
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('dernier')"
+              title="Dernier donneur"
+              aria-label="Dernier donneur"
+            >
+              <i class="bi bi-chevron-bar-right"></i>
+            </button>
+          </div>
+
+          @if (chargementEnCours) {
+            <span
+              class="spinner-border spinner-border-sm text-primary"
+              role="status"
+              aria-label="Chargement du donneur"
+            ></span>
+          }
+        </div>
 
         @if (donneur) {
           <div class="card-body py-2">
