@@ -21,6 +21,19 @@
   padding-right: 35px !important;
 }
 
+/* Taille maximale : A4 paysage (297 x 210 mm) */
+.graphique-a4 {
+  width: 100%;
+  max-width: 297mm;
+  aspect-ratio: 297 / 210;
+}
+
+.graphique-a4 svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .table-lignes-compact th,
 .table-lignes-compact td {
   padding-top: 1px !important;

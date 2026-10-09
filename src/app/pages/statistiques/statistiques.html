@@ -81,35 +81,174 @@
     </div>
 
     <div class="col-md-8">
-      <div class="table-responsive rounded border">
-        <table class="table table-bordered table-hover table-striped table-sm mb-0">
-          <thead class="table-dark">
-            <tr class="align-middle">
-              <th class="col-commune-largeur">Commune</th>
-              <th class="col-chiffre-largeur text-center">Nb de donneurs</th>
-              <th class="col-chiffre-largeur text-center">% du total</th>
-            </tr>
-          </thead>
+      <div class="d-flex flex-wrap gap-2 mb-2">
+        <div class="btn-group" role="group" aria-label="Mode d'affichage">
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-primary]="affichage() === 'tableau'"
+            [class.btn-outline-primary]="affichage() !== 'tableau'"
+            (click)="affichage.set('tableau')"
+          >
+            <i class="bi bi-table me-1" aria-hidden="true"></i>Tableau
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-primary]="affichage() === 'graphique'"
+            [class.btn-outline-primary]="affichage() !== 'graphique'"
+            (click)="affichage.set('graphique')"
+          >
+            <i class="bi bi-pie-chart me-1" aria-hidden="true"></i>Graphique
+          </button>
+        </div>
 
-          <tbody>
-            @for (commune of classementCommunes(); track commune.Commune) {
-              <tr class="align-middle">
-                <td>{{ commune.Commune }}</td>
-                <td class="text-end col-number">{{ commune.NbDonneurs }}</td>
-                <td class="text-end col-pourcentage">
-                  {{ commune.Pourcentage | number: '1.2-2' }} %
-                </td>
-              </tr>
-            } @empty {
-              <tr class="align-middle">
-                <td>—</td>
-                <td class="text-end col-number">—</td>
-                <td class="text-end col-pourcentage">—</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        @if (affichage() === 'graphique') {
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            [disabled]="classementCommunes().length === 0"
+            (click)="exporterImage()"
+          >
+            <i class="bi bi-file-earmark-image me-1" aria-hidden="true"></i>Exporter l'image
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            [disabled]="classementCommunes().length === 0"
+            (click)="exporterPdf()"
+          >
+            <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Exporter en PDF
+          </button>
+        }
       </div>
+
+      @if (affichage() === 'tableau') {
+        <div class="table-responsive rounded border">
+          <table class="table table-bordered table-hover table-striped table-sm mb-0">
+            <thead class="table-dark">
+              <tr class="align-middle">
+                <th class="col-commune-largeur">Commune</th>
+                <th class="col-chiffre-largeur text-center">Nb de donneurs</th>
+                <th class="col-chiffre-largeur text-center">% du total</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (commune of classementCommunes(); track commune.Commune) {
+                <tr class="align-middle">
+                  <td>{{ commune.Commune }}</td>
+                  <td class="text-end col-number">{{ commune.NbDonneurs }}</td>
+                  <td class="text-end col-pourcentage">
+                    {{ commune.Pourcentage | number: '1.2-2' }} %
+                  </td>
+                </tr>
+              } @empty {
+                <tr class="align-middle">
+                  <td>—</td>
+                  <td class="text-end col-number">—</td>
+                  <td class="text-end col-pourcentage">—</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        @if (classementCommunes().length === 0) {
+          <div class="text-muted">Aucune donnée à afficher.</div>
+        } @else {
+          <div class="graphique-a4 border rounded bg-white">
+            <svg
+              #svgGraphique
+              xmlns="http://www.w3.org/2000/svg"
+              [attr.viewBox]="'0 0 ' + largeurSvg + ' ' + hauteurSvg"
+              font-family="Arial, Helvetica, sans-serif"
+              role="img"
+              [attr.aria-label]="titreGraphique()"
+            >
+              <rect
+                x="0"
+                y="0"
+                [attr.width]="largeurSvg"
+                [attr.height]="hauteurSvg"
+                fill="#ffffff"
+              />
+
+              <text x="40" y="40" font-size="18" font-weight="bold" fill="#212529">
+                {{ titreGraphique() }}
+              </text>
+
+              @for (info of infosGraphique(); track $index) {
+                <text
+                  [attr.x]="info.x"
+                  [attr.y]="info.y"
+                  font-size="14"
+                  [attr.textLength]="info.textLength"
+                  lengthAdjust="spacingAndGlyphs"
+                  fill="#212529"
+                >
+                  {{ info.texte }}
+                </text>
+              }
+
+              @for (part of partsGraphique(); track $index) {
+                @if (part.chemin) {
+                  <path
+                    [attr.d]="part.chemin"
+                    [attr.fill]="part.couleur"
+                    stroke="#ffffff"
+                    stroke-width="1"
+                  />
+                } @else {
+                  <circle
+                    [attr.cx]="pieCx"
+                    [attr.cy]="pieCy"
+                    [attr.r]="pieR"
+                    [attr.fill]="part.couleur"
+                  />
+                }
+              }
+
+              @for (part of partsGraphique(); track $index) {
+                @if (part.pourcentageTexte) {
+                  <text
+                    [attr.x]="part.pourcentageX"
+                    [attr.y]="part.pourcentageY"
+                    text-anchor="middle"
+                    dominant-baseline="middle"
+                    font-size="13"
+                    font-weight="bold"
+                    fill="#ffffff"
+                  >
+                    {{ part.pourcentageTexte }}
+                  </text>
+                }
+              }
+
+              @for (entree of legendeGraphique().entrees; track $index) {
+                <rect
+                  [attr.x]="entree.xCarre"
+                  [attr.y]="entree.y"
+                  [attr.width]="legendeGraphique().taillePolice * 0.9"
+                  [attr.height]="legendeGraphique().taillePolice * 0.9"
+                  [attr.fill]="entree.couleur"
+                />
+                <text
+                  [attr.x]="entree.xTexte"
+                  [attr.y]="entree.y + legendeGraphique().taillePolice * 0.8"
+                  text-anchor="end"
+                  [attr.font-size]="legendeGraphique().taillePolice"
+                  [attr.textLength]="entree.textLength"
+                  lengthAdjust="spacingAndGlyphs"
+                  fill="#212529"
+                >
+                  {{ entree.texte }}
+                </text>
+              }
+            </svg>
+          </div>
+        }
+      }
     </div>
   </div>
 </div>

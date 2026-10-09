@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, computed, signal, viewChild } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { SupabaseService } from '../../services/supabase';
 import { SessionService } from '../../services/session';
@@ -60,6 +60,36 @@ interface ClassementCommune {
   Pourcentage: number;
 }
 
+interface PartGraphique {
+  chemin: string | null;
+  couleur: string;
+  pourcentageX: number;
+  pourcentageY: number;
+  pourcentageTexte: string | null;
+}
+
+interface EntreeLegende {
+  xCarre: number;
+  xTexte: number;
+  y: number;
+  couleur: string;
+  texte: string;
+  textLength: number | null;
+}
+
+// Dimensions d'une page A4 paysage à 96 dpi
+const LARGEUR_SVG = 1123;
+const HAUTEUR_SVG = 794;
+const PIE_CX = 360;
+const PIE_CY = 440;
+const PIE_R = 320;
+const LEGENDE_DROITE = 1083;
+const LEGENDE_BAS = 760;
+const LEGENDE_LARGEUR = 383;
+const LEGENDE_HAUTEUR = 640;
+const INFOS_TAILLE_POLICE = 14;
+const INFOS_LARGEUR = 1043;
+
 @Component({
   imports: [DatePipe, DecimalPipe],
   selector: 'app-statistiques',
@@ -88,6 +118,254 @@ export class Statistiques implements OnInit {
 
   classementCommunes = signal<ClassementCommune[]>([]);
   chargement = signal(true);
+
+  affichage = signal<'tableau' | 'graphique'>('tableau');
+  svgGraphique = viewChild<ElementRef<SVGSVGElement>>('svgGraphique');
+
+  readonly largeurSvg = LARGEUR_SVG;
+  readonly hauteurSvg = HAUTEUR_SVG;
+  readonly pieCx = PIE_CX;
+  readonly pieCy = PIE_CY;
+  readonly pieR = PIE_R;
+
+  titreGraphique = computed(() => {
+    const collecte = this.collecteSelectionnee();
+
+    if (!collecte) {
+      return '';
+    }
+
+    const date = new Date(`${collecte.DateCollecte}T00:00:00`).toLocaleDateString('fr-FR');
+
+    return `Répartition des donneurs par commune — collecte ${collecte.annee} n° ${collecte.NumCollecte} du ${date}`;
+  });
+
+  infosGraphique = computed(() => {
+    const nom = (nomUsage: string, prenom: string) => `${nomUsage} ${prenom}`.trim();
+
+    const lignes = [
+      {
+        y: 70,
+        texte:
+          `Nb donneurs : ${this.nbTotalDonneurs()} (${this.nbFemmes()} femmes / ${this.nbHommes()} hommes)` +
+          ` - Âge moyen : ${this.formaterAgeMoyen()}`,
+      },
+      {
+        y: 92,
+        texte:
+          `Plus jeune : ${nom(this.plusJeuneNom(), this.plusJeunePrenom()) || '—'}` +
+          ` / Plus sage : ${nom(this.plusAgeNom(), this.plusAgePrenom()) || '—'}`,
+      },
+    ];
+
+    return lignes.map((ligne) => ({
+      x: 40,
+      y: ligne.y,
+      texte: ligne.texte,
+      textLength:
+        ligne.texte.length * INFOS_TAILLE_POLICE * 0.55 > INFOS_LARGEUR ? INFOS_LARGEUR : null,
+    }));
+  });
+
+  private couleurPart(index: number): string {
+    const teinte = Math.round((index * 137.508) % 360);
+    const luminosite = index % 2 === 0 ? 42 : 56;
+
+    return `hsl(${teinte}, 65%, ${luminosite}%)`;
+  }
+
+  partsGraphique = computed<PartGraphique[]>(() => {
+    const communes = this.classementCommunes();
+    const total = communes.reduce((somme, commune) => somme + commune.NbDonneurs, 0);
+
+    if (total === 0) {
+      return [];
+    }
+
+    const point = (angle: number, rayon: number) => ({
+      x: PIE_CX + rayon * Math.cos(angle - Math.PI / 2),
+      y: PIE_CY + rayon * Math.sin(angle - Math.PI / 2),
+    });
+
+    let angleDebut = 0;
+
+    return communes.map((commune, index) => {
+      const part = commune.NbDonneurs / total;
+      const angleFin = angleDebut + part * 2 * Math.PI;
+      const milieu = point((angleDebut + angleFin) / 2, PIE_R * 0.68);
+
+      let chemin: string | null = null;
+
+      if (part < 1) {
+        const debut = point(angleDebut, PIE_R);
+        const fin = point(angleFin, PIE_R);
+        const grandArc = part > 0.5 ? 1 : 0;
+
+        chemin =
+          `M ${PIE_CX} ${PIE_CY} L ${debut.x.toFixed(2)} ${debut.y.toFixed(2)} ` +
+          `A ${PIE_R} ${PIE_R} 0 ${grandArc} 1 ${fin.x.toFixed(2)} ${fin.y.toFixed(2)} Z`;
+      }
+
+      angleDebut = angleFin;
+
+      return {
+        chemin,
+        couleur: this.couleurPart(index),
+        pourcentageX: milieu.x,
+        pourcentageY: milieu.y,
+        pourcentageTexte:
+          part >= 0.04
+            ? `${commune.Pourcentage.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`
+            : null,
+      };
+    });
+  });
+
+  legendeGraphique = computed(() => {
+    const communes = this.classementCommunes();
+    const nombre = communes.length;
+
+    let colonnes = 1;
+
+    while (colonnes < 4 && LEGENDE_HAUTEUR / Math.ceil(nombre / colonnes) < 17) {
+      colonnes++;
+    }
+
+    const lignes = Math.max(1, Math.ceil(nombre / colonnes));
+    const hauteurLigne = Math.min(26, LEGENDE_HAUTEUR / lignes);
+    const taillePolice = Math.min(15, hauteurLigne * 0.72);
+    const largeurColonne = LEGENDE_LARGEUR / colonnes;
+    const largeurTexteMax = largeurColonne - taillePolice * 1.6;
+    const yDebut = LEGENDE_BAS - lignes * hauteurLigne;
+
+    const entrees: EntreeLegende[] = communes.map((commune, index) => {
+      const colonne = Math.floor(index / lignes);
+      const ligne = index % lignes;
+      const texte = `${commune.Commune} — ${commune.NbDonneurs} (${commune.Pourcentage.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %)`;
+      const largeurEstimee = texte.length * taillePolice * 0.55;
+      const droiteColonne = LEGENDE_DROITE - (colonnes - 1 - colonne) * largeurColonne;
+      const xCarre = droiteColonne - taillePolice * 0.9;
+
+      return {
+        xCarre,
+        xTexte: xCarre - taillePolice * 0.4,
+        y: yDebut + ligne * hauteurLigne,
+        couleur: this.couleurPart(index),
+        texte,
+        textLength: largeurEstimee > largeurTexteMax ? largeurTexteMax : null,
+      };
+    });
+
+    return { entrees, taillePolice };
+  });
+
+  basculerAffichage(): void {
+    this.affichage.update((valeur) => (valeur === 'tableau' ? 'graphique' : 'tableau'));
+  }
+
+  private nomFichierGraphique(extension: string): string {
+    const collecte = this.collecteSelectionnee();
+
+    return collecte
+      ? `statistiques-collecte-${collecte.annee}-${collecte.NumCollecte}.${extension}`
+      : `statistiques-collecte.${extension}`;
+  }
+
+  private serialiserSvg(): string | null {
+    const svg = this.svgGraphique()?.nativeElement;
+
+    if (!svg) {
+      return null;
+    }
+
+    const copie = svg.cloneNode(true) as SVGSVGElement;
+
+    copie.setAttribute('width', String(LARGEUR_SVG));
+    copie.setAttribute('height', String(HAUTEUR_SVG));
+    copie.removeAttribute('style');
+    copie.removeAttribute('class');
+
+    return new XMLSerializer().serializeToString(copie);
+  }
+
+  exporterImage(): void {
+    const svg = this.serialiserSvg();
+
+    if (!svg) {
+      return;
+    }
+
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+    const image = new Image();
+
+    image.onload = () => {
+      const echelle = 2;
+      const canvas = document.createElement('canvas');
+
+      canvas.width = LARGEUR_SVG * echelle;
+      canvas.height = HAUTEUR_SVG * echelle;
+
+      const contexte = canvas.getContext('2d');
+
+      if (contexte) {
+        contexte.drawImage(image, 0, 0, canvas.width, canvas.height);
+      }
+
+      URL.revokeObjectURL(url);
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          return;
+        }
+
+        const lien = document.createElement('a');
+        const urlImage = URL.createObjectURL(blob);
+
+        lien.href = urlImage;
+        lien.download = this.nomFichierGraphique('png');
+        lien.click();
+
+        URL.revokeObjectURL(urlImage);
+      }, 'image/png');
+    };
+
+    image.onerror = () => URL.revokeObjectURL(url);
+    image.src = url;
+  }
+
+  // Impression via le navigateur : choisir « Enregistrer au format PDF » comme imprimante
+  exporterPdf(): void {
+    const svg = this.serialiserSvg();
+
+    if (!svg) {
+      return;
+    }
+
+    const iframe = document.createElement('iframe');
+
+    iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;visibility:hidden;';
+
+    iframe.onload = () => {
+      const fenetre = iframe.contentWindow;
+
+      if (!fenetre) {
+        iframe.remove();
+        return;
+      }
+
+      fenetre.onafterprint = () => iframe.remove();
+      fenetre.focus();
+      fenetre.print();
+    };
+
+    iframe.srcdoc =
+      `<!DOCTYPE html><html><head><meta charset="utf-8">` +
+      `<title>${this.nomFichierGraphique('pdf').replace('.pdf', '')}</title>` +
+      `<style>@page{size:A4 landscape;margin:0}html,body{margin:0;padding:0}` +
+      `svg{display:block;width:297mm;height:210mm}</style></head><body>${svg}</body></html>`;
+
+    document.body.appendChild(iframe);
+  }
 
   constructor(
     private supabase: SupabaseService,
