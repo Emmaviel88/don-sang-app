@@ -608,6 +608,15 @@ export class Coordonnees implements OnInit {
     this.eligible = this.ageOK && this.delaiDernierDonOK && this.nombreDons365OK && this.statutOK;
   }
 
+  definirDecede(estDecede: boolean): void {
+    if (!this.donneur) {
+      return;
+    }
+
+    this.donneur.EstDecede = estDecede;
+    this.donneur.Actif = !estDecede;
+  }
+
   libelleDonneur(): string {
     if (!this.donneur) {
       return '';

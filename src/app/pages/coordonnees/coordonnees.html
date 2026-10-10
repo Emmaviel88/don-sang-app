@@ -344,7 +344,7 @@ apportées au donneur"
                 class="form-check-input"
                 [ngModel]="donneur.Actif"
                 (ngModelChange)="donneur.Actif = $event"
-                [disabled]="!modeEdition"
+                [disabled]="!modeEdition || donneur.EstDecede"
               />
 
               <label for="actif" class="form-check-label"> Actif </label>
@@ -397,7 +397,7 @@ apportées au donneur"
                 type="checkbox"
                 class="form-check-input"
                 [ngModel]="donneur.EstDecede"
-                (ngModelChange)="donneur.EstDecede = $event"
+                (ngModelChange)="definirDecede($event)"
                 [disabled]="!modeEdition"
               />
 
