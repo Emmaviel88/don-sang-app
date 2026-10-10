@@ -18,6 +18,7 @@ export class App {
   menuNavigationOuvert = false;
   readonly typeConnexion = environment.production ? 'en ligne' : 'locale';
   public appVersion = environment.version;
+  readonly anneeEnCours = new Date().getFullYear();
 
   constructor(
     public session: SessionService,

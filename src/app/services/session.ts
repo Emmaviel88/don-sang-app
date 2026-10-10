@@ -6,6 +6,8 @@ export interface UtilisateurConnecte {
 
   Login: string;
 
+  NomComplet: string;
+
   Role: string;
 }
 
@@ -71,6 +73,8 @@ export class SessionService {
         IdUser: utilisateur.IdUser,
 
         Login: utilisateur.Login,
+
+        NomComplet: utilisateur.NomComplet ?? utilisateur.Login,
 
         Role: utilisateur.Role,
       });

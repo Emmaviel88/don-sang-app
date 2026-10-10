@@ -14,8 +14,10 @@
     >
       <option value="" class="bg-dark text-white">Sélectionnez votre nom</option>
 
-      @for (nom of logins(); track $index) {
-        <option [value]="nom" class="bg-dark text-white">{{ nom }}</option>
+      @for (utilisateur of logins(); track utilisateur.login) {
+        <option [value]="utilisateur.login" class="bg-dark text-white">
+          {{ utilisateur.nomComplet }}
+        </option>
       }
     </select>
 

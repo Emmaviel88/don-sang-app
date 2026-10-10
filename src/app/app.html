@@ -151,11 +151,15 @@
           actifs)
         </span>
 
-        <span>&copy; 2026-F Gremillet - V{{ appVersion }} </span>
+        <span class="d-flex align-items-center gap-2">
+          &copy; {{ anneeEnCours }} <img src="LOGO GF Wh.png" alt="Logo GF" height="32" /> V{{
+            appVersion
+          }}
+        </span>
 
         <span>
-          {{ session.utilisateur()?.Login }} [{{ session.utilisateur()?.Role }}] ➜ Connecté à la
-          Base de données {{ typeConnexion }}
+          {{ session.utilisateur()?.NomComplet }} [{{ session.utilisateur()?.Role }}] ➜ Connecté à
+          la Base de données {{ typeConnexion }}
         </span>
       </div>
     </footer>

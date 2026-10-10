@@ -9,11 +9,10 @@ import { SessionService } from '../../services/session';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class LoginComponent {
-
-  logins = signal<string[]>([]);
+  logins = signal<{ login: string; nomComplet: string }[]>([]);
   login = '';
   password = '';
   message = signal('');
@@ -22,7 +21,7 @@ export class LoginComponent {
   constructor(
     private supabase: SupabaseService,
     private session: SessionService,
-    private router: Router
+    private router: Router,
   ) {
     this.chargerLogins();
   }
@@ -39,7 +38,6 @@ export class LoginComponent {
   }
 
   async seConnecter() {
-
     if (this.chargement()) {
       return;
     }
@@ -47,16 +45,16 @@ export class LoginComponent {
     this.message.set('');
     this.chargement.set(true);
 
-    const email = this.login
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      + '+dondusangletholy@gmail.com';
+    const email =
+      this.login
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, '-') + '+dondusangletholy@gmail.com';
 
     const { error } = await this.supabase.client.auth.signInWithPassword({
       email: email,
-      password: this.password
+      password: this.password,
     });
 
     if (error) {
@@ -90,7 +88,8 @@ export class LoginComponent {
     this.session.definirUtilisateur({
       IdUser: utilisateur.IdUser,
       Login: utilisateur.Login,
-      Role: utilisateur.Role
+      NomComplet: utilisateur.NomComplet ?? utilisateur.Login,
+      Role: utilisateur.Role,
     });
 
     try {

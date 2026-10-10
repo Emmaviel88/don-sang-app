@@ -202,14 +202,14 @@ export class SupabaseService {
       .join(' ');
   }
 
-  async getLogins(): Promise<string[]> {
+  async getLogins(): Promise<{ login: string; nomComplet: string }[]> {
     const { data, error } = await this.supabase.functions.invoke('liste-login');
 
     if (error) {
       throw error;
     }
 
-    return data.logins;
+    return data.utilisateurs;
   }
 
   async gererUtilisateurs<TResponse>(requete: Record<string, unknown>): Promise<TResponse> {

@@ -137,7 +137,7 @@ export class Statistiques implements OnInit {
 
     const date = new Date(`${collecte.DateCollecte}T00:00:00`).toLocaleDateString('fr-FR');
 
-    return `Répartition des donneurs par commune — collecte ${collecte.annee} n° ${collecte.NumCollecte} du ${date}`;
+    return `Répartition des donneurs par commune — collecte n° ${collecte.NumCollecte} du ${date}`;
   });
 
   infosGraphique = computed(() => {
