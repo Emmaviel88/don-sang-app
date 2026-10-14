@@ -83,6 +83,11 @@ export class LoginComponent {
 
     const utilisateur = userData[0];
 
+    const { error: cnxError } = await this.supabase.client.rpc('maj_derniere_cnx');
+    if (cnxError) {
+      console.error('ERREUR MAJ DerniereCnx :', cnxError);
+    }
+
     console.log('UTILISATEUR CONNECTÉ :', utilisateur);
 
     this.session.definirUtilisateur({
