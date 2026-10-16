@@ -370,6 +370,18 @@ export class SupabaseService {
     return data;
   }
 
+  async reinitialiserPrimoDon(IdContact: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('t_Contacts')
+      .update({ PrimoDon: false })
+      .eq('IdContact', IdContact)
+      .eq('PrimoDon', true);
+
+    if (error) {
+      throw error;
+    }
+  }
+
   async supprimerDon(IdDon: number): Promise<void> {
     const { error } = await this.supabase.from('t_Dons').delete().eq('IdDon', IdDon);
 

@@ -82,7 +82,7 @@ export class RechercheContactController {
         .order('NomUsage', { ascending: true })
         .order('Prenom', { ascending: true })
         .order('DateNaissance', { ascending: true })
-        .limit(20);
+        .limit(100);
 
       if (error) {
         throw error;

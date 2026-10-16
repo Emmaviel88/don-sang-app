@@ -89,6 +89,96 @@ export class ExportDonneursExcelService {
     this.declencherTelechargement(buffer, nomFichier);
   }
 
+  // Nouveau donneur = donneur ayant donné à cette collecte et dont c'est le seul don à ce jour
+  // (même définition que les statistiques), ou dont la case Primo-don est cochée : cela inclut
+  // les anciens donneurs revenus, dont l'adresse mail a pu changer.
+  async exporterNouveauxDonneurs(collecte: CollecteSelectionnee): Promise<number> {
+    const dateCollecte = this.creerDateLocale(collecte.DateCollecte);
+
+    if (!dateCollecte) {
+      throw new Error('Date de collecte invalide.');
+    }
+
+    const donsCollecte = await this.chargerToutesLesPages((from, to) =>
+      this.supabase.client
+        .from('t_Dons')
+        .select('IdDonneur')
+        .eq('AnnéeDon', collecte.annee)
+        .eq('NumCollecte', collecte.NumCollecte)
+        .range(from, to),
+    );
+
+    const idsDonneurs = [...new Set(donsCollecte.map((don) => don.IdDonneur as number))];
+
+    const [contacts, dons, moyensContact] = await Promise.all([
+      this.chargerParLotsDIds(idsDonneurs, (lotIds) =>
+        this.chargerToutesLesPages((from, to) =>
+          this.supabase.client
+            .from('t_Contacts')
+            .select('IdContact, NomUsage, Prenom, NbDonsAvant2013, PrimoDon')
+            .in('IdContact', lotIds)
+            .range(from, to),
+        ),
+      ),
+      this.chargerParLotsDIds(idsDonneurs, (lotIds) =>
+        this.chargerToutesLesPages((from, to) =>
+          this.supabase.client
+            .from('t_Dons')
+            .select('IdDonneur, "AnnéeDon", NumCollecte')
+            .in('IdDonneur', lotIds)
+            .range(from, to),
+        ),
+      ),
+      this.chargerMoyensContact(idsDonneurs),
+    ]);
+
+    const nbDonsJusquaCollecte = new Map<number, number>();
+
+    for (const don of dons) {
+      const annee = don['AnnéeDon'] as number;
+      const jusquaCollecte =
+        annee < collecte.annee ||
+        (annee === collecte.annee && (don.NumCollecte as number) <= collecte.NumCollecte);
+
+      if (jusquaCollecte) {
+        nbDonsJusquaCollecte.set(don.IdDonneur, (nbDonsJusquaCollecte.get(don.IdDonneur) ?? 0) + 1);
+      }
+    }
+
+    const lignes = contacts
+      .filter(
+        (contact) =>
+          contact.PrimoDon === true ||
+          (contact.NbDonsAvant2013 ?? 0) + (nbDonsJusquaCollecte.get(contact.IdContact) ?? 0) === 1,
+      )
+      .map((contact) => ({
+        NomUsage: (contact.NomUsage as string | null) ?? '',
+        Prenom: (contact.Prenom as string | null) ?? '',
+        Mail: moyensContact.get(contact.IdContact)?.Mail ?? '',
+      }))
+      .sort((a, b) => `${a.NomUsage} ${a.Prenom}`.localeCompare(`${b.NomUsage} ${b.Prenom}`, 'fr'));
+
+    const workbook = new ExcelJS.Workbook();
+    const feuille = workbook.addWorksheet('Nouveaux donneurs');
+
+    feuille.columns = [
+      { header: "Nom d'usage", key: 'NomUsage', width: 28 },
+      { header: 'Prénom', key: 'Prenom', width: 24 },
+      { header: 'Adresse mail', key: 'Mail', width: 40 },
+    ];
+    feuille.getRow(1).font = { bold: true };
+    feuille.addRows(lignes);
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    this.declencherTelechargement(
+      buffer,
+      `Nouveaux donneurs collecte ${this.dateToString(dateCollecte)}.xlsx`,
+    );
+
+    return lignes.length;
+  }
+
   private async chargerModele(): Promise<ExcelJS.Workbook> {
     const reponse = await fetch(encodeURI(CHEMIN_MODELE));
 

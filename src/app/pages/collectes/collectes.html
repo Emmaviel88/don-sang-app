@@ -1,5 +1,45 @@
 <div class="container-fluid py-1">
-  <h2 class="mb-3">Collectes et enregistrement des dons</h2>
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Collectes et enregistrement des dons</h2>
+
+    @if (sessionRole() === 'SA') {
+      <div class="d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="exportNouveauxEnCours() || !collecteSelectionnee()"
+          (click)="exporterNouveauxDonneurs()"
+          data-bs-toggle="tooltip"
+          data-bs-placement="bottom"
+          data-bs-custom-class="tooltip-sombre"
+          title="Exporter vers Excel les nouveaux donneurs
+(primo-donneurs) de la collecte sélectionnée"
+        >
+          @if (exportNouveauxEnCours()) {
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          }
+          Exporter Nouveaux Donneurs collecte (Excel)
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="exportEnCours() || !collecteSelectionnee()"
+          (click)="exporterDonneursEligibles()"
+          data-bs-toggle="tooltip"
+          data-bs-placement="bottom"
+          data-bs-custom-class="tooltip-sombre"
+          title="Exporter la liste des donneurs
+éligibles vers Excel"
+        >
+          @if (exportEnCours()) {
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          }
+          Exporter la liste des donneurs éligibles (Excel)
+        </button>
+      </div>
+    }
+  </div>
 
   @if (message()) {
     <div class="alert alert-danger py-2">
@@ -31,29 +71,12 @@
         Changer de collecte
       </button>
 
-      <button
-        type="button"
-        class="btn btn-primary btn-sm ms-2"
-        [disabled]="exportEnCours() || sessionRole() !== 'SA'"
-        (click)="exporterDonneursEligibles()"
-        data-bs-toggle="tooltip"
-        data-bs-placement="bottom"
-        data-bs-custom-class="tooltip-sombre"
-        title="Exporter la liste des donneurs
-éligibles vers Excel"
-      >
-        @if (exportEnCours()) {
-          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-        }
-        Exporter la liste des donneurs éligibles (Excel)
-      </button>
-
       @if (!collecteModifiable()) {
         <span class="alert alert-danger py-2 ms-2">
           {{
             collecteModifiable()
               ? ''
-              : "La collecte sélectionnée ne vous permet pas d'y enregistrer des dons !"
+              : "La date de la collecte sélectionnée ne vous permet pas d'y enregistrer des dons !"
           }}
         </span>
       }

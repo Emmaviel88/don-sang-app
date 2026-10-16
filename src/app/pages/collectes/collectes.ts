@@ -49,6 +49,7 @@ export class CollectesComponent {
   choixOuvert = signal(false);
   message = signal('');
   exportEnCours = signal(false);
+  exportNouveauxEnCours = signal(false);
   // Ajout pour gestion verrouillage bouton export liste vers Excel en fonction du rôle de session
   sessionRole: import('@angular/core').WritableSignal<string | undefined>;
 
@@ -131,6 +132,30 @@ export class CollectesComponent {
       this.message.set("Impossible d'exporter la liste des donneurs éligibles :" + error);
     } finally {
       this.exportEnCours.set(false);
+    }
+  }
+
+  async exporterNouveauxDonneurs(): Promise<void> {
+    const collecte = this.collecteSelectionnee();
+
+    if (!collecte || this.exportNouveauxEnCours()) {
+      return;
+    }
+
+    this.exportNouveauxEnCours.set(true);
+    this.message.set('');
+
+    try {
+      const nb = await this.exportExcel.exporterNouveauxDonneurs(collecte);
+
+      if (nb === 0) {
+        this.message.set('Aucun nouveau donneur pour cette collecte.');
+      }
+    } catch (error) {
+      console.error('ERREUR EXPORT NOUVEAUX DONNEURS :', error);
+      this.message.set("Impossible d'exporter la liste des nouveaux donneurs : " + error);
+    } finally {
+      this.exportNouveauxEnCours.set(false);
     }
   }
 
@@ -290,12 +315,23 @@ export class CollectesComponent {
     try {
       this.message.set('');
 
+      const donsExistants = await this.supabase.getDons(donneur.IdContact);
+
       await this.supabase.ajouterDon(
         donneur.IdContact,
         collecte.annee,
         collecte.NumCollecte,
         collecte.DateCollecte,
       );
+
+      // À partir du 2e don enregistré, le donneur n'est plus primo-donneur.
+      if (donsExistants.length > 0) {
+        try {
+          await this.supabase.reinitialiserPrimoDon(donneur.IdContact);
+        } catch (error) {
+          console.error('ERREUR REINITIALISATION PRIMO-DON :', error);
+        }
+      }
 
       await this.chargerDons(donneur.IdContact);
 

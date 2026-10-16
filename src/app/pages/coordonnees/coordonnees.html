@@ -439,8 +439,7 @@ apportées au donneur"
                 [ngModel]="adresse?.Adresse2"
                 (ngModelChange)="adresse && (adresse.Adresse2 = $event)"
                 [disabled]="!modeEdition"
-                [class.bg-success-subtle]="modeEdition && !!adresse?.Adresse2?.trim()"
-                [class.bg-warning-subtle]="!!donneur && !adresse?.Adresse2?.trim()"
+                [class.bg-success-subtle]="modeEdition"
               />
             </div>
 
