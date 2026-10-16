@@ -143,6 +143,18 @@ apportées au donneur"
               class="btn btn-outline-primary"
               [disabled]="!donneur || modeEdition || enregistrementEnCours"
               [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('precedent', 10)"
+              title="10 donneurs en arrière"
+              aria-label="10 donneurs en arrière"
+            >
+              -10
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
               (click)="parcourirDonneurs('precedent')"
               title="Donneur précédent"
               aria-label="Donneur précédent"
@@ -172,6 +184,18 @@ apportées au donneur"
               aria-label="Donneur suivant"
             >
               <i class="bi bi-chevron-right"></i>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!donneur || modeEdition || enregistrementEnCours"
+              [class.disabled]="chargementEnCours"
+              (click)="parcourirDonneurs('suivant', 10)"
+              title="10 donneurs en avant"
+              aria-label="10 donneurs en avant"
+            >
+              +10
             </button>
 
             <button
