@@ -110,11 +110,17 @@ export class Statistiques implements OnInit {
   plusJeunePrenom = signal('');
   plusJeuneAgeJours = signal(0);
   plusJeuneSexe = signal<string | null>(null);
+  plusJeuneDateReference = signal('');
 
   plusAgeNom = signal('');
   plusAgePrenom = signal('');
   plusAgeAgeJours = signal(0);
   plusAgeSexe = signal<string | null>(null);
+  plusAgeDateReference = signal('');
+  dateReferenceMoyenne = signal('');
+
+  portee = signal<'collecte' | 'annee'>('collecte');
+  anneeSelectionnee = computed(() => this.collecteSelectionnee()?.annee ?? null);
 
   classementCommunes = signal<ClassementCommune[]>([]);
   chargement = signal(true);
@@ -133,6 +139,10 @@ export class Statistiques implements OnInit {
 
     if (!collecte) {
       return '';
+    }
+
+    if (this.portee() === 'annee') {
+      return `Répartition des donneurs par commune — année ${collecte.annee} (toutes les collectes)`;
     }
 
     const date = new Date(`${collecte.DateCollecte}T00:00:00`).toLocaleDateString('fr-FR');
@@ -265,6 +275,10 @@ export class Statistiques implements OnInit {
 
   private nomFichierGraphique(extension: string): string {
     const collecte = this.collecteSelectionnee();
+
+    if (collecte && this.portee() === 'annee') {
+      return `statistiques-annee-${collecte.annee}.${extension}`;
+    }
 
     return collecte
       ? `statistiques-collecte-${collecte.annee}-${collecte.NumCollecte}.${extension}`
@@ -470,18 +484,36 @@ export class Statistiques implements OnInit {
       return;
     }
 
+    const annuel = this.portee() === 'annee';
+    const datesAnnee = this.collectes()
+      .filter((item) => item.annee === collecte.annee)
+      .map((item) => item.DateCollecte)
+      .sort();
+
+    // Date de référence pour exprimer les âges moyens (dernière collecte de l'année en mode annuel)
+    const dateReferenceMoyenne = annuel
+      ? (datesAnnee[datesAnnee.length - 1] ?? collecte.DateCollecte)
+      : collecte.DateCollecte;
+
+    this.dateReferenceMoyenne.set(dateReferenceMoyenne);
+
     try {
-      const { data: donsCollecte, error: erreurDonsCollecte } = await this.supabase.client
-        .from('t_Dons')
-        .select('IdDonneur, DateDon')
-        .eq('AnnéeDon', collecte.annee)
-        .eq('NumCollecte', collecte.NumCollecte);
+      const donsCollecte = await this.lireLignes<DonneurAge>((debut, fin) => {
+        let requete = this.supabase.client
+          .from('t_Dons')
+          .select(
+            'IdDon, IdDonneur, DateDon, t_Contacts!inner(NomUsage, Prenom, DateNaissance, Sexe)',
+          )
+          .eq('AnnéeDon', collecte.annee);
 
-      if (erreurDonsCollecte) {
-        throw erreurDonsCollecte;
-      }
+        if (!annuel) {
+          requete = requete.eq('NumCollecte', collecte.NumCollecte);
+        }
 
-      const donneurs = new Set((donsCollecte ?? []).map((don) => don.IdDonneur));
+        return requete.order('IdDon').range(debut, fin);
+      });
+
+      const donneurs = new Set(donsCollecte.map((don) => don.IdDonneur));
 
       this.nbTotalDonneurs.set(donneurs.size);
 
@@ -503,14 +535,16 @@ export class Statistiques implements OnInit {
         return;
       }
 
-      const { data: contacts, error: erreurContacts } = await this.supabase.client
-        .from('t_Contacts')
-        .select('IdContact, NbDonsAvant2013, Sexe')
-        .in('IdContact', [...donneurs]);
-
-      if (erreurContacts) {
-        throw erreurContacts;
-      }
+      const contacts = await this.lireParLots<DonneurStatistique>(
+        [...donneurs],
+        (lot, debut, fin) =>
+          this.supabase.client
+            .from('t_Contacts')
+            .select('IdContact, NbDonsAvant2013, Sexe')
+            .in('IdContact', lot)
+            .order('IdContact')
+            .range(debut, fin),
+      );
 
       let nbFemmes = 0;
       let nbHommes = 0;
@@ -528,16 +562,18 @@ export class Statistiques implements OnInit {
       this.nbFemmes.set(nbFemmes);
       this.nbHommes.set(nbHommes);
 
-      const { data: adresses, error: erreurAdresses } = await this.supabase.client
-        .from('t_Adresses')
-        .select('IdContact, Commune, CodePostal, IdPays, EstPrincipale, EstValide')
-        .in('IdContact', [...donneurs])
-        .eq('EstPrincipale', true)
-        .eq('EstValide', true);
-
-      if (erreurAdresses) {
-        throw erreurAdresses;
-      }
+      const adresses = await this.lireParLots<AdresseStatistique>(
+        [...donneurs],
+        (lot, debut, fin) =>
+          this.supabase.client
+            .from('t_Adresses')
+            .select('IdContact, Commune, CodePostal, IdPays, EstPrincipale, EstValide')
+            .in('IdContact', lot)
+            .eq('EstPrincipale', true)
+            .eq('EstValide', true)
+            .order('IdContact')
+            .range(debut, fin),
+      );
 
       const { data: pays, error: erreurPays } = await this.supabase.client
         .from('t_Pays')
@@ -607,25 +643,18 @@ export class Statistiques implements OnInit {
 
       this.classementCommunes.set(classementCommunes);
 
-      const { data: donsDesDonneurs, error: erreurDonsDesDonneurs } = await this.supabase.client
-        .from('t_Dons')
-        .select('IdDonneur, "AnnéeDon", NumCollecte')
-        .in('IdDonneur', [...donneurs]);
-
-      if (erreurDonsDesDonneurs) {
-        throw erreurDonsDesDonneurs;
-      }
-
-      const { data: donneursAge, error: erreurDonneursAge } = await this.supabase.client
-        .from('t_Dons')
-        .select('IdDonneur, DateDon, t_Contacts!inner(NomUsage, Prenom, DateNaissance, Sexe)')
-        .eq('AnnéeDon', collecte.annee)
-        .eq('NumCollecte', collecte.NumCollecte)
-        .in('IdDonneur', [...donneurs]);
-
-      if (erreurDonneursAge) {
-        throw erreurDonneursAge;
-      }
+      // Dons antérieurs à la période étudiée (collecte ou année) pour détecter les primo-dons
+      const donsDesDonneurs = await this.lireParLots<DonStatistique>(
+        [...donneurs],
+        (lot, debut, fin) =>
+          this.supabase.client
+            .from('t_Dons')
+            .select('IdDon, IdDonneur, "AnnéeDon", NumCollecte')
+            .in('IdDonneur', lot)
+            .lte('AnnéeDon', collecte.annee)
+            .order('IdDon')
+            .range(debut, fin),
+      );
 
       let totalAgeJours = 0;
       let nombreAges = 0;
@@ -635,14 +664,18 @@ export class Statistiques implements OnInit {
       let plusJeuneNom = '';
       let plusJeunePrenom = '';
       let plusJeuneSexe: string | null = null;
+      let plusJeuneDateDon = '';
 
       let ageMaximumJours = Number.NEGATIVE_INFINITY;
 
       let plusAgeNom = '';
       let plusAgePrenom = '';
       let plusAgeSexe: string | null = null;
+      let plusAgeDateDon = '';
 
-      for (const donneur of (donneursAge ?? []) as DonneurAge[]) {
+      const premierDonParDonneur = new Map<number, { ageJours: number; dateDon: string }>();
+
+      for (const donneur of donsCollecte) {
         const contact = Array.isArray(donneur.t_Contacts)
           ? donneur.t_Contacts[0]
           : donneur.t_Contacts;
@@ -658,15 +691,20 @@ export class Statistiques implements OnInit {
         const ageJours = (dateDon.getTime() - dateNaissance.getTime()) / (1000 * 60 * 60 * 24);
 
         if (ageJours >= 0) {
-          totalAgeJours += ageJours;
-          nombreAges++;
+          const premierDon = premierDonParDonneur.get(donneur.IdDonneur);
 
+          if (!premierDon || donneur.DateDon < premierDon.dateDon) {
+            premierDonParDonneur.set(donneur.IdDonneur, { ageJours, dateDon: donneur.DateDon });
+          }
+
+          // Extrêmes calculés sur l'ensemble des dons de la période (les 5 collectes en mode annuel)
           if (ageJours < ageMinimumJours) {
             ageMinimumJours = ageJours;
 
             plusJeuneNom = contact.NomUsage ?? '';
             plusJeunePrenom = contact.Prenom ?? '';
             plusJeuneSexe = contact.Sexe ?? null;
+            plusJeuneDateDon = donneur.DateDon;
           }
 
           if (ageJours > ageMaximumJours) {
@@ -675,8 +713,14 @@ export class Statistiques implements OnInit {
             plusAgeNom = contact.NomUsage ?? '';
             plusAgePrenom = contact.Prenom ?? '';
             plusAgeSexe = contact.Sexe ?? null;
+            plusAgeDateDon = donneur.DateDon;
           }
         }
+      }
+
+      for (const { ageJours } of premierDonParDonneur.values()) {
+        totalAgeJours += ageJours;
+        nombreAges++;
       }
 
       const ageMoyenJours = nombreAges > 0 ? totalAgeJours / nombreAges : 0;
@@ -688,6 +732,7 @@ export class Statistiques implements OnInit {
         this.plusJeunePrenom.set(plusJeunePrenom);
         this.plusJeuneAgeJours.set(ageMinimumJours);
         this.plusJeuneSexe.set(plusJeuneSexe);
+        this.plusJeuneDateReference.set(annuel ? plusJeuneDateDon : collecte.DateCollecte);
       } else {
         this.plusJeuneNom.set('');
         this.plusJeunePrenom.set('');
@@ -700,6 +745,7 @@ export class Statistiques implements OnInit {
         this.plusAgePrenom.set(plusAgePrenom);
         this.plusAgeAgeJours.set(ageMaximumJours);
         this.plusAgeSexe.set(plusAgeSexe);
+        this.plusAgeDateReference.set(annuel ? plusAgeDateDon : collecte.DateCollecte);
       } else {
         this.plusAgeNom.set('');
         this.plusAgePrenom.set('');
@@ -707,32 +753,31 @@ export class Statistiques implements OnInit {
         this.plusAgeSexe.set(null);
       }
 
-      const nbDonsApres2013 = new Map<number, number>();
+      const nbDonsAvantPeriode = new Map<number, number>();
 
-      for (const don of (donsDesDonneurs ?? []) as DonStatistique[]) {
-        const donAvantCollecte =
-          don.AnnéeDon < collecte.annee ||
-          (don.AnnéeDon === collecte.annee && don.NumCollecte <= collecte.NumCollecte);
+      for (const don of donsDesDonneurs) {
+        const donAvantPeriode = annuel
+          ? don.AnnéeDon < collecte.annee
+          : don.AnnéeDon < collecte.annee ||
+            (don.AnnéeDon === collecte.annee && don.NumCollecte < collecte.NumCollecte);
 
-        if (!donAvantCollecte) {
+        if (!donAvantPeriode) {
           continue;
         }
 
-        const nombreActuel = nbDonsApres2013.get(don.IdDonneur) ?? 0;
+        const nombreActuel = nbDonsAvantPeriode.get(don.IdDonneur) ?? 0;
 
-        nbDonsApres2013.set(don.IdDonneur, nombreActuel + 1);
+        nbDonsAvantPeriode.set(don.IdDonneur, nombreActuel + 1);
       }
 
       let nbPrimo = 0;
 
-      for (const contact of (contacts ?? []) as DonneurStatistique[]) {
+      for (const contact of contacts) {
         const nbAvant2013 = contact.NbDonsAvant2013 ?? 0;
 
-        const nbApres2013 = nbDonsApres2013.get(contact.IdContact) ?? 0;
+        const nbAvant = nbDonsAvantPeriode.get(contact.IdContact) ?? 0;
 
-        const nbTotal = nbAvant2013 + nbApres2013;
-
-        if (nbTotal === 1) {
+        if (nbAvant2013 + nbAvant === 0) {
           nbPrimo++;
         }
       }
@@ -824,15 +869,14 @@ export class Statistiques implements OnInit {
   }
 
   formaterAgeMoyen(): string {
-    const collecte = this.collecteSelectionnee();
-
     const jours = this.ageMoyenJours();
+    const reference = this.dateReferenceMoyenne();
 
-    if (!collecte || jours <= 0) {
+    if (!reference || jours <= 0) {
       return '—';
     }
 
-    return this.formaterAge(jours, collecte.DateCollecte);
+    return this.formaterAge(jours, reference);
   }
 
   libellePlusJeuneDonneur(): string {
@@ -840,17 +884,17 @@ export class Statistiques implements OnInit {
   }
 
   formaterPlusJeuneDonneur(): string {
-    const collecte = this.collecteSelectionnee();
+    const reference = this.plusJeuneDateReference();
 
     const jours = this.plusJeuneAgeJours();
 
-    if (!collecte || jours <= 0) {
+    if (!reference || jours <= 0) {
       return '—';
     }
 
     return `${this.plusJeuneNom()} ${this.plusJeunePrenom()} — ${this.formaterAge(
       jours,
-      collecte.DateCollecte,
+      reference,
     )}`;
   }
 
@@ -869,16 +913,13 @@ export class Statistiques implements OnInit {
       return `${this.plusAgeNom()} ${this.plusAgePrenom()}`;
     }
 
-    const collecte = this.collecteSelectionnee();
+    const reference = this.plusAgeDateReference();
 
-    if (!collecte) {
+    if (!reference) {
       return '—';
     }
 
-    return `${this.plusAgeNom()} ${this.plusAgePrenom()} — ${this.formaterAge(
-      jours,
-      collecte.DateCollecte,
-    )}`;
+    return `${this.plusAgeNom()} ${this.plusAgePrenom()} — ${this.formaterAge(jours, reference)}`;
   }
 
   private formaterAge(jours: number, dateReference: string): string {
@@ -923,6 +964,8 @@ export class Statistiques implements OnInit {
       return;
     }
 
+    const ancienneAnnee = this.collecteSelectionnee()?.annee;
+
     const selection: CollecteSelectionnee = {
       IdCollecte: collecte.IdCollecte,
       annee: collecte.annee,
@@ -934,6 +977,69 @@ export class Statistiques implements OnInit {
 
     this.collecteSelectionnee.set(selection);
 
+    // En mode annuel, les chiffres ne changent pas tant que l'année reste la même
+    if (this.portee() === 'annee' && ancienneAnnee === collecte.annee) {
+      return;
+    }
+
     await this.chargerStatistiques();
+  }
+
+  async changerPortee(portee: 'collecte' | 'annee'): Promise<void> {
+    if (this.portee() === portee) {
+      return;
+    }
+
+    this.portee.set(portee);
+
+    await this.chargerStatistiques();
+  }
+
+  // Lecture complète (au-delà de la limite de lignes par requête) d'une requête paginée
+  private async lireLignes<T>(
+    requete: (
+      debut: number,
+      fin: number,
+    ) => PromiseLike<{ data: unknown[] | null; error: unknown }>,
+  ): Promise<T[]> {
+    const taillePage = 1000;
+    const lignes: T[] = [];
+
+    for (let debut = 0; ; debut += taillePage) {
+      const { data, error } = await requete(debut, debut + taillePage - 1);
+
+      if (error) {
+        throw error;
+      }
+
+      const page = (data ?? []) as T[];
+
+      lignes.push(...page);
+
+      if (page.length < taillePage) {
+        return lignes;
+      }
+    }
+  }
+
+  // Évite les URL trop longues en découpant la liste d'identifiants
+  private async lireParLots<T>(
+    ids: number[],
+    requete: (
+      lot: number[],
+      debut: number,
+      fin: number,
+    ) => PromiseLike<{ data: unknown[] | null; error: unknown }>,
+  ): Promise<T[]> {
+    const taillelot = 150;
+    const resultat: T[] = [];
+
+    for (let i = 0; i < ids.length; i += taillelot) {
+      const lot = ids.slice(i, i + taillelot);
+
+      resultat.push(...(await this.lireLignes<T>((debut, fin) => requete(lot, debut, fin))));
+    }
+
+    return resultat;
   }
 }
