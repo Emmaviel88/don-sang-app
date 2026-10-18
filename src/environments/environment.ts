@@ -1,7 +1,7 @@
 import packageInfo from '../../package.json';
 
 export const environment = {
-  production: false, //Mettre à true pour le push Vercel
+  production: true, //Mettre à true pour le push Vercel
   version: packageInfo.version, // Récupère la version depuis package.json
 
   local: {
