@@ -165,10 +165,10 @@ export class AdhesionAmicale implements OnDestroy {
     await this.chargerNbAdherents(annee);
   }
 
-  estSA(): boolean {
-    const utilisateur = this.session.utilisateur();
+  peutModifierAdhesions(): boolean {
+    const role = this.session.utilisateur()?.Role;
 
-    return utilisateur?.Role === 'SA';
+    return role === 'SA' || role === 'Admin';
   }
 
   adhesionAnneeSelectionnee(): Adhesion | undefined {
@@ -182,7 +182,7 @@ export class AdhesionAmicale implements OnDestroy {
       return false;
     }
 
-    if (!this.estSA()) {
+    if (!this.peutModifierAdhesions()) {
       return false;
     }
 
@@ -194,7 +194,7 @@ export class AdhesionAmicale implements OnDestroy {
       return false;
     }
 
-    if (!this.estSA()) {
+    if (!this.peutModifierAdhesions()) {
       return false;
     }
 
@@ -208,7 +208,7 @@ export class AdhesionAmicale implements OnDestroy {
       return;
     }
 
-    if (!this.estSA()) {
+    if (!this.peutModifierAdhesions()) {
       return;
     }
 
@@ -237,7 +237,7 @@ export class AdhesionAmicale implements OnDestroy {
       return;
     }
 
-    if (!this.estSA()) {
+    if (!this.peutModifierAdhesions()) {
       return;
     }
 

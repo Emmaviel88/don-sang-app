@@ -98,10 +98,11 @@
     </div>
   }
 
-  @if (!estSA()) {
+  @if (!peutModifierAdhesions()) {
     <div class="alert alert-info py-2 mb-2">
       <i class="bi bi-lock me-1" aria-hidden="true"></i>
-      Page en lecture seule : seuls les comptes SA peuvent ajouter ou supprimer une adhésion.
+      Page en lecture seule : seuls les comptes SA et Admin peuvent ajouter ou supprimer une
+      adhésion.
     </div>
   }
 
@@ -273,7 +274,7 @@
             Si le donneur est déjà adhérent pour l'année sélectionnée (marquée ✓), il n'est pas
             possible d'ajouter une seconde adhésion.
           </li>
-          <li>Ces actions sont réservées aux comptes 'SA'.</li>
+          <li>Ces actions sont réservées aux comptes 'SA' et 'Admin'.</li>
         </ul>
       </div>
     </div>
