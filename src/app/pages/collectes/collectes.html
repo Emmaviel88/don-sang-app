@@ -72,11 +72,11 @@
       </button>
 
       @if (!collecteModifiable()) {
-        <span class="alert alert-danger py-2 ms-2">
+        <span class="alert alert-warning py-2 ms-2">
           {{
             collecteModifiable()
               ? ''
-              : "La date de la collecte sélectionnée ne vous permet pas d'y enregistrer des dons !"
+              : "La collecte sélectionnée (date future) ne vous permet pas d'y enregistrer des dons !"
           }}
         </span>
       }
@@ -139,7 +139,7 @@
           type="text"
           class="form-control fs-5 fw-bold"
           [value]="
-            'Donneur : ' +
+            'Donneur sélectionné : ' +
             (donneur.NomUsage || '') +
             ' ' +
             (donneur.Prenom || '') +
@@ -170,7 +170,7 @@
           <button
             type="button"
             class="btn btn-danger"
-            [disabled]="!donSelectionne() || !collecteModifiable()"
+            [disabled]="!peutSupprimerDon()"
             title="Sélectionnez un don dans la liste avant de pouvoir le supprimer."
             (click)="supprimerDon()"
           >
@@ -277,19 +277,27 @@
         </div>
       </div>
       <div class="col-md-1"></div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <div class="fs-5 text-justify text-info">
-          Pour enregistrer un nouveau don pour le donneur sélectionné, choisir (ou vérifier) d'abord
-          la collecte. Cliquer ensuite sur &lt;Enregistrer Don&gt;.
-          <br />
-          Si le donneur sélectionné a déjà effectué un don pour cette collecte, il ne sera pas
-          possible d'en ajouter un second.
-          <br />
-          <br />
-          Pour supprimer un don existant (action réservée aux administrateurs), sélectionner d'abord
-          le don à supprimer dans le tableau ci-contre.
-          <br />
-          Cliquer ensuite sur &lt;Supprimer Don&gt;.
+          <strong class="text-decoration-underline">Enregistrement d'un nouveau don :</strong>
+          <ul>
+            <li>
+              Vérifier le donneur sélectionné. Si besoin, le rechercher dans l'onglet
+              <strong>Infos Donneurs</strong>.
+            </li>
+            <li>
+              Vérifier ensuite la collecte concernée. Si besoin la changer avec le bouton
+              &lt;<strong>Changer de collecte</strong>&gt;.
+            </li>
+            <li>Cliquer ensuite sur &lt;<strong>Enregistrer Don</strong>&gt;.</li>
+          </ul>
+          <strong class="text-decoration-underline"
+            >Suppression d'un don (réservé aux comptes 'Admin' et 'SA') :</strong
+          >
+          <ul>
+            <li>Sélectionner le don à supprimer dans le tableau ci-contre.</li>
+            <li>Cliquer ensuite sur le bouton &lt;<strong>Supprimer Don</strong>&gt;.</li>
+          </ul>
         </div>
       </div>
     </div>

@@ -342,6 +342,13 @@ export class CollectesComponent {
     }
   }
 
+  // La suppression ne dépend pas de la collecte sélectionnée : rôle Admin/SA et don sélectionné
+  peutSupprimerDon(): boolean {
+    const role = this.session.utilisateur()?.Role;
+
+    return (role === 'SA' || role === 'Admin') && !!this.donSelectionne();
+  }
+
   async supprimerDon(): Promise<void> {
     const don = this.donSelectionne();
     const donneur = this.donneurSelectionne();
@@ -350,7 +357,7 @@ export class CollectesComponent {
       return;
     }
 
-    if (!this.collecteModifiable()) {
+    if (!this.peutSupprimerDon()) {
       return;
     }
 
