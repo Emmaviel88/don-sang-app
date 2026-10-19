@@ -607,6 +607,11 @@ export class Statistiques implements OnInit {
         const adresse = adresseParDonneur.get(idDonneur);
 
         if (!adresse) {
+          // Donneur sans adresse principale valide : compté à part pour que le total corresponde
+          nombreDonneursParCommune.set(
+            'Commune non renseignée',
+            (nombreDonneursParCommune.get('Commune non renseignée') ?? 0) + 1,
+          );
           continue;
         }
 
