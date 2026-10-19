@@ -24,6 +24,7 @@ interface DonStatistique {
 }
 
 interface DonneurAge {
+  IdDon: number;
   IdDonneur: number;
   DateDon: string;
   t_Contacts:
@@ -118,6 +119,8 @@ export class Statistiques implements OnInit {
   plusAgeSexe = signal<string | null>(null);
   plusAgeDateReference = signal('');
   dateReferenceMoyenne = signal('');
+  nbDonsAnnee = 0;
+  nbDonneursAnnee = 0;
 
   portee = signal<'collecte' | 'annee'>('collecte');
   anneeSelectionnee = computed(() => this.collecteSelectionnee()?.annee ?? null);
@@ -157,8 +160,12 @@ export class Statistiques implements OnInit {
       {
         y: 70,
         texte:
-          `Nb donneurs : ${this.nbTotalDonneurs()} (${this.nbFemmes()} femmes / ${this.nbHommes()} hommes)` +
-          ` - Âge moyen : ${this.formaterAgeMoyen()}`,
+          this.portee() === 'annee'
+            ? `Nb de dons : ${this.nbDonsAnnee}` +
+              ` - Nb donneurs : ${this.nbDonneursAnnee} (${this.nbFemmes()} femmes / ${this.nbHommes()} hommes)` +
+              ` - Âge moyen : ${this.formaterAgeMoyen()}`
+            : `Nb donneurs : ${this.nbTotalDonneurs()} (${this.nbFemmes()} femmes / ${this.nbHommes()} hommes)` +
+              ` - Âge moyen : ${this.formaterAgeMoyen()}`,
       },
       {
         y: 92,
@@ -513,9 +520,16 @@ export class Statistiques implements OnInit {
         return requete.order('IdDon').range(debut, fin);
       });
 
-      const donneurs = new Set(donsCollecte.map((don) => don.IdDonneur));
+      const donsDistincts = new Set(donsCollecte.map((don) => don.IdDon));
+      this.nbDonsAnnee = donsDistincts.size;
 
-      this.nbTotalDonneurs.set(donneurs.size);
+      const donneurs = new Set(donsCollecte.map((don) => don.IdDonneur));
+      this.nbDonneursAnnee = donneurs.size;
+
+      //const donneurs = new Set(donsCollecte.map((don) => don.IdDon));
+
+      //this.nbTotalDonneurs.set(donneurs.size);
+      this.nbTotalDonneurs.set(annuel ? donsDistincts.size : donneurs.size);
 
       if (donneurs.size === 0) {
         this.nbPrimoDons.set(0);
