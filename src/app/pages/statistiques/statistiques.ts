@@ -171,7 +171,7 @@ export class Statistiques implements OnInit {
         y: 92,
         texte:
           `Plus jeune : ${nom(this.plusJeuneNom(), this.plusJeunePrenom()) || '—'}` +
-          ` / Plus sage : ${nom(this.plusAgeNom(), this.plusAgePrenom()) || '—'}`,
+          `   —   Plus sage : ${nom(this.plusAgeNom(), this.plusAgePrenom()) || '—'}`,
       },
     ];
 
