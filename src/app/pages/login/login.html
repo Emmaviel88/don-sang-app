@@ -9,6 +9,7 @@
       id="login"
       name="login"
       [(ngModel)]="login"
+      (change)="$any($event.target).value && champMotDePasse.focus()"
       required
       [disabled]="chargement()"
     >
@@ -24,6 +25,7 @@
     <label for="password">Mot de passe</label>
 
     <input
+      #champMotDePasse
       id="password"
       name="password"
       type="password"
