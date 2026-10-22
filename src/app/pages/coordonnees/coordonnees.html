@@ -451,7 +451,9 @@ apportées au donneur"
                 (ngModelChange)="adresse && (adresse.Adresse1 = $event)"
                 [disabled]="!modeEdition"
                 [class.bg-success-subtle]="modeEdition && !!adresse?.Adresse1?.trim()"
-                [class.bg-warning-subtle]="!!donneur && !adresse?.Adresse1?.trim()"
+                [class.bg-warning-subtle]="
+                  (!!donneur && !adresse?.Adresse1?.trim()) || !adresse?.EstValide
+                "
               />
             </div>
 
@@ -482,7 +484,9 @@ apportées au donneur"
                 (ngModelChange)="modifierCodePostal($event)"
                 [disabled]="!modeEdition"
                 [class.bg-success-subtle]="modeEdition && !!adresse?.CodePostal?.trim()"
-                [class.bg-warning-subtle]="!!donneur && !adresse?.CodePostal?.trim()"
+                [class.bg-warning-subtle]="
+                  (!!donneur && !adresse?.CodePostal?.trim()) || !adresse?.EstValide
+                "
               />
             </div>
 
@@ -496,7 +500,9 @@ apportées au donneur"
                 (ngModelChange)="modifierCommune($event)"
                 [disabled]="!modeEdition"
                 [class.bg-success-subtle]="modeEdition && !!adresse?.Commune?.trim()"
-                [class.bg-warning-subtle]="!!donneur && !adresse?.Commune?.trim()"
+                [class.bg-warning-subtle]="
+                  (!!donneur && !adresse?.Commune?.trim()) || !adresse?.EstValide
+                "
               />
             </div>
 
@@ -519,7 +525,8 @@ apportées au donneur"
               </select>
             </div>
 
-            <div class="col-12">
+            <!--<div class="col-12">-->
+            <div class="col-md-8">
               <label class="form-label mb-1"> Commentaire </label>
 
               <textarea
@@ -531,6 +538,13 @@ apportées au donneur"
                 [class.bg-success-subtle]="modeEdition"
               >
               </textarea>
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-3">
+              <label class="form-label mb-1"></label>
+              @if (adresse && !adresse.EstValide) {
+                <div class="text-danger bg-warning-subtle text-center">Adresse invalide</div>
+              }
             </div>
           </div>
         </div>

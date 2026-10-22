@@ -393,7 +393,7 @@ export class Coordonnees implements OnInit {
       )
       .eq('IdContact', donneur.IdContact)
       .eq('EstPrincipale', true)
-      .eq('EstValide', true)
+      //.eq('EstValide', true)
       .maybeSingle();
 
     if (error) {
