@@ -540,12 +540,18 @@ apportées au donneur"
               </textarea>
             </div>
             <div class="col-md-1"></div>
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label mb-1"></label>
               @if (adresse && !adresse.EstValide) {
-                <div class="text-danger bg-warning-subtle text-center">Adresse invalide</div>
+                <!-- Ajout de border, border-warning et rounded pour adoucir les angles -->
+                <div
+                  class="text-danger bg-warning-subtle border border-warning rounded text-center p-1"
+                >
+                  Adresse invalide !
+                </div>
               }
             </div>
+            <div class="col-md-1"></div>
           </div>
         </div>
       </div>

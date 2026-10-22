@@ -623,8 +623,8 @@ export class Statistiques implements OnInit {
         if (!adresse) {
           // Donneur sans adresse principale valide : compté à part pour que le total corresponde
           nombreDonneursParCommune.set(
-            'Commune non renseignée',
-            (nombreDonneursParCommune.get('Commune non renseignée') ?? 0) + 1,
+            'Adresse non renseignée ou erronée',
+            (nombreDonneursParCommune.get('Adresse non renseignée ou erronée') ?? 0) + 1,
           );
           continue;
         }
