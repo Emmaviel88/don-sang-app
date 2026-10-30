@@ -541,14 +541,10 @@ apportées au donneur"
             </div>
             <div class="col-md-1"></div>
             <div class="col-md-2">
+              <br />
               <label class="form-label mb-1"></label>
               @if (adresse && !adresse.EstValide) {
-                <!-- Ajout de border, border-warning et rounded pour adoucir les angles -->
-                <div
-                  class="text-danger bg-warning-subtle border border-warning rounded text-center p-1"
-                >
-                  Adresse invalide !
-                </div>
+                <button type="button" class="btn btn-warning">Adresse invalide !</button>
               }
             </div>
             <div class="col-md-1"></div>
