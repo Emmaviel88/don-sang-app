@@ -544,7 +544,22 @@ apportées au donneur"
               <br />
               <label class="form-label mb-1"></label>
               @if (donneur && (!adresse || !adresse.EstValide)) {
-                <button type="button" class="btn btn-warning">Adresse invalide !</button>
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  [class.disabled]="!peutBasculerValiditeAdresse"
+                  (click)="basculerValiditeAdresse()"
+                >
+                  Adresse invalide !
+                </button>
+              } @else if (donneur && peutBasculerValiditeAdresse) {
+                <button
+                  type="button"
+                  class="btn btn-outline-success"
+                  (click)="basculerValiditeAdresse()"
+                >
+                  Adresse valide
+                </button>
               }
             </div>
             <div class="col-md-1"></div>

@@ -113,6 +113,7 @@ export class Coordonnees implements OnInit {
   private idContactAvantCreation: number | null = null;
   private adresseExistante = false;
   private signatureAdresseInitiale: string | null = null;
+  private validiteAdresseForcee = false;
   private idMoyenTelephone: number | null = null;
   private idMoyenEmail: number | null = null;
 
@@ -408,6 +409,7 @@ export class Coordonnees implements OnInit {
     this.adresse = data as Adresse | null;
     this.adresseExistante = data !== null;
     this.signatureAdresseInitiale = this.adresse ? this.signatureAdresse(this.adresse) : null;
+    this.validiteAdresseForcee = false;
 
     const idPays = this.adresse?.IdPays;
 
@@ -895,6 +897,31 @@ export class Coordonnees implements OnInit {
     ]);
   }
 
+  get peutBasculerValiditeAdresse(): boolean {
+    return this.modeEdition && this.session.utilisateur()?.Role === 'SA';
+  }
+
+  basculerValiditeAdresse(): void {
+    if (!this.peutBasculerValiditeAdresse || !this.adresse) {
+      return;
+    }
+
+    const complete =
+      !!this.adresse.Adresse1?.trim() &&
+      !!this.adresse.CodePostal?.trim() &&
+      !!this.adresse.Commune?.trim() &&
+      this.adresse.IdPays !== null;
+
+    if (!this.adresse.EstValide && !complete) {
+      this.erreur = 'Une adresse incomplète ne peut pas être validée.';
+      return;
+    }
+
+    this.erreur = '';
+    this.adresse.EstValide = !this.adresse.EstValide;
+    this.validiteAdresseForcee = true;
+  }
+
   private adresseVide(): Adresse {
     return {
       Adresse1: null,
@@ -1173,7 +1200,9 @@ export class Coordonnees implements OnInit {
       !!this.adresse.Commune?.trim() &&
       this.adresse.IdPays !== null;
     // Une adresse complète inchangée conserve son statut (ex. invalidée suite à un courrier retourné).
-    const estValide = adresseComplete && (adresseModifiee ? true : this.adresse.EstValide);
+    // Si le SA a basculé le statut manuellement, son choix prévaut (sauf adresse incomplète).
+    const estValide =
+      adresseComplete && (this.validiteAdresseForcee || !adresseModifiee ? this.adresse.EstValide : true);
 
     const valeurs = {
       Adresse1: this.adresse.Adresse1?.trim() || null,
@@ -1204,6 +1233,7 @@ export class Coordonnees implements OnInit {
     this.adresseExistante = true;
     this.adresse.EstValide = estValide;
     this.signatureAdresseInitiale = signature;
+    this.validiteAdresseForcee = false;
   }
 
   private async enregistrerMoyenContact(
