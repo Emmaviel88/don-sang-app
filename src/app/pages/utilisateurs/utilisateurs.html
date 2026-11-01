@@ -5,10 +5,23 @@
       <!--<p class="text-muted mb-0">Comptes applicatifs et accès à l’association</p>-->
     </div>
     @if (peutGerer()) {
-      <button type="button" class="btn btn-primary btn-sm" (click)="commencerCreation()">
-        <i class="bi bi-person-plus me-1" aria-hidden="true"></i>
-        Nouvel utilisateur
-      </button>
+      <div class="d-flex gap-2">
+        @if (estSA()) {
+          <button
+            type="button"
+            class="btn btn-outline-warning btn-sm"
+            [disabled]="!peutReinitialiserMotDePasse()"
+            (click)="reinitialiserMotDePasse()"
+          >
+            <i class="bi bi-key me-1" aria-hidden="true"></i>
+            Reset Pwd
+          </button>
+        }
+        <button type="button" class="btn btn-primary btn-sm" (click)="commencerCreation()">
+          <i class="bi bi-person-plus me-1" aria-hidden="true"></i>
+          Nouvel utilisateur
+        </button>
+      </div>
     }
   </header>
 

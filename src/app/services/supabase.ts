@@ -224,6 +224,23 @@ export class SupabaseService {
     return data as TResponse;
   }
 
+  async reinitialiserMotDePasse(authUserId: string, login: string): Promise<void> {
+    const { error } = await this.supabase.functions.invoke('reset-account', {
+      body: { AuthUserId: authUserId, login },
+    });
+
+    if (error) {
+      const reponse = (error as { context?: unknown }).context;
+      if (reponse instanceof Response) {
+        const detail = await reponse.json().catch(() => null);
+        if (detail?.message) {
+          throw new Error(detail.message);
+        }
+      }
+      throw error;
+    }
+  }
+
   async testerLectureContacts(): Promise<number> {
     const { data, error } = await this.supabase.from('t_Contacts').select('IdContact');
 

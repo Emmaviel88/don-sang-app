@@ -281,6 +281,70 @@ export class UtilisateursComponent implements OnInit {
     }
   }
 
+  peutReinitialiserMotDePasse(): boolean {
+    const utilisateur = this.selection();
+    return (
+      this.estSA() &&
+      !this.creation() &&
+      !this.chargement() &&
+      !!utilisateur?.AuthUserId &&
+      !!utilisateur.Contact
+    );
+  }
+
+  // NOM D'USAGE en majuscules + espace + initiale(s) du prénom (Jean-Pierre -> J-P)
+  motDePasseParDefaut(contact: ResultatRechercheContact): string {
+    const nom = (contact.NomUsage || contact.NomdeNaissance || '').trim().toLocaleUpperCase('fr');
+    const initiales = (contact.Prenom ?? '')
+      .split('-')
+      .map((partie) => partie.trim().charAt(0).toLocaleUpperCase('fr'))
+      .filter((initiale) => initiale !== '')
+      .join('-');
+    return `${nom} ${initiales}`.trim();
+  }
+
+  async reinitialiserMotDePasse(): Promise<void> {
+    const utilisateur = this.selection();
+
+    if (!utilisateur?.AuthUserId || !utilisateur.Contact || !this.peutReinitialiserMotDePasse()) {
+      return;
+    }
+
+    const motDePasse = this.motDePasseParDefaut(utilisateur.Contact);
+    if (!motDePasse) {
+      this.messageErreur.set('Impossible de déterminer le mot de passe par défaut.');
+      return;
+    }
+
+    const confirmation = window.confirm(
+      `Réinitialiser le mot de passe de ${utilisateur.Login ?? this.afficherNom(utilisateur.Contact)} à sa valeur par défaut ?`,
+    );
+    if (!confirmation) {
+      return;
+    }
+
+    this.chargement.set(true);
+    this.effacerMessages();
+
+    try {
+      await this.supabase.reinitialiserMotDePasse(utilisateur.AuthUserId, motDePasse);
+      await this.chargerUtilisateurs();
+      const utilisateurActualise = this.utilisateurs().find(
+        (ligne) => ligne.IdUser === utilisateur.IdUser,
+      );
+      if (utilisateurActualise) {
+        this.selectionner(utilisateurActualise);
+      }
+      this.messageSucces.set(
+        'Mot de passe réinitialisé. L’utilisateur devra le changer à sa prochaine connexion.',
+      );
+    } catch (error) {
+      this.signalerErreur('La réinitialisation du mot de passe a échoué.', error);
+    } finally {
+      this.chargement.set(false);
+    }
+  }
+
   private signalerErreur(message: string, error: unknown): void {
     console.error(message, error);
     this.messageErreur.set(
