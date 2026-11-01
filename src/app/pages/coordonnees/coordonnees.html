@@ -543,7 +543,7 @@ apportées au donneur"
             <div class="col-md-2">
               <br />
               <label class="form-label mb-1"></label>
-              @if (adresse && !adresse.EstValide) {
+              @if (donneur && (!adresse || !adresse.EstValide)) {
                 <button type="button" class="btn btn-warning">Adresse invalide !</button>
               }
             </div>

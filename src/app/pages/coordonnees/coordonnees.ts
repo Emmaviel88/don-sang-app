@@ -112,6 +112,7 @@ export class Coordonnees implements OnInit {
   enregistrementEnCours = false;
   private idContactAvantCreation: number | null = null;
   private adresseExistante = false;
+  private signatureAdresseInitiale: string | null = null;
   private idMoyenTelephone: number | null = null;
   private idMoyenEmail: number | null = null;
 
@@ -406,6 +407,7 @@ export class Coordonnees implements OnInit {
 
     this.adresse = data as Adresse | null;
     this.adresseExistante = data !== null;
+    this.signatureAdresseInitiale = this.adresse ? this.signatureAdresse(this.adresse) : null;
 
     const idPays = this.adresse?.IdPays;
 
@@ -882,6 +884,17 @@ export class Coordonnees implements OnInit {
     this.changeDetectorRef.detectChanges();
   }
 
+  // Le commentaire est exclu : seule la localisation détermine la validité de l'adresse.
+  private signatureAdresse(adresse: Adresse): string {
+    return JSON.stringify([
+      adresse.Adresse1?.trim() || null,
+      adresse.Adresse2?.trim() || null,
+      adresse.CodePostal?.trim() || null,
+      adresse.Commune?.trim() || null,
+      adresse.IdPays ?? null,
+    ]);
+  }
+
   private adresseVide(): Adresse {
     return {
       Adresse1: null,
@@ -891,7 +904,7 @@ export class Coordonnees implements OnInit {
       IdPays: null,
       Commentaire: null,
       EstPrincipale: true,
-      EstValide: true,
+      EstValide: false,
     };
   }
 
@@ -1147,22 +1160,20 @@ export class Coordonnees implements OnInit {
     const contientAdresse =
       champsAdresse.some((valeur) => !!valeur?.trim()) || this.adresse.IdPays !== null;
 
-    if (!contientAdresse) {
-      if (this.adresseExistante) {
-        const { error } = await this.supabase.client
-          .from('t_Adresses')
-          .update({ EstPrincipale: false, EstValide: false })
-          .eq('IdContact', this.donneur.IdContact)
-          .eq('EstPrincipale', true)
-          .eq('EstValide', true);
-
-        if (error) {
-          throw error;
-        }
-        this.adresseExistante = false;
-      }
+    if (!contientAdresse && !this.adresseExistante) {
+      this.adresse.EstValide = false;
       return;
     }
+
+    const signature = this.signatureAdresse(this.adresse);
+    const adresseModifiee = !this.adresseExistante || signature !== this.signatureAdresseInitiale;
+    const adresseComplete =
+      !!this.adresse.Adresse1?.trim() &&
+      !!this.adresse.CodePostal?.trim() &&
+      !!this.adresse.Commune?.trim() &&
+      this.adresse.IdPays !== null;
+    // Une adresse complète inchangée conserve son statut (ex. invalidée suite à un courrier retourné).
+    const estValide = adresseComplete && (adresseModifiee ? true : this.adresse.EstValide);
 
     const valeurs = {
       Adresse1: this.adresse.Adresse1?.trim() || null,
@@ -1172,16 +1183,16 @@ export class Coordonnees implements OnInit {
       IdPays: this.adresse.IdPays,
       Commentaire: this.adresse.Commentaire?.trim() || null,
       EstPrincipale: true,
-      EstValide: true,
+      EstValide: estValide,
     };
 
+    // Pas de filtre sur EstValide : une adresse invalide doit pouvoir être corrigée.
     const result = this.adresseExistante
       ? await this.supabase.client
           .from('t_Adresses')
           .update(valeurs)
           .eq('IdContact', this.donneur.IdContact)
           .eq('EstPrincipale', true)
-          .eq('EstValide', true)
       : await this.supabase.client
           .from('t_Adresses')
           .insert({ ...valeurs, IdContact: this.donneur.IdContact });
@@ -1191,6 +1202,8 @@ export class Coordonnees implements OnInit {
     }
 
     this.adresseExistante = true;
+    this.adresse.EstValide = estValide;
+    this.signatureAdresseInitiale = signature;
   }
 
   private async enregistrerMoyenContact(
