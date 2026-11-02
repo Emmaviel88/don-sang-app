@@ -201,26 +201,131 @@ export class ExportDonneursExcelService {
     const anneeDebut = anneeFin - 3;
 
     const [adhesions, fonctions] = await Promise.all([
+      this.chargerIdsAdhesions(anneeDebut, anneeFin),
+      this.chargerIdsComite(),
+    ]);
+
+    return this.exporterListeAvecConjoints(
+      new Set([...adhesions, ...fonctions]),
+      'Adhérents',
+      `Liste adhérents et membres ${anneeDebut}-${anneeFin}.xlsx`,
+    );
+  }
+
+  // Invités de la soirée annuelle : donneurs ayant donné sur les 8 dernières années (code postal 88,
+  // adresse principale valide, moins de 71 ans ou date de naissance inconnue) ∪ adhérents depuis
+  // 2021 ∪ membres actuels du comité. Même regroupement des conjoints que exporterAdherents.
+  async exporterInvitesSoiree(anneeFin: number): Promise<{ nbTotal: number; nbMails: number }> {
+    const anneeDebutDons = anneeFin - 7;
+    const anneeDebutAdhesions = 2021;
+
+    const [adhesions, fonctions, donneurs88] = await Promise.all([
+      this.chargerIdsAdhesions(anneeDebutAdhesions, anneeFin),
+      this.chargerIdsComite(),
+      this.chargerIdsDonneurs88(anneeDebutDons, anneeFin),
+    ]);
+
+    return this.exporterListeAvecConjoints(
+      new Set([...adhesions, ...fonctions, ...donneurs88]),
+      'Invités soirée',
+      `Liste invités soirée annuelle ${anneeDebutDons}-${anneeFin}.xlsx`,
+    );
+  }
+
+  private async chargerIdsAdhesions(anneeDebut: number, anneeFin: number): Promise<number[]> {
+    const lignes = await this.chargerToutesLesPages((from, to) =>
+      this.supabase.client
+        .from('t_Adhesions')
+        .select('IdContact')
+        .gte('Année', anneeDebut)
+        .lte('Année', anneeFin)
+        .range(from, to),
+    );
+
+    return lignes.map((ligne) => ligne.IdContact as number);
+  }
+
+  private async chargerIdsComite(): Promise<number[]> {
+    const lignes = await this.chargerToutesLesPages((from, to) =>
+      this.supabase.client
+        .from('t_ContactsFonctions')
+        .select('IdContact')
+        .is('DateFin', null)
+        .range(from, to),
+    );
+
+    return lignes.map((ligne) => ligne.IdContact as number);
+  }
+
+  private async chargerIdsDonneurs88(anneeDebut: number, anneeFin: number): Promise<number[]> {
+    const [dons, adresses88] = await Promise.all([
       this.chargerToutesLesPages((from, to) =>
         this.supabase.client
-          .from('t_Adhesions')
-          .select('IdContact')
-          .gte('Année', anneeDebut)
-          .lte('Année', anneeFin)
+          .from('t_Dons')
+          .select('IdDonneur')
+          .gte('AnnéeDon', anneeDebut)
+          .lte('AnnéeDon', anneeFin)
           .range(from, to),
       ),
       this.chargerToutesLesPages((from, to) =>
         this.supabase.client
-          .from('t_ContactsFonctions')
+          .from('t_Adresses')
           .select('IdContact')
-          .is('DateFin', null)
+          .like('CodePostal', '88%')
+          .eq('EstPrincipale', true)
+          .eq('EstValide', true)
           .range(from, to),
       ),
     ]);
 
-    const idsAdherents = new Set(
-      [...adhesions, ...fonctions].map((ligne) => ligne.IdContact as number),
+    const idsAdresses88 = new Set(adresses88.map((ligne) => ligne.IdContact as number));
+    const candidats = [...new Set(dons.map((don) => don.IdDonneur as number))].filter((id) =>
+      idsAdresses88.has(id),
     );
+
+    const contacts = await this.chargerParLotsDIds(candidats, (lotIds) =>
+      this.chargerToutesLesPages((from, to) =>
+        this.supabase.client
+          .from('t_Contacts')
+          .select('IdContact, DateNaissance, "EstDécédé"')
+          .in('IdContact', lotIds)
+          .range(from, to),
+      ),
+    );
+
+    const aujourdHui = new Date();
+
+    return contacts
+      .filter((contact) => {
+        if (contact['EstDécédé'] === true) {
+          return false;
+        }
+
+        const naissance = this.creerDateLocale(contact.DateNaissance);
+
+        return !naissance || this.calculerAge(naissance, aujourdHui) < 71;
+      })
+      .map((contact) => contact.IdContact as number);
+  }
+
+  private calculerAge(naissance: Date, reference: Date): number {
+    let age = reference.getFullYear() - naissance.getFullYear();
+    const mois = reference.getMonth() - naissance.getMonth();
+
+    if (mois < 0 || (mois === 0 && reference.getDate() < naissance.getDate())) {
+      age--;
+    }
+
+    return age;
+  }
+
+  // Construit la feuille à partir d'une liste d'IdContact : chaque personne est associée à son
+  // conjoint (IdConjoint), même s'il ne fait pas partie de la liste, sur une même ligne.
+  private async exporterListeAvecConjoints(
+    idsAdherents: Set<number>,
+    nomFeuille: string,
+    nomFichier: string,
+  ): Promise<{ nbTotal: number; nbMails: number }> {
     const chargerContacts = (ids: number[], colonne: 'IdContact' | 'IdConjoint') =>
       this.chargerParLotsDIds(ids, (lotIds) =>
         this.chargerToutesLesPages((from, to) =>
@@ -315,7 +420,7 @@ export class ExportDonneursExcelService {
     );
 
     const workbook = new ExcelJS.Workbook();
-    const feuille = workbook.addWorksheet('Adhérents');
+    const feuille = workbook.addWorksheet(nomFeuille);
 
     feuille.columns = [
       { header: 'Civilité', key: 'Civilite', width: 12 },
@@ -389,10 +494,7 @@ export class ExportDonneursExcelService {
 
     const buffer = await workbook.xlsx.writeBuffer();
 
-    this.declencherTelechargement(
-      buffer,
-      `Liste adhérents et membres ${anneeDebut}-${anneeFin}.xlsx`,
-    );
+    this.declencherTelechargement(buffer, nomFichier);
 
     return { nbTotal, nbMails };
   }

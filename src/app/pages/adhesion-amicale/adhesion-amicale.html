@@ -3,19 +3,35 @@
     <h2 class="mb-0">Adhésion amicale</h2>
 
     @if (estSA()) {
-      <button
-        type="button"
-        class="btn btn-primary btn-sm"
-        [disabled]="exportAdherentsEnCours()"
-        (click)="exporterAdherents()"
-        title="Exporter vers Excel les adhérents des 4 dernières années (N-3 à N)
+      <div class="d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="exportInvitesEnCours()"
+          (click)="exporterInvitesSoiree()"
+          title="Exporter vers Excel les invités de la soirée annuelle : donneurs du 88 (dons des 8 dernières années),
+adhérents depuis 2021 et membres du comité"
+        >
+          @if (exportInvitesEnCours()) {
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          }
+          Exporter les invités soirée annuelle (Excel)
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="exportAdherentsEnCours()"
+          (click)="exporterAdherents()"
+          title="Exporter vers Excel les adhérents des 4 dernières années (N-3 à N)
 et les membres du comité"
-      >
-        @if (exportAdherentsEnCours()) {
-          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-        }
-        Exporter la liste des adhérents (Excel)
-      </button>
+        >
+          @if (exportAdherentsEnCours()) {
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          }
+          Exporter la liste des adhérents (Excel)
+        </button>
+      </div>
     }
   </div>
 

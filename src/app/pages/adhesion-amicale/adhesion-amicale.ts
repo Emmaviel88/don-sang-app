@@ -37,6 +37,7 @@ export class AdhesionAmicale implements OnDestroy {
   nbTotalAdherents = signal(0);
   message = signal('');
   exportAdherentsEnCours = signal(false);
+  exportInvitesEnCours = signal(false);
 
   constructor(
     private donneurSelection: DonneurSelectionService,
@@ -191,6 +192,28 @@ export class AdhesionAmicale implements OnDestroy {
       this.message.set("Impossible d'exporter la liste des adhérents : " + error);
     } finally {
       this.exportAdherentsEnCours.set(false);
+    }
+  }
+
+  async exporterInvitesSoiree(): Promise<void> {
+    if (!this.estSA() || this.exportInvitesEnCours()) {
+      return;
+    }
+
+    this.exportInvitesEnCours.set(true);
+    this.message.set('');
+
+    try {
+      const { nbTotal, nbMails } = await this.exportExcel.exporterInvitesSoiree(
+        new Date().getFullYear(),
+      );
+
+      this.message.set(`Export terminé : ${nbTotal} personnes, ${nbMails} adresses mail connues.`);
+    } catch (error) {
+      console.error('ERREUR EXPORT INVITÉS SOIRÉE :', error);
+      this.message.set("Impossible d'exporter la liste des invités : " + error);
+    } finally {
+      this.exportInvitesEnCours.set(false);
     }
   }
 
