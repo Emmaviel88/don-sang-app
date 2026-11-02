@@ -1,5 +1,23 @@
 <div class="container-fluid py-2">
-  <h2 class="mb-2">Adhésion amicale</h2>
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h2 class="mb-0">Adhésion amicale</h2>
+
+    @if (estSA()) {
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="exportAdherentsEnCours()"
+        (click)="exporterAdherents()"
+        title="Exporter vers Excel les adhérents des 4 dernières années (N-3 à N)
+et les membres du comité"
+      >
+        @if (exportAdherentsEnCours()) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Exporter la liste des adhérents (Excel)
+      </button>
+    }
+  </div>
 
   <!-- Recherche -->
   <div class="row mb-2">

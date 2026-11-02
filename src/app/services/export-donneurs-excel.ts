@@ -39,6 +39,22 @@ interface LigneExport {
   VolontairePlasma: boolean;
 }
 
+interface ContactAdherent {
+  IdContact: number;
+  Civilite: string;
+  Nom: string;
+  Prenom: string;
+  Mail: string;
+  Adresse: AdresseAdherent;
+  IdConjoint: number | null;
+}
+
+interface AdresseAdherent {
+  Adresse: string;
+  CodePostal: string;
+  Commune: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ExportDonneursExcelService {
   constructor(private supabase: SupabaseService) {}
@@ -177,6 +193,242 @@ export class ExportDonneursExcelService {
     );
 
     return lignes.length;
+  }
+
+  // Adhérents des années [anneeFin-3 ; anneeFin] ∪ membres actuels du comité.
+  // Chaque adhérent est associé à son conjoint (IdConjoint), même non adhérent, sur une même ligne.
+  async exporterAdherents(anneeFin: number): Promise<{ nbTotal: number; nbMails: number }> {
+    const anneeDebut = anneeFin - 3;
+
+    const [adhesions, fonctions] = await Promise.all([
+      this.chargerToutesLesPages((from, to) =>
+        this.supabase.client
+          .from('t_Adhesions')
+          .select('IdContact')
+          .gte('Année', anneeDebut)
+          .lte('Année', anneeFin)
+          .range(from, to),
+      ),
+      this.chargerToutesLesPages((from, to) =>
+        this.supabase.client
+          .from('t_ContactsFonctions')
+          .select('IdContact')
+          .is('DateFin', null)
+          .range(from, to),
+      ),
+    ]);
+
+    const idsAdherents = new Set(
+      [...adhesions, ...fonctions].map((ligne) => ligne.IdContact as number),
+    );
+    const chargerContacts = (ids: number[], colonne: 'IdContact' | 'IdConjoint') =>
+      this.chargerParLotsDIds(ids, (lotIds) =>
+        this.chargerToutesLesPages((from, to) =>
+          this.supabase.client
+            .from('t_Contacts')
+            .select(
+              'IdContact, Civilite, NomUsage, NomdeNaissance, Prenom, IdConjoint, "EstDécédé"',
+            )
+            .in(colonne, lotIds)
+            .range(from, to),
+        ),
+      );
+
+    const contactsAdherents = await chargerContacts([...idsAdherents], 'IdContact');
+
+    // Conjoints : lien porté par la fiche de l'adhérent ou par celle du conjoint
+    const idsConjointsConnus = contactsAdherents
+      .map((ligne) => ligne.IdConjoint as number | null)
+      .filter((id): id is number => id !== null && !idsAdherents.has(id));
+    const [conjointsDirects, conjointsInverses] = await Promise.all([
+      chargerContacts([...new Set(idsConjointsConnus)], 'IdContact'),
+      chargerContacts([...idsAdherents], 'IdConjoint'),
+    ]);
+
+    const contactsBruts = [...contactsAdherents, ...conjointsDirects, ...conjointsInverses];
+    const idsContacts = [...new Set(contactsBruts.map((ligne) => ligne.IdContact as number))];
+
+    const [adresses, moyensContact] = await Promise.all([
+      this.chargerAdressesCompletes(idsContacts),
+      this.chargerMoyensContact(idsContacts),
+    ]);
+
+    const contacts = new Map<number, ContactAdherent>();
+
+    for (const ligne of contactsBruts) {
+      if (ligne['EstDécédé'] === true) {
+        continue;
+      }
+
+      contacts.set(ligne.IdContact, {
+        IdContact: ligne.IdContact,
+        Civilite: (ligne.Civilite as string | null) ?? '',
+        Nom: ((ligne.NomUsage || ligne.NomdeNaissance || '') as string).toUpperCase(),
+        Prenom: (ligne.Prenom as string | null) ?? '',
+        Mail: moyensContact.get(ligne.IdContact)?.Mail ?? '',
+        Adresse: adresses.get(ligne.IdContact) ?? { Adresse: '', CodePostal: '', Commune: '' },
+        IdConjoint: ligne.IdConjoint as number | null,
+      });
+    }
+
+    const dejaTraites = new Set<number>();
+    const lignes: Array<{ personne: ContactAdherent; conjoint: ContactAdherent | null }> = [];
+
+    const trier = (a: ContactAdherent, b: ContactAdherent) =>
+      `${a.Nom} ${a.Prenom}`.localeCompare(`${b.Nom} ${b.Prenom}`, 'fr');
+    const tousContacts = [...contacts.values()].sort(trier);
+    const contactsTries = tousContacts.filter((contact) => idsAdherents.has(contact.IdContact));
+
+    for (const personne of contactsTries) {
+      if (dejaTraites.has(personne.IdContact)) {
+        continue;
+      }
+
+      dejaTraites.add(personne.IdContact);
+
+      let conjoint: ContactAdherent | null = null;
+
+      if (personne.IdConjoint !== null) {
+        conjoint = contacts.get(personne.IdConjoint) ?? null;
+      }
+
+      if (!conjoint) {
+        conjoint =
+          tousContacts.find(
+            (autre) => autre.IdConjoint === personne.IdContact && !dejaTraites.has(autre.IdContact),
+          ) ?? null;
+      }
+
+      if (conjoint && !dejaTraites.has(conjoint.IdContact)) {
+        dejaTraites.add(conjoint.IdContact);
+      } else {
+        conjoint = null;
+      }
+
+      lignes.push({ personne, conjoint });
+    }
+
+    lignes.sort(
+      (a, b) =>
+        a.personne.Nom.localeCompare(b.personne.Nom, 'fr') ||
+        a.personne.Prenom.localeCompare(b.personne.Prenom, 'fr'),
+    );
+
+    const workbook = new ExcelJS.Workbook();
+    const feuille = workbook.addWorksheet('Adhérents');
+
+    feuille.columns = [
+      { header: 'Civilité', key: 'Civilite', width: 12 },
+      { header: 'NOM', key: 'Nom', width: 24 },
+      { header: 'Prénom', key: 'Prenom', width: 20 },
+      { header: 'Adresse mail', key: 'Mail', width: 36 },
+      { header: 'Adresse', key: 'Adresse', width: 44 },
+      { header: 'Code postal', key: 'CodePostal', width: 12 },
+      { header: 'Commune', key: 'Commune', width: 28 },
+      { header: 'Civilité conjoint(e)', key: 'CiviliteConjoint', width: 18 },
+      { header: 'NOM conjoint(e)', key: 'NomConjoint', width: 24 },
+      { header: 'Prénom conjoint(e)', key: 'PrenomConjoint', width: 20 },
+      { header: 'Adresse mail conjoint(e)', key: 'MailConjoint', width: 36 },
+    ];
+
+    let nbTotal = 0;
+    let nbMails = 0;
+
+    for (const { personne, conjoint } of lignes) {
+      nbTotal += conjoint ? 2 : 1;
+      nbMails += (personne.Mail ? 1 : 0) + (conjoint?.Mail ? 1 : 0);
+
+      const adresse = personne.Adresse.Adresse
+        ? personne.Adresse
+        : (conjoint?.Adresse ?? personne.Adresse);
+
+      feuille.addRow({
+        Civilite: personne.Civilite,
+        Nom: personne.Nom,
+        Prenom: personne.Prenom,
+        Mail: personne.Mail,
+        Adresse: adresse.Adresse,
+        CodePostal: adresse.CodePostal,
+        Commune: adresse.Commune,
+        CiviliteConjoint: conjoint?.Civilite ?? '',
+        NomConjoint: conjoint?.Nom ?? '',
+        PrenomConjoint: conjoint?.Prenom ?? '',
+        MailConjoint: conjoint?.Mail ?? '',
+      });
+    }
+
+    const bordure: Partial<ExcelJS.Borders> = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' },
+    };
+
+    feuille.eachRow((ligne, numeroLigne) => {
+      ligne.eachCell({ includeEmpty: true }, (cellule) => {
+        cellule.border = bordure;
+        cellule.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: {
+            argb: numeroLigne === 1 ? 'FF000000' : numeroLigne % 2 === 0 ? 'FFFFFFFF' : 'FFE7E6E6',
+          },
+        };
+      });
+    });
+    feuille.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+    feuille.addRow({});
+
+    const totaux = feuille.addRow({
+      Nom: `Nb total : ${nbTotal}`,
+      Mail: `Nb de mails connus : ${nbMails}`,
+    });
+
+    totaux.font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    this.declencherTelechargement(
+      buffer,
+      `Liste adhérents et membres ${anneeDebut}-${anneeFin}.xlsx`,
+    );
+
+    return { nbTotal, nbMails };
+  }
+
+  private async chargerAdressesCompletes(
+    idsContacts: number[],
+  ): Promise<Map<number, AdresseAdherent>> {
+    const carte = new Map<number, AdresseAdherent>();
+
+    if (idsContacts.length === 0) {
+      return carte;
+    }
+
+    const donnees = await this.chargerParLotsDIds(idsContacts, (lotIds) =>
+      this.chargerToutesLesPages((from, to) =>
+        this.supabase.client
+          .from('t_Adresses')
+          .select('IdContact, Adresse1, Adresse2, CodePostal, Commune')
+          .in('IdContact', lotIds)
+          .eq('EstPrincipale', true)
+          .eq('EstValide', true)
+          .range(from, to),
+      ),
+    );
+
+    for (const ligne of donnees) {
+      const texte = (valeur: unknown) => (valeur ?? '').toString().trim();
+
+      carte.set(ligne.IdContact, {
+        Adresse: [texte(ligne.Adresse1), texte(ligne.Adresse2)].filter((p) => p !== '').join(', '),
+        CodePostal: texte(ligne.CodePostal),
+        Commune: texte(ligne.Commune),
+      });
+    }
+
+    return carte;
   }
 
   private async chargerModele(): Promise<ExcelJS.Workbook> {

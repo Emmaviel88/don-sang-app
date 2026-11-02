@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SupabaseService } from '../../services/supabase';
 import { SessionService } from '../../services/session';
+import { ExportDonneursExcelService } from '../../services/export-donneurs-excel';
 import {
   RechercheContactController,
   ResultatRechercheContact,
@@ -35,12 +36,14 @@ export class AdhesionAmicale implements OnDestroy {
   anneeAEditer = signal(new Date().getFullYear() + 1);
   nbTotalAdherents = signal(0);
   message = signal('');
+  exportAdherentsEnCours = signal(false);
 
   constructor(
     private donneurSelection: DonneurSelectionService,
     private supabase: SupabaseService,
     private session: SessionService,
     private cdr: ChangeDetectorRef,
+    private exportExcel: ExportDonneursExcelService,
   ) {
     this.rechercheContacts = new RechercheContactController(this.supabase.client, this.cdr);
 
@@ -163,6 +166,32 @@ export class AdhesionAmicale implements OnDestroy {
     this.anneeAEditer.set(annee);
 
     await this.chargerNbAdherents(annee);
+  }
+
+  estSA(): boolean {
+    return this.session.utilisateur()?.Role === 'SA';
+  }
+
+  async exporterAdherents(): Promise<void> {
+    if (!this.estSA() || this.exportAdherentsEnCours()) {
+      return;
+    }
+
+    this.exportAdherentsEnCours.set(true);
+    this.message.set('');
+
+    try {
+      const { nbTotal, nbMails } = await this.exportExcel.exporterAdherents(
+        new Date().getFullYear(),
+      );
+
+      this.message.set(`Export terminé : ${nbTotal} personnes, ${nbMails} adresses mail connues.`);
+    } catch (error) {
+      console.error('ERREUR EXPORT ADHÉRENTS :', error);
+      this.message.set("Impossible d'exporter la liste des adhérents : " + error);
+    } finally {
+      this.exportAdherentsEnCours.set(false);
+    }
   }
 
   peutModifierAdhesions(): boolean {
