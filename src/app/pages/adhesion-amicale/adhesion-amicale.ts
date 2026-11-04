@@ -195,17 +195,20 @@ export class AdhesionAmicale implements OnDestroy {
     }
   }
 
+  readonly anneeFinInvites = new Date().getFullYear();
+  readonly anneeDebutInvites = this.anneeFinInvites - 5;
+
   async exporterInvitesSoiree(): Promise<void> {
     if (!this.estSA() || this.exportInvitesEnCours()) {
       return;
     }
 
     this.exportInvitesEnCours.set(true);
-    this.message.set('');
+    this.message.set('Préparation de la liste en cours ...');
 
     try {
       const { nbTotal, nbMails } = await this.exportExcel.exporterInvitesSoiree(
-        new Date().getFullYear(),
+        this.anneeFinInvites,
       );
 
       this.message.set(`Export terminé : ${nbTotal} personnes, ${nbMails} adresses mail connues.`);

@@ -9,8 +9,21 @@
           class="btn btn-primary btn-sm"
           [disabled]="exportInvitesEnCours()"
           (click)="exporterInvitesSoiree()"
-          title="Exporter vers Excel les invités de la soirée annuelle : donneurs du 88 (dons des 8 dernières années),
-adhérents depuis 2021 et membres du comité"
+          [title]="
+            'Exporter vers Excel les invités de la soirée annuelle (' +
+            anneeDebutInvites +
+            ' à ' +
+            anneeFinInvites +
+            ') : donneurs du 88 (dons de ' +
+            anneeDebutInvites +
+            ' à ' +
+            anneeFinInvites +
+            '), adhérents de ' +
+            anneeDebutInvites +
+            ' à ' +
+            anneeFinInvites +
+            ' et membres du comité'
+          "
         >
           @if (exportInvitesEnCours()) {
             <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>

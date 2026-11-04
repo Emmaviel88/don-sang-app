@@ -212,12 +212,13 @@ export class ExportDonneursExcelService {
     );
   }
 
-  // Invités de la soirée annuelle : donneurs ayant donné sur les 8 dernières années (code postal 88,
-  // adresse principale valide, moins de 71 ans ou date de naissance inconnue) ∪ adhérents depuis
-  // 2021 ∪ membres actuels du comité. Même regroupement des conjoints que exporterAdherents.
+  // Invités de la soirée annuelle : donneurs ayant donné sur les années [anneeFin-5 ; anneeFin]
+  // (code postal 88, adresse principale valide, moins de 71 ans ou date de naissance inconnue) ∪
+  // adhérents de ces mêmes années ∪ membres actuels du comité. Même regroupement des conjoints
+  // que exporterAdherents.
   async exporterInvitesSoiree(anneeFin: number): Promise<{ nbTotal: number; nbMails: number }> {
-    const anneeDebutDons = anneeFin - 7;
-    const anneeDebutAdhesions = 2021;
+    const anneeDebutDons = anneeFin - 5;
+    const anneeDebutAdhesions = anneeFin - 5;
 
     const [adhesions, fonctions, donneurs88] = await Promise.all([
       this.chargerIdsAdhesions(anneeDebutAdhesions, anneeFin),
