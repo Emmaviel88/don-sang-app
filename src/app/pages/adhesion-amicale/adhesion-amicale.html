@@ -10,9 +10,7 @@
           [disabled]="exportInvitesEnCours()"
           (click)="exporterInvitesSoiree()"
           [title]="
-            'Exporter vers Excel les invités de la soirée annuelle (' +
-            anneeDebutInvites +
-            ' à ' +
+            'Exporter la liste des invités de la soirée choucroute (' +
             anneeFinInvites +
             ') : donneurs du 88 (dons de ' +
             anneeDebutInvites +
@@ -22,7 +20,7 @@
             anneeDebutInvites +
             ' à ' +
             anneeFinInvites +
-            ' et membres du comité'
+            ' et membres actuels du comité'
           "
         >
           @if (exportInvitesEnCours()) {
