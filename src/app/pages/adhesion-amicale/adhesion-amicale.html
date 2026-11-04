@@ -2,7 +2,7 @@
   <div class="d-flex align-items-center justify-content-between mb-2">
     <h2 class="mb-0">Adhésion amicale</h2>
 
-    @if (estSA()) {
+    @if (estSA() || estAdmin()) {
       <div class="d-flex gap-2">
         <button
           type="button"
@@ -29,9 +29,9 @@
           @if (exportInvitesEnCours()) {
             <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
           }
-          Exporter les invités soirée annuelle (Excel)
+          Exporter la liste des invités à la soirée choucroute (Excel)
         </button>
-
+        <!--
         <button
           type="button"
           class="btn btn-primary btn-sm"
@@ -45,7 +45,7 @@ et les membres du comité"
           }
           Exporter la liste des adhérents (Excel)
         </button>
-      </div>
+      --></div>
     }
   </div>
 

@@ -173,8 +173,12 @@ export class AdhesionAmicale implements OnDestroy {
     return this.session.utilisateur()?.Role === 'SA';
   }
 
+  estAdmin(): boolean {
+    return this.session.utilisateur()?.Role === 'Admin';
+  }
+
   async exporterAdherents(): Promise<void> {
-    if (!this.estSA() || this.exportAdherentsEnCours()) {
+    if ((!this.estSA() && !this.estAdmin()) || this.exportAdherentsEnCours()) {
       return;
     }
 
@@ -199,7 +203,7 @@ export class AdhesionAmicale implements OnDestroy {
   readonly anneeDebutInvites = this.anneeFinInvites - 5;
 
   async exporterInvitesSoiree(): Promise<void> {
-    if (!this.estSA() || this.exportInvitesEnCours()) {
+    if ((!this.estSA() && !this.estAdmin()) || this.exportInvitesEnCours()) {
       return;
     }
 
