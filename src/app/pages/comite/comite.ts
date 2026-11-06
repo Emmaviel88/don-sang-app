@@ -3,7 +3,12 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RechercheContactComponent } from '../../components/recherche-contact/recherche-contact';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
-import { AffectationComite, FonctionComite, SupabaseService } from '../../services/supabase';
+import {
+  AffectationComite,
+  FonctionComite,
+  PeriodeFonction,
+  SupabaseService,
+} from '../../services/supabase';
 import { ResultatRechercheContact } from '../../services/recherche-contact';
 import { SessionService } from '../../services/session';
 
@@ -24,6 +29,7 @@ export class Comite implements OnInit {
 
   fonctions: FonctionComite[] = [];
   affectations: AffectationComite[] = [];
+  private moisAncienneteParContact = new Map<number, number>();
   membreSelectionne: DonneurSelectionne | null = null;
   idAffectationSelectionnee: number | null = null;
   message = '';
@@ -65,9 +71,12 @@ export class Comite implements OnInit {
         this.supabase.getFonctionsComite(),
         this.supabase.getAffectationsComiteActuelles(),
       ]);
+      const idContacts = [...new Set(affectations.map((affectation) => affectation.IdContact))];
+      const periodes = await this.supabase.getPeriodesFonctions(idContacts);
 
       this.fonctions = fonctions;
       this.affectations = affectations;
+      this.moisAncienneteParContact = this.calculerMoisAnciennete(periodes);
     } catch (error) {
       console.error('ERREUR CHARGEMENT COMITÉ :', error);
       this.message = 'Impossible de charger le comité.';
@@ -519,18 +528,78 @@ export class Comite implements OnInit {
       return '—';
     }
 
-    const debut = this.dateLocale(dateDebut);
-    const aujourdHui = new Date();
-    let mois =
-      (aujourdHui.getFullYear() - debut.getFullYear()) * 12 +
-      aujourdHui.getMonth() -
-      debut.getMonth();
+    return this.formaterDuree(this.moisEntre(this.dateLocale(dateDebut), new Date()));
+  }
 
-    if (aujourdHui.getDate() < debut.getDate()) {
+  ancienneteComite(idContact: number): string {
+    const mois = this.moisAncienneteParContact.get(idContact);
+
+    return mois === undefined ? '—' : this.formaterDuree(mois);
+  }
+
+  // Cumul des périodes de toutes les fonctions ; les périodes qui se chevauchent ne sont comptées qu'une fois.
+  private calculerMoisAnciennete(periodes: PeriodeFonction[]): Map<number, number> {
+    const aujourdHui = new Date();
+    aujourdHui.setHours(0, 0, 0, 0);
+    const parContact = new Map<number, Array<[Date, Date]>>();
+
+    for (const periode of periodes) {
+      if (!periode.DateDebut) {
+        continue;
+      }
+
+      const debut = this.dateLocale(periode.DateDebut);
+      const finPeriode = periode.DateFin ? this.dateLocale(periode.DateFin) : aujourdHui;
+      const fin = finPeriode > aujourdHui ? aujourdHui : finPeriode;
+
+      if (fin <= debut) {
+        continue;
+      }
+
+      const liste = parContact.get(periode.IdContact) ?? [];
+      liste.push([debut, fin]);
+      parContact.set(periode.IdContact, liste);
+    }
+
+    const resultat = new Map<number, number>();
+
+    for (const [idContact, intervalles] of parContact) {
+      intervalles.sort((a, b) => a[0].getTime() - b[0].getTime());
+      const fusionnes: Array<[Date, Date]> = [];
+
+      for (const [debut, fin] of intervalles) {
+        const dernier = fusionnes[fusionnes.length - 1];
+
+        if (dernier && debut <= dernier[1]) {
+          if (fin > dernier[1]) {
+            dernier[1] = fin;
+          }
+        } else {
+          fusionnes.push([debut, fin]);
+        }
+      }
+
+      const jours = fusionnes.reduce(
+        (total, [debut, fin]) => total + Math.round((fin.getTime() - debut.getTime()) / 86400000),
+        0,
+      );
+      resultat.set(idContact, Math.floor(jours / 30.4375));
+    }
+
+    return resultat;
+  }
+
+  private moisEntre(debut: Date, fin: Date): number {
+    let mois = (fin.getFullYear() - debut.getFullYear()) * 12 + fin.getMonth() - debut.getMonth();
+
+    if (fin.getDate() < debut.getDate()) {
       mois--;
     }
 
-    const moisTotaux = Math.max(0, mois);
+    return Math.max(0, mois);
+  }
+
+  private formaterDuree(moisTotaux: number): string {
     const annees = Math.floor(moisTotaux / 12);
     const moisRestants = moisTotaux % 12;
 

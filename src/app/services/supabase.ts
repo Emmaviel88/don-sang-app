@@ -24,6 +24,12 @@ export interface AffectationComite {
   Fonction: FonctionComite;
 }
 
+export interface PeriodeFonction {
+  IdContact: number;
+  DateDebut: string | null;
+  DateFin: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -109,6 +115,34 @@ export class SupabaseService {
 
       return this.nomComplet(a.Contact).localeCompare(this.nomComplet(b.Contact), 'fr');
     });
+  }
+
+  async getPeriodesFonctions(idContacts: number[]): Promise<PeriodeFonction[]> {
+    if (idContacts.length === 0) {
+      return [];
+    }
+
+    const { data, error } = await this.supabase
+      .from('t_ContactsFonctions')
+      .select('IdContact, "DateDébut", DateFin')
+      .in('IdContact', idContacts)
+      .limit(10000);
+
+    if (error) {
+      throw error;
+    }
+
+    const lignes = (data ?? []) as unknown as Array<{
+      IdContact: number;
+      DateDébut: string | null;
+      DateFin: string | null;
+    }>;
+
+    return lignes.map((ligne) => ({
+      IdContact: ligne.IdContact,
+      DateDebut: ligne['DateDébut'],
+      DateFin: ligne.DateFin,
+    }));
   }
 
   async ajouterMembreComite(
