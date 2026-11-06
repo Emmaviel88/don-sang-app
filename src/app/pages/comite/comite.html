@@ -63,7 +63,7 @@
             <tr>
               <th scope="col">Fonction</th>
               <th scope="col">Membre</th>
-              <th scope="col">Date début</th>
+              <th scope="col" class="text-center">Date début</th>
               <th scope="col" class="text-center">Ancienneté dans la fonction</th>
               <th scope="col" class="text-center">Ancienneté au Comité</th>
             </tr>
@@ -71,7 +71,7 @@
           <tbody>
             @if (chargement) {
               <tr>
-                <td colspan="4" class="text-center text-muted">Chargement…</td>
+                <td colspan="5" class="text-center text-muted">Chargement…</td>
               </tr>
             } @else {
               @for (
@@ -94,7 +94,7 @@
                 >
                   <td>{{ affectation.Fonction.Libelle }}</td>
                   <td>{{ afficherNom(affectation.Contact) }}</td>
-                  <td>{{ affectation.DateDebut | date: 'dd/MM/yyyy' }}</td>
+                  <td class="text-center">{{ affectation.DateDebut | date: 'dd/MM/yyyy' }}</td>
                   <td class="text-end">{{ dureeFonction(affectation.DateDebut) }}</td>
                   <td class="text-end">{{ ancienneteComite(affectation.IdContact) }}</td>
                 </tr>
