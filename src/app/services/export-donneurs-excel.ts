@@ -237,9 +237,12 @@ export class ExportDonneursExcelService {
     const lignes = await this.chargerToutesLesPages((from, to) =>
       this.supabase.client
         .from('t_Adhesions')
-        .select('IdContact')
+        // 1. On sélectionne l'IdContact et on joint la table t_Contacts en filtrant directement sur Actif
+        .select('IdContact, t_Contacts!inner(Actif)')
         .gte('Année', anneeDebut)
         .lte('Année', anneeFin)
+        // 2. On applique le filtre sur la table jointe
+        .eq('t_Contacts.Actif', true)
         .range(from, to),
     );
 
