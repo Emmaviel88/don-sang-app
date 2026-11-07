@@ -31,16 +31,29 @@ export class GestionRecompenses implements OnDestroy {
   recompenseSelectionnee = signal<Recompense | null>(null);
   message = signal('');
 
-  // Niveaux non encore atteints (en modification, le niveau de la ligne éditée reste proposé).
+  // Ajout : uniquement les niveaux supérieurs au plus haut niveau atteint.
+  // Modification : le niveau de la ligne éditée et ceux compris entre ses niveaux voisins.
   niveauxDisponibles = computed(() => {
     const edite = this.recompenseSelectionnee();
-    const atteints = new Set(
-      this.recompenses()
-        .filter((recompense) => recompense.IdRecompense !== edite?.IdRecompense)
-        .map((recompense) => recompense.NiveauEFS),
+    const autres = this.recompenses()
+      .filter((recompense) => recompense.IdRecompense !== edite?.IdRecompense)
+      .map((recompense) => recompense.NiveauEFS);
+
+    if (!edite) {
+      const max = Math.max(0, ...autres);
+
+      return this.niveaux.filter((niveau) => niveau > max);
+    }
+
+    const borneBasse = Math.max(0, ...autres.filter((niveau) => niveau <= edite.NiveauEFS));
+    const borneHaute = Math.min(
+      Infinity,
+      ...autres.filter((niveau) => niveau > edite.NiveauEFS),
     );
 
-    return this.niveaux.filter((niveau) => niveau === edite?.NiveauEFS || !atteints.has(niveau));
+    return this.niveaux.filter(
+      (niveau) => niveau === edite.NiveauEFS || (niveau > borneBasse && niveau < borneHaute),
+    );
   });
 
   recherche = '';
