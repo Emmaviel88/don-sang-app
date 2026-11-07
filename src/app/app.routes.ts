@@ -42,6 +42,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'recompenses',
+    loadComponent: () =>
+      import('./pages/recompenses/recompenses').then((m) => m.GestionRecompenses),
+  },
+
+  {
     path: 'comite',
     loadComponent: () => import('./pages/comite/comite').then((m) => m.Comite),
   },

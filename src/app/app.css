@@ -45,7 +45,8 @@
 }
 
 .navbar .navbar-nav .commande-navbar {
-  width: 135px;
+  width: 122px;
+  font-size: 1.1rem !important;
   color: #d3d3d3 !important;
   border: 1px solid rgba(255, 255, 255, 0.75);
 }

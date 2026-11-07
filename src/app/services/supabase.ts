@@ -401,6 +401,59 @@ export class SupabaseService {
     }
   }
 
+  async getRecompenses(IdContact: number) {
+    const { data, error } = await this.supabase
+      .from('t_Recompenses')
+      .select('IdRecompense, IdContact, NiveauEFS, DateAttribution')
+      .eq('IdContact', IdContact)
+      .order('NiveauEFS', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return data.map((ligne) => ({
+      IdRecompense: ligne.IdRecompense as number,
+      IdContact: ligne.IdContact as number,
+      NiveauEFS: ligne.NiveauEFS as number,
+      DateAttribution: ligne.DateAttribution as string,
+    }));
+  }
+
+  async ajouterRecompense(IdContact: number, niveau: number, DateAttribution: string) {
+    const { error } = await this.supabase.from('t_Recompenses').insert({
+      IdContact: IdContact,
+      NiveauEFS: niveau,
+      DateAttribution: DateAttribution,
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async modifierRecompense(IdRecompense: number, niveau: number, DateAttribution: string) {
+    const { error } = await this.supabase
+      .from('t_Recompenses')
+      .update({ NiveauEFS: niveau, DateAttribution: DateAttribution })
+      .eq('IdRecompense', IdRecompense);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async supprimerRecompense(IdRecompense: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('t_Recompenses')
+      .delete()
+      .eq('IdRecompense', IdRecompense);
+
+    if (error) {
+      throw error;
+    }
+  }
+
   async ajouterDon(IdContact: number, annee: number, NumCollecte: number, DateDon: string) {
     const { data, error } = await this.supabase
       .from('t_Dons')

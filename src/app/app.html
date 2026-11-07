@@ -88,6 +88,17 @@
               Statistiques collectes
             </a>
 
+            <a
+              class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"
+              routerLink="/recompenses"
+              routerLinkActive="active fw-bold"
+              (click)="fermerMenuNavigation()"
+              appTooltip="Consulter les récompenses des donneurs"
+              placement="bottom"
+            >
+              Gestion<br />Récompenses
+            </a>
+
             @if (session.utilisateur()?.Role === 'Admin' || session.utilisateur()?.Role === 'SA') {
               <a
                 class="nav-link commande-navbar rounded p-2 fs-5 text-center d-flex align-items-center justify-content-center"

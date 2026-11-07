@@ -1,0 +1,193 @@
+<div class="container-fluid py-2">
+  <h2 class="mb-2">Gestion Récompenses</h2>
+
+  <!-- Recherche -->
+  <div class="row mb-2">
+    <div class="col-12">
+      <div class="d-flex align-items-center gap-2">
+        <label for="rechercheDonneur" class="form-label fw-bold mb-0"> Recherche </label>
+
+        <div class="position-relative">
+          <input
+            id="rechercheDonneur"
+            type="text"
+            class="form-control form-control-sm recompenses-recherche-input"
+            [(ngModel)]="recherche"
+            (ngModelChange)="rechercherDonneurs()"
+            autocomplete="off"
+          />
+
+          @if (rechercheContacts.rechercheEnCours) {
+            <span
+              class="spinner-border spinner-border-sm position-absolute top-50 end-0 translate-middle-y me-2"
+              aria-hidden="true"
+            ></span>
+          }
+
+          @if (rechercheContacts.resultats.length > 0) {
+            <div class="list-group recompenses-resultats">
+              @for (resultat of rechercheContacts.resultats; track resultat.IdContact) {
+                <button
+                  type="button"
+                  class="list-group-item list-group-item-action"
+                  (click)="selectionnerDonneur(resultat.IdContact)"
+                >
+                  {{ afficherResultat(resultat) }}
+
+                  @if (resultat.DateNaissance) {
+                    <span class="text-muted ms-2">
+                      {{ resultat.DateNaissance | date: 'dd/MM/yyyy' }}
+                    </span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Donneur sélectionné -->
+  <div class="row mb-2">
+    <div class="col-md-6">
+      <label class="form-label fw-bold mb-1">Donneur sélectionné</label>
+
+      <input
+        type="text"
+        class="form-control form-control-sm fs-6 fw-bold"
+        [value]="
+          donneurSelectionne()
+            ? (donneurSelectionne()!.NomUsage || '') +
+              ' ' +
+              (donneurSelectionne()!.Prenom || '') +
+              ' - ' +
+              (donneurSelectionne()!.DateNaissance | date: 'dd/MM/yyyy')
+            : ''
+        "
+        disabled
+      />
+    </div>
+  </div>
+
+  @if (message()) {
+    <div class="alert alert-warning py-2 mb-2">
+      {{ message() }}
+    </div>
+  }
+
+  @if (!peutModifier()) {
+    <div class="alert alert-info py-2 mb-2">
+      <i class="bi bi-lock me-1" aria-hidden="true"></i>
+      Page en lecture seule : seuls les comptes SA et Admin peuvent modifier les récompenses.
+    </div>
+  }
+
+  <div class="d-flex flex-wrap gap-4 align-items-start">
+    <!-- Historique -->
+    <div>
+      <div class="fw-bold mb-1">Historique des récompenses</div>
+
+      <div class="border rounded recompenses-table-container">
+        <table class="table table-bordered table-hover table-striped table-sm mb-0 table-recompenses">
+          <thead>
+            <tr>
+              <th>Niveau atteint</th>
+              <th>Année d'obtention</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (recompense of recompenses(); track recompense.IdRecompense) {
+              <tr
+                (click)="selectionnerLigne(recompense)"
+                [class.table-primary]="
+                  recompense.IdRecompense === recompenseSelectionnee()?.IdRecompense
+                "
+                [style.cursor]="peutModifier() ? 'pointer' : 'default'"
+              >
+                <td>{{ recompense.NiveauEFS }}</td>
+                <td>{{ anneeDe(recompense) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="text-muted">
+                  {{ donneurSelectionne() ? 'Aucune récompense' : 'Aucun donneur sélectionné' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Saisie (SA / Admin) -->
+    @if (peutModifier()) {
+      <div class="d-flex flex-column gap-2">
+        <div class="fw-bold">
+          {{ recompenseSelectionnee() ? 'Modifier la récompense' : 'Nouvelle récompense' }}
+        </div>
+
+        <div class="recompenses-saisie">
+          <label for="niveauEdit" class="form-label mb-1">Niveau</label>
+          <select
+            id="niveauEdit"
+            class="form-select form-select-sm"
+            [(ngModel)]="niveauAEditer"
+            [disabled]="!donneurSelectionne()"
+          >
+            <option [ngValue]="null">--</option>
+            @for (niveau of niveaux; track niveau) {
+              <option [ngValue]="niveau">{{ niveau }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="recompenses-saisie">
+          <label for="anneeEdit" class="form-label mb-1">Année d'obtention</label>
+          <input
+            id="anneeEdit"
+            type="number"
+            class="form-control form-control-sm"
+            [(ngModel)]="anneeAEditer"
+            [disabled]="!donneurSelectionne()"
+            min="1900"
+          />
+        </div>
+
+        <div class="d-flex gap-2 mt-1">
+          <button
+            type="button"
+            class="btn btn-success btn-sm"
+            [disabled]="!peutAjouter()"
+            (click)="ajouter()"
+          >
+            Ajouter
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="!recompenseSelectionnee()"
+            (click)="modifier()"
+          >
+            Modifier
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            [disabled]="!recompenseSelectionnee()"
+            (click)="supprimer()"
+          >
+            Supprimer
+          </button>
+        </div>
+
+        <div class="text-muted small">
+          Cliquer sur une ligne du tableau pour la modifier ou la supprimer.
+        </div>
+      </div>
+    }
+  </div>
+</div>
