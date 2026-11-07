@@ -26,6 +26,21 @@ interface Recompense {
 export class GestionRecompenses implements OnDestroy {
   readonly niveaux = [1, 2, 3, 4, 5, 6, 7];
 
+  readonly criteres = [
+    { niveau: '1er', femmes: '3 dons', hommes: '5 dons', insigne: 'Bronze' },
+    { niveau: '2ème', femmes: '10 dons', hommes: '10 dons', insigne: 'Bronze' },
+    { niveau: '3ème', femmes: '25 dons', hommes: '25 dons', insigne: 'Bronze' },
+    { niveau: '4ème', femmes: '45 dons', hommes: '75 dons', insigne: 'Argent' },
+    { niveau: '5ème', femmes: '60 dons', hommes: '100 dons', insigne: 'Or' },
+    { niveau: '6ème', femmes: '100 dons', hommes: '150 dons', insigne: 'Or + 1 Palme' },
+    {
+      niveau: '7ème',
+      femmes: '200 dons et +',
+      hommes: '200 dons et +',
+      insigne: 'Or + 2 Palmes',
+    },
+  ];
+
   donneurSelectionne = signal<DonneurSelectionne | null>(null);
   recompenses = signal<Recompense[]>([]);
   recompenseSelectionnee = signal<Recompense | null>(null);
@@ -46,10 +61,7 @@ export class GestionRecompenses implements OnDestroy {
     }
 
     const borneBasse = Math.max(0, ...autres.filter((niveau) => niveau <= edite.NiveauEFS));
-    const borneHaute = Math.min(
-      Infinity,
-      ...autres.filter((niveau) => niveau > edite.NiveauEFS),
-    );
+    const borneHaute = Math.min(Infinity, ...autres.filter((niveau) => niveau > edite.NiveauEFS));
 
     return this.niveaux.filter(
       (niveau) => niveau === edite.NiveauEFS || (niveau > borneBasse && niveau < borneHaute),

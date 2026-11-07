@@ -42,3 +42,36 @@
 .recompenses-saisie {
   width: 10rem;
 }
+
+.recompenses-criteres-container {
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table-criteres th,
+.table-criteres td {
+  padding: 2px 0.75rem;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.table-criteres th {
+  background-color: var(--bs-emphasis-color);
+  color: var(--bs-body-bg);
+}
+
+.table-criteres td.criteres-niveau {
+  text-align: left;
+}
+
+.table-criteres .criteres-femmes {
+  background-color: #f291f2;
+  color: #212529;
+}
+
+.table-criteres .criteres-hommes {
+  background-color: #9a9ae6;
+  color: #212529;
+}

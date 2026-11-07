@@ -83,6 +83,36 @@
   flex: 0 0 auto;
 }
 
+/* Grand écran : le header reste sur une ligne ; le titre ne passe sur 2 lignes qu'en dernier recours. */
+@media screen and (min-width: 1400px) {
+  .app-navbar-inner {
+    flex-wrap: nowrap;
+  }
+
+  .app-navbar-brand {
+    flex: 0 1 auto;
+  }
+
+  .app-navbar-brand .navbar-brand {
+    min-width: 0;
+    white-space: normal;
+    font-size: 1.3rem !important;
+  }
+
+  .app-navbar-links {
+    gap: 0.4rem;
+  }
+
+  .navbar .navbar-nav .commande-navbar {
+    width: 118px;
+  }
+
+  .app-navbar-controls,
+  .app-navbar-content {
+    flex-shrink: 0;
+  }
+}
+
 @media screen and (min-width: 700px) and (max-width: 1399.98px) and (orientation: landscape) {
   .app-navbar-inner {
     display: grid;

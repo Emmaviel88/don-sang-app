@@ -89,7 +89,9 @@
       <div class="fw-bold mb-1">Historique des récompenses</div>
 
       <div class="border rounded recompenses-table-container">
-        <table class="table table-bordered table-hover table-striped table-sm mb-0 table-recompenses">
+        <table
+          class="table table-bordered table-hover table-striped table-sm mb-0 table-recompenses"
+        >
           <thead>
             <tr>
               <th>Niveau atteint</th>
@@ -189,5 +191,36 @@
         </div>
       </div>
     }
+  </div>
+
+  <!-- Critères d'attribution -->
+  <div class="mt-3">
+    <div class="fw-bold mb-1">Critères d'attribution</div>
+
+    <div class="border rounded recompenses-criteres-container">
+      <table class="table table-bordered table-sm mb-0 table-criteres">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="criteres-femmes">Femmes</th>
+            <th class="criteres-hommes">Hommes</th>
+            <th>Diplôme</th>
+            <th>Insigne</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (critere of criteres; track critere.niveau) {
+            <tr>
+              <td class="criteres-niveau text-end">{{ critere.niveau }} niveau</td>
+              <td class="criteres-femmes">{{ critere.femmes }}</td>
+              <td class="criteres-hommes">{{ critere.hommes }}</td>
+              <td class="text-end">Diplôme de {{ critere.niveau }} niveau</td>
+              <td>{{ critere.insigne }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
