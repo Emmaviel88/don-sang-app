@@ -1,5 +1,5 @@
 <div class="container-fluid py-2">
-  <h2 class="mb-2">Gestion Récompenses</h2>
+  <h2 class="mb-2">Gestion des Récompenses</h2>
 
   <!-- Recherche -->
   <div class="row mb-2">
@@ -77,8 +77,8 @@
   }
 
   @if (!peutModifier()) {
-    <div class="alert alert-info py-2 mb-2">
-      <i class="bi bi-lock me-1" aria-hidden="true"></i>
+    <div class="alert alert-warning text-warning col-md-6 py-2 mb-2">
+      <i class="bi bi-lock me-1 text-warning" aria-hidden="true"></i>
       Page en lecture seule : seuls les comptes SA et Admin peuvent modifier les récompenses.
     </div>
   }
@@ -202,8 +202,8 @@
         <thead>
           <tr>
             <th></th>
-            <th class="criteres-femmes">Femmes</th>
-            <th class="criteres-hommes">Hommes</th>
+            <th>Femmes</th>
+            <th>Hommes</th>
             <th>Diplôme</th>
             <th>Insigne</th>
           </tr>
