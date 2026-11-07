@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, effect, OnDestroy, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, effect, OnDestroy, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
@@ -30,6 +30,18 @@ export class GestionRecompenses implements OnDestroy {
   recompenses = signal<Recompense[]>([]);
   recompenseSelectionnee = signal<Recompense | null>(null);
   message = signal('');
+
+  // Niveaux non encore atteints (en modification, le niveau de la ligne éditée reste proposé).
+  niveauxDisponibles = computed(() => {
+    const edite = this.recompenseSelectionnee();
+    const atteints = new Set(
+      this.recompenses()
+        .filter((recompense) => recompense.IdRecompense !== edite?.IdRecompense)
+        .map((recompense) => recompense.NiveauEFS),
+    );
+
+    return this.niveaux.filter((niveau) => niveau === edite?.NiveauEFS || !atteints.has(niveau));
+  });
 
   recherche = '';
   readonly rechercheContacts: RechercheContactController;

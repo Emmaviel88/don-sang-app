@@ -137,7 +137,7 @@
             [disabled]="!donneurSelectionne()"
           >
             <option [ngValue]="null">--</option>
-            @for (niveau of niveaux; track niveau) {
+            @for (niveau of niveauxDisponibles(); track niveau) {
               <option [ngValue]="niveau">{{ niveau }}</option>
             }
           </select>
