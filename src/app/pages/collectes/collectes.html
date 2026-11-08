@@ -72,12 +72,14 @@
       </button>
 
       @if (!collecteModifiable()) {
-        <span class="alert alert-warning py-2 ms-2">
-          {{
+        <span
+          class="alert alert-warning py-2 ms-1"
+          [innerHTML]="
             collecteModifiable()
               ? ''
-              : 'Vous ne pouvez pas ajouter ni supprimer de don pour la collecte sélectionnée !'
-          }}
+              : '<i class=\'bi bi-lock me-1\' aria-hidden=\'true\'></i>Vous ne pouvez pas ajouter ni supprimer de don pour la collecte sélectionnée !'
+          "
+        >
         </span>
       }
 
