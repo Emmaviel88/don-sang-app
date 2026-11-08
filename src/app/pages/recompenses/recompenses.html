@@ -80,9 +80,13 @@
   }
 
   @if (!peutModifier()) {
-    <div class="alert alert-warning col-md-6 py-2 mb-2">
-      <i class="bi bi-lock me-1" aria-hidden="true"></i>
-      Page en lecture seule : seuls les comptes SA et Admin peuvent modifier les récompenses.
+    <div class="row mb-2">
+      <div class="col-md-6">
+        <div class="alert alert-warning py-2 mb-0">
+          <i class="bi bi-lock me-1" aria-hidden="true"></i>
+          Page en lecture seule : seuls les comptes SA et Admin peuvent modifier les récompenses.
+        </div>
+      </div>
     </div>
   }
 
