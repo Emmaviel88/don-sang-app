@@ -44,6 +44,7 @@ export class GestionRecompenses implements OnDestroy {
   donneurSelectionne = signal<DonneurSelectionne | null>(null);
   recompenses = signal<Recompense[]>([]);
   recompenseSelectionnee = signal<Recompense | null>(null);
+  nbDonsTotal = signal<number | null>(null);
   message = signal('');
 
   // Ajout : uniquement les niveaux supérieurs au plus haut niveau atteint.
@@ -90,8 +91,10 @@ export class GestionRecompenses implements OnDestroy {
 
       if (donneur) {
         void this.chargerRecompenses(donneur.IdContact);
+        void this.chargerNbDons(donneur);
       } else {
         this.recompenses.set([]);
+        this.nbDonsTotal.set(null);
       }
     });
   }
@@ -159,6 +162,26 @@ export class GestionRecompenses implements OnDestroy {
       this.message.set('Impossible de sélectionner le donneur.');
 
       this.cdr.detectChanges();
+    }
+  }
+
+  async chargerNbDons(donneur: DonneurSelectionne): Promise<void> {
+    this.nbDonsTotal.set(null);
+
+    try {
+      const dons = await this.supabase.getDons(donneur.IdContact);
+
+      // Évite d'afficher le résultat d'un donneur précédemment sélectionné.
+      if (this.donneurSelectionne()?.IdContact !== donneur.IdContact) {
+        return;
+      }
+
+      const nbApres2013 = dons.filter((don) => don.annee >= 2013).length;
+
+      this.nbDonsTotal.set((donneur.NbDonsAvant2013 ?? 0) + nbApres2013);
+    } catch (error) {
+      console.error('ERREUR CHARGEMENT NOMBRE DE DONS :', error);
+      this.nbDonsTotal.set(null);
     }
   }
 

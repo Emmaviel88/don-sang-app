@@ -62,7 +62,10 @@
               ' ' +
               (donneurSelectionne()!.Prenom || '') +
               ' - ' +
-              (donneurSelectionne()!.DateNaissance | date: 'dd/MM/yyyy')
+              (donneurSelectionne()!.DateNaissance | date: 'dd/MM/yyyy') +
+              (nbDonsTotal() !== null
+                ? ' - ' + nbDonsTotal() + (nbDonsTotal()! > 1 ? ' dons' : ' don')
+                : '')
             : ''
         "
         disabled
