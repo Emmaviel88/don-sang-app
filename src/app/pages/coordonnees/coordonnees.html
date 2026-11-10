@@ -539,10 +539,21 @@ apportées au donneur"
               >
               </textarea>
             </div>
-            <div class="col-md-1"></div>
-            <div class="col-md-2">
-              <br />
-              <label class="form-label mb-1"></label>
+            <div class="col-md-1 d-flex flex-column">
+              <label class="form-label mb-1 invisible">&nbsp;</label>
+              <div class="flex-grow-1 d-flex align-items-center">
+                @if (donneur && donneur.IdContact && imageMeilleureRecompense) {
+                  <img
+                    [src]="imageMeilleureRecompense"
+                    alt="Plus haute récompense atteinte"
+                    style="height: 70px; width: auto"
+                  />
+                }
+              </div>
+            </div>
+            <div class="col-md-2 d-flex flex-column">
+              <label class="form-label mb-1 invisible">&nbsp;</label>
+              <div class="flex-grow-1 d-flex align-items-center">
               @if (donneur && (!adresse || !adresse.EstValide)) {
                 <button
                   type="button"
@@ -561,6 +572,7 @@ apportées au donneur"
                   Adresse valide
                 </button>
               }
+              </div>
             </div>
             <div class="col-md-1"></div>
           </div>

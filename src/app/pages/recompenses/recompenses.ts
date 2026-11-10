@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, computed, effect, OnDestroy, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { imageRecompense } from './image-recompense';
 import { FormsModule } from '@angular/forms';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SupabaseService } from '../../services/supabase';
@@ -46,6 +47,10 @@ export class GestionRecompenses implements OnDestroy {
   recompenseSelectionnee = signal<Recompense | null>(null);
   nbDonsTotal = signal<number | null>(null);
   message = signal('');
+
+  imageMeilleureRecompense = computed(() =>
+    imageRecompense(this.recompenses().map((recompense) => recompense.NiveauEFS)),
+  );
 
   // Ajout : uniquement les niveaux supérieurs au plus haut niveau atteint.
   // Modification : le niveau de la ligne éditée et ceux compris entre ses niveaux voisins.

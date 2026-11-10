@@ -6,6 +6,7 @@ import { CollecteSelectionService, CollecteSelectionnee } from '../../services/c
 import { DonneurSelectionService } from '../../services/donneur-selection';
 import { SessionService } from '../../services/session';
 import { CompteursContactsService } from '../../services/compteurs-contacts';
+import { imageRecompense } from '../recompenses/image-recompense';
 
 interface Donneur {
   IdContact: number;
@@ -78,6 +79,27 @@ export class Coordonnees implements OnInit {
   controleRecherche?: RechercheContactComponent;
 
   donneur: Donneur | null = null;
+  imageMeilleureRecompense: string | null = null;
+
+  private async chargerImageRecompense(): Promise<void> {
+    const donneur = this.donneur;
+
+    if (!donneur) {
+      return;
+    }
+
+    try {
+      const recompenses = await this.supabase.getRecompenses(donneur.IdContact);
+
+      if (this.donneur === donneur) {
+        this.imageMeilleureRecompense = imageRecompense(
+          recompenses.map((recompense) => recompense.NiveauEFS),
+        );
+      }
+    } catch {
+      this.imageMeilleureRecompense = null;
+    }
+  }
 
   erreur = '';
   succes = '';
@@ -305,8 +327,8 @@ export class Coordonnees implements OnInit {
       this.adresse = null;
       this.adresseExistante = false;
       this.pays = null;
+      this.imageMeilleureRecompense = null;
 
-      this.telephonePortable = '';
       this.email = '';
       this.idMoyenTelephone = null;
       this.idMoyenEmail = null;
@@ -327,6 +349,7 @@ export class Coordonnees implements OnInit {
         this.chargerAdresse(),
         this.chargerMoyensContact(),
         this.calculerEligibilite(),
+        this.chargerImageRecompense(),
       ]);
 
       if (numero !== this.numeroSelection) {

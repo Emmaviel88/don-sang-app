@@ -198,6 +198,14 @@
         </div>
       </div>
     }
+
+    @if (imageMeilleureRecompense(); as image) {
+      <img
+        [src]="image"
+        alt="Plus haute récompense atteinte"
+        style="height: 90px; width: auto"
+      />
+    }
   </div>
 
   <!-- Critères d'attribution -->
