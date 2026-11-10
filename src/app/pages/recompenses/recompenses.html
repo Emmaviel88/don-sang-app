@@ -200,11 +200,10 @@
     }
 
     @if (imageMeilleureRecompense(); as image) {
-      <img
-        [src]="image"
-        alt="Plus haute récompense atteinte"
-        style="height: 90px; width: auto"
-      />
+      <div class="d-flex flex-column align-items-center">
+        <small class="text-muted" style="font-size: 0.45em">{{ libelleImageRecompense(image) }}</small>
+        <img [src]="image" alt="Plus haute récompense atteinte" style="height: 90px; width: auto" />
+      </div>
     }
   </div>
 

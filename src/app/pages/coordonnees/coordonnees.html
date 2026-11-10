@@ -361,73 +361,101 @@ apportées au donneur"
         <div class="card-header py-1 fw-bold">État / Statut</div>
 
         @if (donneur) {
-          <div class="card-body py-2">
-            <div class="form-check mb-1 etat-statut-check">
-              <input
-                id="actif"
-                type="checkbox"
-                class="form-check-input"
-                [ngModel]="donneur.Actif"
-                (ngModelChange)="donneur.Actif = $event"
-                [disabled]="!modeEdition || donneur.EstDecede"
-              />
+          <div class="card-body py-2 d-flex justify-content-between align-items-stretch">
+            <div>
+              <div class="form-check mb-1 etat-statut-check">
+                <input
+                  id="actif"
+                  type="checkbox"
+                  class="form-check-input"
+                  [ngModel]="donneur.Actif"
+                  (ngModelChange)="donneur.Actif = $event"
+                  [disabled]="!modeEdition || donneur.EstDecede"
+                />
 
-              <label for="actif" class="form-check-label"> Actif </label>
+                <label for="actif" class="form-check-label"> Actif </label>
+              </div>
+
+              <div class="form-check mb-1 etat-statut-check">
+                <input
+                  id="primoDon"
+                  type="checkbox"
+                  class="form-check-input"
+                  [ngModel]="donneur.PrimoDon"
+                  (ngModelChange)="donneur.PrimoDon = $event"
+                  [disabled]="!modeEdition"
+                />
+
+                <label for="primoDon" class="form-check-label"> Primo-don </label>
+              </div>
+
+              <div class="form-check mb-1 etat-statut-check">
+                <input
+                  id="volontairePlasma"
+                  type="checkbox"
+                  class="form-check-input"
+                  [ngModel]="donneur.VolontairePlasma"
+                  (ngModelChange)="donneur.VolontairePlasma = $event"
+                  [disabled]="!modeEdition"
+                />
+
+                <label for="volontairePlasma" class="form-check-label"> Volontaire plasma </label>
+              </div>
+
+              <div class="form-check mb-1 etat-statut-check">
+                <input
+                  id="nePeutVeutPlusDonner"
+                  type="checkbox"
+                  class="form-check-input"
+                  [ngModel]="donneur.NePeutVeutPlusDonner"
+                  (ngModelChange)="donneur.NePeutVeutPlusDonner = $event"
+                  [disabled]="!modeEdition"
+                />
+
+                <label for="nePeutVeutPlusDonner" class="form-check-label">
+                  Ne peut/veut plus donner
+                </label>
+              </div>
+
+              <div class="form-check mb-1 etat-statut-check">
+                <input
+                  id="estDecede"
+                  type="checkbox"
+                  class="form-check-input"
+                  [ngModel]="donneur.EstDecede"
+                  (ngModelChange)="definirDecede($event)"
+                  [disabled]="!modeEdition"
+                />
+
+                <label for="estDecede" class="form-check-label"> Décédé </label>
+              </div>
             </div>
 
-            <div class="form-check mb-1 etat-statut-check">
-              <input
-                id="primoDon"
-                type="checkbox"
-                class="form-check-input"
-                [ngModel]="donneur.PrimoDon"
-                (ngModelChange)="donneur.PrimoDon = $event"
-                [disabled]="!modeEdition"
-              />
-
-              <label for="primoDon" class="form-check-label"> Primo-don </label>
-            </div>
-
-            <div class="form-check mb-1 etat-statut-check">
-              <input
-                id="volontairePlasma"
-                type="checkbox"
-                class="form-check-input"
-                [ngModel]="donneur.VolontairePlasma"
-                (ngModelChange)="donneur.VolontairePlasma = $event"
-                [disabled]="!modeEdition"
-              />
-
-              <label for="volontairePlasma" class="form-check-label"> Volontaire plasma </label>
-            </div>
-
-            <div class="form-check mb-1 etat-statut-check">
-              <input
-                id="nePeutVeutPlusDonner"
-                type="checkbox"
-                class="form-check-input"
-                [ngModel]="donneur.NePeutVeutPlusDonner"
-                (ngModelChange)="donneur.NePeutVeutPlusDonner = $event"
-                [disabled]="!modeEdition"
-              />
-
-              <label for="nePeutVeutPlusDonner" class="form-check-label">
-                Ne peut/veut plus donner
-              </label>
-            </div>
-
-            <div class="form-check mb-1 etat-statut-check">
-              <input
-                id="estDecede"
-                type="checkbox"
-                class="form-check-input"
-                [ngModel]="donneur.EstDecede"
-                (ngModelChange)="definirDecede($event)"
-                [disabled]="!modeEdition"
-              />
-
-              <label for="estDecede" class="form-check-label"> Décédé </label>
-            </div>
+            @if (donneur.IdContact) {
+              <div class="d-flex flex-column align-items-center justify-content-between">
+                <div
+                  class="flex-grow-1 d-flex flex-column align-items-center justify-content-center"
+                >
+                  @if (imageMeilleureRecompense) {
+                    <small class="text-muted" style="font-size: 0.8em">{{
+                      libelleImageRecompense(imageMeilleureRecompense)
+                    }}</small>
+                    <img
+                      [src]="imageMeilleureRecompense"
+                      alt="Plus haute récompense atteinte"
+                      style="height: 70px; width: auto"
+                    />
+                  }
+                </div>
+                @if (nbDonsTotal !== null) {
+                  <div class="mb-1 d-flex align-items-center" style="min-height: 1.5rem">
+                    <small class="text-muted" style="font-size: 0.8em">
+                      {{ nbDonsTotal }} {{ nbDonsTotal > 1 ? 'dons' : 'don' }}
+                    </small>
+                  </div>
+                }
+              </div>
+            }
           </div>
         }
       </div>
@@ -539,39 +567,28 @@ apportées au donneur"
               >
               </textarea>
             </div>
-            <div class="col-md-1 d-flex flex-column">
-              <label class="form-label mb-1 invisible">&nbsp;</label>
-              <div class="flex-grow-1 d-flex align-items-center">
-                @if (donneur && donneur.IdContact && imageMeilleureRecompense) {
-                  <img
-                    [src]="imageMeilleureRecompense"
-                    alt="Plus haute récompense atteinte"
-                    style="height: 70px; width: auto"
-                  />
-                }
-              </div>
-            </div>
+            <div class="col-md-1"></div>
             <div class="col-md-2 d-flex flex-column">
               <label class="form-label mb-1 invisible">&nbsp;</label>
               <div class="flex-grow-1 d-flex align-items-center">
-              @if (donneur && (!adresse || !adresse.EstValide)) {
-                <button
-                  type="button"
-                  class="btn btn-warning"
-                  [class.disabled]="!peutBasculerValiditeAdresse"
-                  (click)="basculerValiditeAdresse()"
-                >
-                  Adresse invalide !
-                </button>
-              } @else if (donneur && peutBasculerValiditeAdresse) {
-                <button
-                  type="button"
-                  class="btn btn-outline-success"
-                  (click)="basculerValiditeAdresse()"
-                >
-                  Adresse valide
-                </button>
-              }
+                @if (donneur && (!adresse || !adresse.EstValide)) {
+                  <button
+                    type="button"
+                    class="btn btn-warning"
+                    [class.disabled]="!peutBasculerValiditeAdresse"
+                    (click)="basculerValiditeAdresse()"
+                  >
+                    Adresse invalide !
+                  </button>
+                } @else if (donneur && peutBasculerValiditeAdresse) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    (click)="basculerValiditeAdresse()"
+                  >
+                    Adresse valide
+                  </button>
+                }
               </div>
             </div>
             <div class="col-md-1"></div>

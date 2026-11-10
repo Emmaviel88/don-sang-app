@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, computed, effect, OnDestroy, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { imageRecompense } from './image-recompense';
+import { imageRecompense, libelleImageRecompense } from './image-recompense';
 import { FormsModule } from '@angular/forms';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SupabaseService } from '../../services/supabase';
@@ -47,6 +47,8 @@ export class GestionRecompenses implements OnDestroy {
   recompenseSelectionnee = signal<Recompense | null>(null);
   nbDonsTotal = signal<number | null>(null);
   message = signal('');
+
+  readonly libelleImageRecompense = libelleImageRecompense;
 
   imageMeilleureRecompense = computed(() =>
     imageRecompense(this.recompenses().map((recompense) => recompense.NiveauEFS)),

@@ -6,7 +6,7 @@ import { CollecteSelectionService, CollecteSelectionnee } from '../../services/c
 import { DonneurSelectionService } from '../../services/donneur-selection';
 import { SessionService } from '../../services/session';
 import { CompteursContactsService } from '../../services/compteurs-contacts';
-import { imageRecompense } from '../recompenses/image-recompense';
+import { imageRecompense, libelleImageRecompense } from '../recompenses/image-recompense';
 
 interface Donneur {
   IdContact: number;
@@ -80,6 +80,8 @@ export class Coordonnees implements OnInit {
 
   donneur: Donneur | null = null;
   imageMeilleureRecompense: string | null = null;
+  nbDonsTotal: number | null = null;
+  readonly libelleImageRecompense = libelleImageRecompense;
 
   private async chargerImageRecompense(): Promise<void> {
     const donneur = this.donneur;
@@ -88,17 +90,21 @@ export class Coordonnees implements OnInit {
       return;
     }
 
-    try {
-      const recompenses = await this.supabase.getRecompenses(donneur.IdContact);
+    const [recompenses, dons] = await Promise.all([
+      this.supabase.getRecompenses(donneur.IdContact).catch(() => null),
+      this.supabase.getDons(donneur.IdContact).catch(() => null),
+    ]);
 
-      if (this.donneur === donneur) {
-        this.imageMeilleureRecompense = imageRecompense(
-          recompenses.map((recompense) => recompense.NiveauEFS),
-        );
-      }
-    } catch {
-      this.imageMeilleureRecompense = null;
+    if (this.donneur !== donneur) {
+      return;
     }
+
+    this.imageMeilleureRecompense = recompenses
+      ? imageRecompense(recompenses.map((recompense) => recompense.NiveauEFS))
+      : null;
+    this.nbDonsTotal = dons
+      ? (donneur.NbDonsAvant2013 ?? 0) + dons.filter((don) => don.annee >= 2013).length
+      : null;
   }
 
   erreur = '';
@@ -328,7 +334,7 @@ export class Coordonnees implements OnInit {
       this.adresseExistante = false;
       this.pays = null;
       this.imageMeilleureRecompense = null;
-
+      this.nbDonsTotal = null;
       this.email = '';
       this.idMoyenTelephone = null;
       this.idMoyenEmail = null;
@@ -1225,7 +1231,8 @@ export class Coordonnees implements OnInit {
     // Une adresse complète inchangée conserve son statut (ex. invalidée suite à un courrier retourné).
     // Si le SA a basculé le statut manuellement, son choix prévaut (sauf adresse incomplète).
     const estValide =
-      adresseComplete && (this.validiteAdresseForcee || !adresseModifiee ? this.adresse.EstValide : true);
+      adresseComplete &&
+      (this.validiteAdresseForcee || !adresseModifiee ? this.adresse.EstValide : true);
 
     const valeurs = {
       Adresse1: this.adresse.Adresse1?.trim() || null,
