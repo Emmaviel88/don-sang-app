@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, computed, effect, OnDestroy, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { imageRecompense, libelleImageRecompense } from './image-recompense';
+import { imageRecompense, libelleImageRecompense, niveauMaxRecompense } from './image-recompense';
 import { FormsModule } from '@angular/forms';
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SupabaseService } from '../../services/supabase';
@@ -52,6 +52,10 @@ export class GestionRecompenses implements OnDestroy {
 
   imageMeilleureRecompense = computed(() =>
     imageRecompense(this.recompenses().map((recompense) => recompense.NiveauEFS)),
+  );
+
+  niveauMeilleureRecompense = computed(() =>
+    niveauMaxRecompense(this.recompenses().map((recompense) => recompense.NiveauEFS)),
   );
 
   // Ajout : uniquement les niveaux supérieurs au plus haut niveau atteint.

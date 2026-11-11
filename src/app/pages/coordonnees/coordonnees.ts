@@ -6,7 +6,11 @@ import { CollecteSelectionService, CollecteSelectionnee } from '../../services/c
 import { DonneurSelectionService } from '../../services/donneur-selection';
 import { SessionService } from '../../services/session';
 import { CompteursContactsService } from '../../services/compteurs-contacts';
-import { imageRecompense, libelleImageRecompense } from '../recompenses/image-recompense';
+import {
+  imageRecompense,
+  libelleImageRecompense,
+  niveauMaxRecompense,
+} from '../recompenses/image-recompense';
 
 interface Donneur {
   IdContact: number;
@@ -80,6 +84,7 @@ export class Coordonnees implements OnInit {
 
   donneur: Donneur | null = null;
   imageMeilleureRecompense: string | null = null;
+  niveauMeilleureRecompense: number | null = null;
   nbDonsTotal: number | null = null;
   readonly libelleImageRecompense = libelleImageRecompense;
 
@@ -101,6 +106,9 @@ export class Coordonnees implements OnInit {
 
     this.imageMeilleureRecompense = recompenses
       ? imageRecompense(recompenses.map((recompense) => recompense.NiveauEFS))
+      : null;
+    this.niveauMeilleureRecompense = recompenses
+      ? niveauMaxRecompense(recompenses.map((recompense) => recompense.NiveauEFS))
       : null;
     this.nbDonsTotal = dons
       ? (donneur.NbDonsAvant2013 ?? 0) + dons.filter((don) => don.annee >= 2013).length
@@ -334,6 +342,7 @@ export class Coordonnees implements OnInit {
       this.adresseExistante = false;
       this.pays = null;
       this.imageMeilleureRecompense = null;
+      this.niveauMeilleureRecompense = null;
       this.nbDonsTotal = null;
       this.email = '';
       this.idMoyenTelephone = null;
