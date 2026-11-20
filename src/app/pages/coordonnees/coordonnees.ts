@@ -1247,7 +1247,7 @@ export class Coordonnees implements OnInit {
       Adresse1: this.adresse.Adresse1?.trim() || null,
       Adresse2: this.adresse.Adresse2?.trim() || null,
       CodePostal: this.adresse.CodePostal?.trim() || null,
-      Commune: this.adresse.Commune?.trim() || null,
+      Commune: this.adresse.Commune?.trim().toLocaleUpperCase('fr-FR') || null,
       IdPays: this.adresse.IdPays,
       Commentaire: this.adresse.Commentaire?.trim() || null,
       EstPrincipale: true,
