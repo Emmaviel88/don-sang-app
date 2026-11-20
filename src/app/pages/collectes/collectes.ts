@@ -281,7 +281,7 @@ export class CollectesComponent {
 
     // Cas d'un User : ne peut saisir un don que le jour de la collecte
     if (utilisateur.Role === 'User') {
-      if (dateCollecte === aujourdHui) {
+      if (dateCollecte.getTime() === aujourdHui.getTime()) {
         return true;
       }
     }
@@ -296,7 +296,22 @@ export class CollectesComponent {
     //return utilisateur.Role === 'SA' || utilisateur.Role === 'Admin';
   }
 
-  async enregistrerDon(): Promise<void> {
+  // Action exceptionnelle (Admin/SA) : enregistre un don même si le donneur n'est pas éligible
+  peutForcerDon(): boolean {
+    const role = this.session.utilisateur()?.Role;
+
+    return (role === 'SA' || role === 'Admin') && !!this.donneurSelectionne() && this.collecteModifiable();
+  }
+
+  async forcerDon(): Promise<void> {
+    if (!this.peutForcerDon()) {
+      return;
+    }
+
+    await this.enregistrerDon(true);
+  }
+
+  async enregistrerDon(forcer = false): Promise<void> {
     const donneur = this.donneurSelectionne();
     const collecte = this.collecteSelectionnee();
 
@@ -304,7 +319,7 @@ export class CollectesComponent {
       return;
     }
 
-    if (!donneur.eligible) {
+    if (!donneur.eligible && !forcer) {
       return;
     }
 
@@ -316,6 +331,15 @@ export class CollectesComponent {
       this.message.set('');
 
       const donsExistants = await this.supabase.getDons(donneur.IdContact);
+
+      const dejaEnregistre = donsExistants.some(
+        (don) => don.annee === collecte.annee && don.NumCollecte === collecte.NumCollecte,
+      );
+
+      if (dejaEnregistre) {
+        this.message.set('Un don est déjà enregistré pour ce donneur dans cette collecte.');
+        return;
+      }
 
       await this.supabase.ajouterDon(
         donneur.IdContact,
