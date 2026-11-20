@@ -905,7 +905,7 @@ export class Coordonnees implements OnInit {
       Actif: true,
       NePeutVeutPlusDonner: false,
       VolontairePlasma: false,
-      PrimoDon: false,
+      PrimoDon: true,
       Commentaire: null,
     };
     this.adresse = this.adresseVide();
