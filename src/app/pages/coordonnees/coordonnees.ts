@@ -1115,8 +1115,12 @@ export class Coordonnees implements OnInit {
     this.succes = '';
 
     try {
+      this.donneur.NomUsage = this.donneur.NomUsage?.trim().toLocaleUpperCase('fr-FR') ?? null;
+      this.donneur.NomdeNaissance =
+        this.donneur.NomdeNaissance?.trim().toLocaleUpperCase('fr-FR') || null;
+
       if (this.modeCreation) {
-        if (!this.donneur.NomUsage?.trim() || !this.donneur.Prenom?.trim()) {
+        if (!this.donneur.NomUsage || !this.donneur.Prenom?.trim()) {
           this.erreur = 'Le nom et le prénom sont obligatoires.';
           return;
         }
@@ -1125,8 +1129,8 @@ export class Coordonnees implements OnInit {
           .from('t_Contacts')
           .insert({
             Civilite: this.donneur.Civilite,
-            NomUsage: this.donneur.NomUsage.trim(),
-            NomdeNaissance: this.donneur.NomdeNaissance?.trim() || null,
+            NomUsage: this.donneur.NomUsage,
+            NomdeNaissance: this.donneur.NomdeNaissance,
             Prenom: this.donneur.Prenom.trim(),
             Sexe: this.donneur.Sexe,
             DateNaissance: this.donneur.DateNaissance,
