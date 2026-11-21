@@ -2,60 +2,58 @@
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h2 class="mb-0">Collectes et enregistrement des dons</h2>
 
-    @if (sessionRole() === 'SA') {
-      <div class="d-flex gap-2">
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          [disabled]="exportNouveauxEnCours() || !collecteSelectionnee()"
-          (click)="exporterNouveauxDonneurs()"
-          data-bs-toggle="tooltip"
-          data-bs-placement="bottom"
-          data-bs-custom-class="tooltip-sombre"
-          title="Exporter vers Excel les nouveaux donneurs
+    <div class="d-flex gap-2">
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="!peutExporter() || exportNouveauxEnCours() || !collecteSelectionnee()"
+        (click)="exporterNouveauxDonneurs()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        data-bs-custom-class="tooltip-sombre"
+        title="Exporter vers Excel les nouveaux donneurs
 (primo-donneurs) de la collecte sélectionnée"
-        >
-          @if (exportNouveauxEnCours()) {
-            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-          }
-          Exporter Nouveaux Donneurs collecte (Excel)
-        </button>
+      >
+        @if (exportNouveauxEnCours()) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Exporter Nouveaux Donneurs collecte (Excel)
+      </button>
 
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          [disabled]="exportEnCours() || !collecteSelectionnee()"
-          (click)="exporterDonneursEligibles()"
-          data-bs-toggle="tooltip"
-          data-bs-placement="bottom"
-          data-bs-custom-class="tooltip-sombre"
-          title="Exporter la liste des donneurs
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="!peutExporter() || exportEnCours() || !collecteSelectionnee()"
+        (click)="exporterDonneursEligibles()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        data-bs-custom-class="tooltip-sombre"
+        title="Exporter la liste des donneurs
 éligibles vers Excel"
-        >
-          @if (exportEnCours()) {
-            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-          }
-          Exporter la liste des donneurs éligibles (Excel)
-        </button>
+      >
+        @if (exportEnCours()) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Exporter la liste des donneurs éligibles (Excel)
+      </button>
 
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          [disabled]="exportPlasmaEnCours() || !collecteSelectionnee()"
-          (click)="exporterVolontairesPlasma()"
-          data-bs-toggle="tooltip"
-          data-bs-placement="bottom"
-          data-bs-custom-class="tooltip-sombre"
-          title="Exporter vers Excel la liste des
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="!peutExporter() || exportPlasmaEnCours() || !collecteSelectionnee()"
+        (click)="exporterVolontairesPlasma()"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        data-bs-custom-class="tooltip-sombre"
+        title="Exporter vers Excel la liste des
 volontaires au don de plasma"
-        >
-          @if (exportPlasmaEnCours()) {
-            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-          }
-          Exporter les volontaires plasma (Excel)
-        </button>
-      </div>
-    }
+      >
+        @if (exportPlasmaEnCours()) {
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        }
+        Exporter les volontaires plasma (Excel)
+      </button>
+    </div>
   </div>
 
   @if (message()) {

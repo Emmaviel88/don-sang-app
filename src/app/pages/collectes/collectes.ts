@@ -54,6 +54,12 @@ export class CollectesComponent {
   // Ajout pour gestion verrouillage bouton export liste vers Excel en fonction du rôle de session
   sessionRole: import('@angular/core').WritableSignal<string | undefined>;
 
+  peutExporter(): boolean {
+    const role = this.sessionRole();
+
+    return role === 'SA' || role === 'Admin';
+  }
+
   constructor(
     private supabase: SupabaseService,
     private selection: CollecteSelectionService,
