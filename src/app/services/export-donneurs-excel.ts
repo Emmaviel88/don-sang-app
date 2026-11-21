@@ -124,7 +124,7 @@ export class ExportDonneursExcelService {
 
     const buffer = await workbook.xlsx.writeBuffer();
     const nomFichier = plasma
-      ? `Volontaires plasma collecte ${this.dateToString(dateCollecte)}.xlsx`
+      ? `Volontaires au don de plasma au ${new Date().toLocaleDateString('fr-FR').replaceAll('/', '-')}.xlsx`
       : `Liste donneurs collecte ${this.dateToString(dateCollecte)}.xlsx`;
 
     this.declencherTelechargement(buffer, nomFichier);
@@ -882,7 +882,7 @@ export class ExportDonneursExcelService {
     const ligneTitre = feuille.getRow(1);
 
     ligneTitre.getCell(1).value = plasma
-      ? `Liste des volontaires au don de plasma pour la collecte de sang du ${this.formaterDateLongue(dateCollecte)}`
+      ? `Volontaires au don de plasma au ${new Date().toLocaleDateString('fr-FR')}`
       : `Liste des donneurs éligibles pour la collecte de sang du ${this.formaterDateLongue(dateCollecte)}`;
 
     const ligneEntete = feuille.getRow(2);
