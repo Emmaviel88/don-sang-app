@@ -122,7 +122,7 @@ export class Statistiques implements OnInit {
   nbDonsAnnee = 0;
   nbDonneursAnnee = 0;
 
-  portee = signal<'collecte' | 'annee'>('collecte');
+  portee = signal<'collecte' | 'annee' | 'exercice'>('collecte');
   anneeSelectionnee = computed(() => this.collecteSelectionnee()?.annee ?? null);
 
   classementCommunes = signal<ClassementCommune[]>([]);
@@ -148,6 +148,10 @@ export class Statistiques implements OnInit {
       return `Répartition des donneurs par commune — année ${collecte.annee} (toutes les collectes)`;
     }
 
+    if (this.portee() === 'exercice') {
+      return `Répartition des donneurs par commune — exercice ${collecte.annee} (collectes 2 à 5 de ${collecte.annee} et 1 de ${collecte.annee + 1})`;
+    }
+
     const date = new Date(`${collecte.DateCollecte}T00:00:00`).toLocaleDateString('fr-FR');
 
     return `Répartition des donneurs par commune — collecte n° ${collecte.NumCollecte} du ${date}`;
@@ -160,7 +164,7 @@ export class Statistiques implements OnInit {
       {
         y: 70,
         texte:
-          this.portee() === 'annee'
+          this.portee() !== 'collecte'
             ? `Nb de dons : ${this.nbDonsAnnee}` +
               ` - Nb donneurs : ${this.nbDonneursAnnee} (${this.nbFemmes()} femmes / ${this.nbHommes()} hommes)` +
               ` - Âge moyen : ${this.formaterAgeMoyen()}`
@@ -285,6 +289,10 @@ export class Statistiques implements OnInit {
 
     if (collecte && this.portee() === 'annee') {
       return `statistiques-annee-${collecte.annee}.${extension}`;
+    }
+
+    if (collecte && this.portee() === 'exercice') {
+      return `statistiques-exercice-${collecte.annee}.${extension}`;
     }
 
     return collecte
@@ -491,9 +499,12 @@ export class Statistiques implements OnInit {
       return;
     }
 
-    const annuel = this.portee() === 'annee';
+    const exercice = this.portee() === 'exercice';
+    const annuel = this.portee() !== 'collecte';
     const datesAnnee = this.collectes()
-      .filter((item) => item.annee === collecte.annee)
+      .filter((item) =>
+        exercice ? this.dansExercice(item, collecte.annee) : item.annee === collecte.annee,
+      )
       .map((item) => item.DateCollecte)
       .sort();
 
@@ -510,8 +521,15 @@ export class Statistiques implements OnInit {
           .from('t_Dons')
           .select(
             'IdDon, IdDonneur, DateDon, t_Contacts!inner(NomUsage, Prenom, DateNaissance, Sexe)',
-          )
-          .eq('AnnéeDon', collecte.annee);
+          );
+
+        if (exercice) {
+          requete = requete.or(
+            `and("AnnéeDon".eq.${collecte.annee},NumCollecte.gte.2),and("AnnéeDon".eq.${collecte.annee + 1},NumCollecte.eq.1)`,
+          );
+        } else {
+          requete = requete.eq('AnnéeDon', collecte.annee);
+        }
 
         if (!annuel) {
           requete = requete.eq('NumCollecte', collecte.NumCollecte);
@@ -775,10 +793,13 @@ export class Statistiques implements OnInit {
       const nbDonsAvantPeriode = new Map<number, number>();
 
       for (const don of donsDesDonneurs) {
-        const donAvantPeriode = annuel
-          ? don.AnnéeDon < collecte.annee
-          : don.AnnéeDon < collecte.annee ||
-            (don.AnnéeDon === collecte.annee && don.NumCollecte < collecte.NumCollecte);
+        const donAvantPeriode = exercice
+          ? don.AnnéeDon < collecte.annee ||
+            (don.AnnéeDon === collecte.annee && don.NumCollecte < 2)
+          : annuel
+            ? don.AnnéeDon < collecte.annee
+            : don.AnnéeDon < collecte.annee ||
+              (don.AnnéeDon === collecte.annee && don.NumCollecte < collecte.NumCollecte);
 
         if (!donAvantPeriode) {
           continue;
@@ -997,14 +1018,22 @@ export class Statistiques implements OnInit {
     this.collecteSelectionnee.set(selection);
 
     // En mode annuel, les chiffres ne changent pas tant que l'année reste la même
-    if (this.portee() === 'annee' && ancienneAnnee === collecte.annee) {
+    if (this.portee() !== 'collecte' && ancienneAnnee === collecte.annee) {
       return;
     }
 
     await this.chargerStatistiques();
   }
 
-  async changerPortee(portee: 'collecte' | 'annee'): Promise<void> {
+  // Exercice N : collectes 2 à 5 de l'année N et collecte 1 de l'année N+1
+  private dansExercice(item: { annee: number; NumCollecte: number }, annee: number): boolean {
+    return (
+      (item.annee === annee && item.NumCollecte >= 2) ||
+      (item.annee === annee + 1 && item.NumCollecte === 1)
+    );
+  }
+
+  async changerPortee(portee: 'collecte' | 'annee' | 'exercice'): Promise<void> {
     if (this.portee() === portee) {
       return;
     }

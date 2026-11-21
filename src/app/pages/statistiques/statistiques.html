@@ -47,19 +47,31 @@
           >
             Année {{ anneeSelectionnee() }}
           </button>
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-primary]="portee() === 'exercice'"
+            [class.btn-outline-primary]="portee() !== 'exercice'"
+            [disabled]="anneeSelectionnee() === null"
+            (click)="changerPortee('exercice')"
+          >
+            Exercice {{ anneeSelectionnee() }}
+          </button>
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label fw-bold">
           {{
-            portee() === 'annee'
-              ? "Nb total de dons [Nb de donneurs] de l'année"
-              : 'Nb de donneurs de la collecte'
+            portee() === 'collecte'
+              ? 'Nb de donneurs de la collecte'
+              : portee() === 'exercice'
+                ? "Nb total de dons [Nb de donneurs] de l'exercice"
+                : "Nb total de dons [Nb de donneurs] de l'année"
           }}
         </label>
         <div class="form-control" style="background-color: var(--bs-secondary-bg)">
-          @if (portee() === 'annee') {
+          @if (portee() !== 'collecte') {
             <span>{{ nbDonsAnnee }} &nbsp;[{{ nbDonneursAnnee }}]</span>
           } @else {
             <span>{{ nbTotalDonneurs() }}</span>
@@ -77,9 +89,11 @@
       <div class="mb-3">
         <label class="form-label fw-bold">
           {{
-            portee() === 'annee'
-              ? "Âge moyen des donneurs de l'année"
-              : 'Âge moyen des donneurs de la collecte'
+            portee() === 'collecte'
+              ? 'Âge moyen des donneurs de la collecte'
+              : portee() === 'exercice'
+                ? "Âge moyen des donneurs de l'exercice"
+                : "Âge moyen des donneurs de l'année"
           }}
         </label>
         <div class="form-control" style="background-color: var(--bs-secondary-bg)">
