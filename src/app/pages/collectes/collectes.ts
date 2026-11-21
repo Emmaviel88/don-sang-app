@@ -50,6 +50,7 @@ export class CollectesComponent {
   message = signal('');
   exportEnCours = signal(false);
   exportNouveauxEnCours = signal(false);
+  exportPlasmaEnCours = signal(false);
   // Ajout pour gestion verrouillage bouton export liste vers Excel en fonction du rôle de session
   sessionRole: import('@angular/core').WritableSignal<string | undefined>;
 
@@ -132,6 +133,30 @@ export class CollectesComponent {
       this.message.set("Impossible d'exporter la liste des donneurs éligibles :" + error);
     } finally {
       this.exportEnCours.set(false);
+    }
+  }
+
+  async exporterVolontairesPlasma(): Promise<void> {
+    const collecte = this.collecteSelectionnee();
+
+    if (!collecte || this.exportPlasmaEnCours()) {
+      return;
+    }
+
+    this.exportPlasmaEnCours.set(true);
+    this.message.set('');
+
+    try {
+      const nb = await this.exportExcel.exporterVolontairesPlasma(collecte);
+
+      if (nb === 0) {
+        this.message.set('Aucun volontaire au don de plasma trouvé.');
+      }
+    } catch (error) {
+      console.error('ERREUR EXPORT VOLONTAIRES PLASMA :', error);
+      this.message.set("Impossible d'exporter la liste des volontaires plasma : " + error);
+    } finally {
+      this.exportPlasmaEnCours.set(false);
     }
   }
 
@@ -300,7 +325,11 @@ export class CollectesComponent {
   peutForcerDon(): boolean {
     const role = this.session.utilisateur()?.Role;
 
-    return (role === 'SA' || role === 'Admin') && !!this.donneurSelectionne() && this.collecteModifiable();
+    return (
+      (role === 'SA' || role === 'Admin') &&
+      !!this.donneurSelectionne() &&
+      this.collecteModifiable()
+    );
   }
 
   async forcerDon(): Promise<void> {

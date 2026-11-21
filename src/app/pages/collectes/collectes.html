@@ -37,6 +37,23 @@
           }
           Exporter la liste des donneurs éligibles (Excel)
         </button>
+
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="exportPlasmaEnCours() || !collecteSelectionnee()"
+          (click)="exporterVolontairesPlasma()"
+          data-bs-toggle="tooltip"
+          data-bs-placement="bottom"
+          data-bs-custom-class="tooltip-sombre"
+          title="Exporter vers Excel la liste des
+volontaires au don de plasma"
+        >
+          @if (exportPlasmaEnCours()) {
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          }
+          Exporter les volontaires plasma (Excel)
+        </button>
       </div>
     }
   </div>

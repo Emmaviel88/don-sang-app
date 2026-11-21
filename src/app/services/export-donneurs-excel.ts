@@ -60,13 +60,28 @@ export class ExportDonneursExcelService {
   constructor(private supabase: SupabaseService) {}
 
   async exporterDonneursEligibles(collecte: CollecteSelectionnee): Promise<void> {
+    await this.exporterListeDonneurs(collecte, false);
+  }
+
+  // Même modèle Excel que la liste des éligibles, mais limité aux volontaires plasma
+  // (actifs), sans appliquer les critères d'éligibilité au don de sang.
+  async exporterVolontairesPlasma(collecte: CollecteSelectionnee): Promise<number> {
+    return this.exporterListeDonneurs(collecte, true);
+  }
+
+  private async exporterListeDonneurs(
+    collecte: CollecteSelectionnee,
+    plasma: boolean,
+  ): Promise<number> {
     const dateCollecte = this.creerDateLocale(collecte.DateCollecte);
 
     if (!dateCollecte) {
       throw new Error('Date de collecte invalide.');
     }
 
-    const contacts = await this.chargerContactsActifs();
+    const contacts = (await this.chargerContactsActifs()).filter(
+      (contact) => !plasma || contact.VolontairePlasma === true,
+    );
     const idsContacts = contacts.map((contact) => contact.IdContact);
 
     const [adresses, moyensContact, dons] = await Promise.all([
@@ -80,7 +95,15 @@ export class ExportDonneursExcelService {
 
     const lignes = contacts
       .map((contact) =>
-        this.construireLigne(contact, dateCollecte, anneeDebut, adresses, moyensContact, dons),
+        this.construireLigne(
+          contact,
+          dateCollecte,
+          anneeDebut,
+          adresses,
+          moyensContact,
+          dons,
+          plasma,
+        ),
       )
       .filter((ligne): ligne is LigneExport => ligne !== null)
       .sort((a, b) => {
@@ -97,12 +120,16 @@ export class ExportDonneursExcelService {
       throw new Error('La feuille « Donneurs » est introuvable dans le modèle Excel.');
     }
 
-    this.remplirFeuille(feuille, lignes, dateCollecte, anneeDebut);
+    this.remplirFeuille(feuille, lignes, dateCollecte, anneeDebut, plasma);
 
     const buffer = await workbook.xlsx.writeBuffer();
-    const nomFichier = `Liste donneurs collecte ${this.dateToString(dateCollecte)}.xlsx`;
+    const nomFichier = plasma
+      ? `Volontaires plasma collecte ${this.dateToString(dateCollecte)}.xlsx`
+      : `Liste donneurs collecte ${this.dateToString(dateCollecte)}.xlsx`;
 
     this.declencherTelechargement(buffer, nomFichier);
+
+    return lignes.length;
   }
 
   // Nouveau donneur = donneur ayant donné à cette collecte et dont c'est le seul don à ce jour
@@ -750,6 +777,7 @@ export class ExportDonneursExcelService {
     >,
     moyensContact: Map<number, { Mobile: string | null; Mail: string | null }>,
     dons: Map<number, string[]>,
+    ignorerEligibilite = false,
   ): LigneExport | null {
     const naissance = this.creerDateLocale(contact.DateNaissance);
 
@@ -815,7 +843,7 @@ export class ExportDonneursExcelService {
 
     const eligible = ageOK && nombreDons365OK && delaiDernierDonOK && aDonneSur8Ans;
 
-    if (!eligible) {
+    if (!eligible && !ignorerEligibilite) {
       return null;
     }
 
@@ -849,11 +877,13 @@ export class ExportDonneursExcelService {
     lignes: LigneExport[],
     dateCollecte: Date,
     anneeDebut: number,
+    plasma = false,
   ): void {
     const ligneTitre = feuille.getRow(1);
 
-    ligneTitre.getCell(1).value =
-      `Liste des donneurs éligibles pour la collecte de sang du ${this.formaterDateLongue(dateCollecte)}`;
+    ligneTitre.getCell(1).value = plasma
+      ? `Liste des volontaires au don de plasma pour la collecte de sang du ${this.formaterDateLongue(dateCollecte)}`
+      : `Liste des donneurs éligibles pour la collecte de sang du ${this.formaterDateLongue(dateCollecte)}`;
 
     const ligneEntete = feuille.getRow(2);
 
@@ -945,7 +975,9 @@ export class ExportDonneursExcelService {
       ligneFooter.getCell(colonne).style = styleFooter;
     }
 
-    ligneFooter.getCell(1).value = `Nombre total de donneurs éligibles : ${lignes.length}`;
+    ligneFooter.getCell(1).value = plasma
+      ? `Nombre total de volontaires plasma : ${lignes.length}`
+      : `Nombre total de donneurs éligibles : ${lignes.length}`;
     feuille.mergeCells(`A${numeroLigneFooter}:U${numeroLigneFooter}`);
 
     const derniereLigneDonnees = numeroLigneFooter - 1;
