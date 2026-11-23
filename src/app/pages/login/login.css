@@ -18,6 +18,13 @@
 }
 
 /* --- COLONNE DE DROITE : LE FORMULAIRE --- */
+/* Tablette : l'image est réduite pour s'afficher entièrement (fond identique à celui de l'image) */
+@media (max-width: 1200px) {
+  :host::before {
+    background-color: #212529;
+    background-size: contain;
+  }
+}
 .login-container {
   display: flex;
   flex-direction: column;
