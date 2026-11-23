@@ -24,17 +24,37 @@
 
     <label for="password">Mot de passe</label>
 
-    <input
-      #champMotDePasse
-      id="password"
-      name="password"
-      type="password"
-      [(ngModel)]="password"
-      autocomplete="current-password"
-      required
-      [disabled]="chargement()"
-      class="bg-dark text-white"
-    />
+    <div class="champ-mot-de-passe">
+      <input
+        #champMotDePasse
+        id="password"
+        name="password"
+        [type]="motDePasseVisible() ? 'text' : 'password'"
+        [(ngModel)]="password"
+        autocomplete="current-password"
+        required
+        [disabled]="chargement()"
+        class="bg-dark text-white"
+      />
+
+      <button
+        type="button"
+        class="bouton-oeil"
+        aria-label="Maintenir appuyé pour afficher le mot de passe"
+        [disabled]="chargement()"
+        (pointerdown)="afficherMotDePasse($event)"
+        (pointerup)="masquerMotDePasse()"
+        (pointerleave)="masquerMotDePasse()"
+        (pointercancel)="masquerMotDePasse()"
+        (contextmenu)="$event.preventDefault()"
+      >
+        <i
+          class="bi"
+          [class.bi-eye]="!motDePasseVisible()"
+          [class.bi-eye-slash]="motDePasseVisible()"
+        ></i>
+      </button>
+    </div>
 
     <button type="submit" [disabled]="chargement()">
       @if (chargement()) {

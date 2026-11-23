@@ -103,6 +103,35 @@ button:hover:not(:disabled) {
   background: #b91c1c; /* Rouge plus sombre au survol */
 }
 
+.champ-mot-de-passe {
+  position: relative;
+}
+
+.champ-mot-de-passe input {
+  padding-right: 52px; /* Place pour le bouton « œil » */
+}
+
+button.bouton-oeil {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 52px;
+  height: 52px; /* Même hauteur que le champ */
+  margin-top: 0;
+  background: transparent;
+  color: #c8cdd3;
+  font-size: 22px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+button.bouton-oeil:hover:not(:disabled) {
+  background: transparent;
+  color: white;
+}
+
 button:disabled {
   opacity: 0.7;
   cursor: not-allowed;

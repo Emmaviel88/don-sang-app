@@ -8,27 +8,67 @@
   <form (ngSubmit)="changerMotDePasse()">
     <label for="nouveauMotDePasse">Nouveau mot de passe</label>
 
-    <input
-      id="nouveauMotDePasse"
-      name="nouveauMotDePasse"
-      type="password"
-      [(ngModel)]="nouveauMotDePasse"
-      autocomplete="new-password"
-      required
-      [disabled]="chargement"
-    />
+    <div class="champ-mot-de-passe">
+      <input
+        id="nouveauMotDePasse"
+        name="nouveauMotDePasse"
+        [type]="champVisible === 'nouveau' ? 'text' : 'password'"
+        [(ngModel)]="nouveauMotDePasse"
+        autocomplete="new-password"
+        required
+        [disabled]="chargement"
+      />
+
+      <button
+        type="button"
+        class="bouton-oeil"
+        aria-label="Maintenir appuyé pour afficher le mot de passe"
+        [disabled]="chargement"
+        (pointerdown)="afficher('nouveau', $event)"
+        (pointerup)="masquer()"
+        (pointerleave)="masquer()"
+        (pointercancel)="masquer()"
+        (contextmenu)="$event.preventDefault()"
+      >
+        <i
+          class="bi"
+          [class.bi-eye]="champVisible !== 'nouveau'"
+          [class.bi-eye-slash]="champVisible === 'nouveau'"
+        ></i>
+      </button>
+    </div>
 
     <label for="confirmation">Confirmer le mot de passe</label>
 
-    <input
-      id="confirmation"
-      name="confirmation"
-      type="password"
-      [(ngModel)]="confirmation"
-      autocomplete="new-password"
-      required
-      [disabled]="chargement"
-    />
+    <div class="champ-mot-de-passe">
+      <input
+        id="confirmation"
+        name="confirmation"
+        [type]="champVisible === 'confirmation' ? 'text' : 'password'"
+        [(ngModel)]="confirmation"
+        autocomplete="new-password"
+        required
+        [disabled]="chargement"
+      />
+
+      <button
+        type="button"
+        class="bouton-oeil"
+        aria-label="Maintenir appuyé pour afficher le mot de passe"
+        [disabled]="chargement"
+        (pointerdown)="afficher('confirmation', $event)"
+        (pointerup)="masquer()"
+        (pointerleave)="masquer()"
+        (pointercancel)="masquer()"
+        (contextmenu)="$event.preventDefault()"
+      >
+        <i
+          class="bi"
+          [class.bi-eye]="champVisible !== 'confirmation'"
+          [class.bi-eye-slash]="champVisible === 'confirmation'"
+        ></i>
+      </button>
+    </div>
 
     @if (message) {
       <p>{{ message }}</p>

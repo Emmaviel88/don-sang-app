@@ -16,7 +16,17 @@ export class ChangerMotDePasseComponent {
   confirmation = '';
   message = '';
   chargement = false;
+  champVisible: 'nouveau' | 'confirmation' | null = null;
 
+  // preventDefault évite que le champ perde le focus (et le clavier) pendant l'appui
+  afficher(champ: 'nouveau' | 'confirmation', event: Event): void {
+    event.preventDefault();
+    this.champVisible = champ;
+  }
+
+  masquer(): void {
+    this.champVisible = null;
+  }
   constructor(
     private supabase: SupabaseService,
     private router: Router

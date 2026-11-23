@@ -17,7 +17,17 @@ export class LoginComponent {
   password = '';
   message = signal('');
   chargement = signal(false);
+  motDePasseVisible = signal(false);
 
+  // preventDefault évite que le champ perde le focus (et le clavier) pendant l'appui
+  afficherMotDePasse(event: Event): void {
+    event.preventDefault();
+    this.motDePasseVisible.set(true);
+  }
+
+  masquerMotDePasse(): void {
+    this.motDePasseVisible.set(false);
+  }
   constructor(
     private supabase: SupabaseService,
     private session: SessionService,
