@@ -112,6 +112,16 @@
   color: rgb(55, 59, 69);
 }
 
+@media (max-width: 1200px) {
+  .comite-contenu {
+    grid-template-columns: minmax(0, 2.2fr) minmax(16rem, 1fr);
+  }
+
+  .comite-tableau th {
+    white-space: normal;
+  }
+}
+
 @media (max-width: 900px) {
   .comite-barre-haute {
     grid-template-columns: minmax(0, 1fr) 10rem;

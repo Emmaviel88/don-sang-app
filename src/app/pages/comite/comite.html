@@ -1,4 +1,4 @@
-<main class="comite-page">
+<main class="comite-page" appDeselectionHorsTableau (deselection)="deselectionnerAffectation()">
   <div class="comite-barre-haute">
     <app-recherche-contact
       inputId="rechercheMembre"
@@ -89,14 +89,26 @@
                       ? 0
                       : -1
                   "
-                  (click)="selectionnerAffectation(affectation)"
+                  (click)="basculerAffectation(affectation)"
                   (keydown)="naviguerDansAffectations($event, index)"
                 >
-                  <td>{{ affectation.Fonction.Libelle }}</td>
+                  <td>{{ abregerFonction(affectation.Fonction.Libelle) }}</td>
                   <td>{{ afficherNom(affectation.Contact) }}</td>
                   <td class="text-center">{{ affectation.DateDebut | date: 'dd/MM/yyyy' }}</td>
-                  <td class="text-end">{{ dureeFonction(affectation.DateDebut) }}</td>
-                  <td class="text-end">{{ ancienneteComite(affectation.IdContact) }}</td>
+                  <td class="text-end">
+                    <span class="d-xl-none">{{ dureeFonction(affectation.DateDebut, true) }}</span>
+                    <span class="d-none d-xl-inline">{{
+                      dureeFonction(affectation.DateDebut)
+                    }}</span>
+                  </td>
+                  <td class="text-end">
+                    <span class="d-xl-none">{{
+                      ancienneteComite(affectation.IdContact, true)
+                    }}</span>
+                    <span class="d-none d-xl-inline">{{
+                      ancienneteComite(affectation.IdContact)
+                    }}</span>
+                  </td>
                 </tr>
               } @empty {
                 <tr>
@@ -243,7 +255,7 @@
               <tbody>
                 @for (affectation of affectationsDuMembre(); track affectation.IdContactFonction) {
                   <tr>
-                    <td>{{ affectation.Fonction.Libelle }}</td>
+                    <td>{{ abregerFonction(affectation.Fonction.Libelle) }}</td>
                     <td>{{ affectation.DateDebut | date: 'dd/MM/yyyy' }}</td>
                   </tr>
                 } @empty {

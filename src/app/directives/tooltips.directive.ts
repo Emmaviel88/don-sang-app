@@ -1,6 +1,7 @@
 import {
   Directive,
   ElementRef,
+  HostListener,
   Input,
   OnDestroy,
   OnInit,
@@ -28,7 +29,10 @@ export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
 
     // Attend que l'élément soit totalement injecté dans le DOM pour initialiser Bootstrap
     setTimeout(() => {
-      if (typeof bootstrap !== 'undefined' && this.title) {
+      // Sur écran tactile (pas de survol), la bulle resterait affichée après le toucher
+      const survolPossible = window.matchMedia('(hover: hover)').matches;
+
+      if (survolPossible && typeof bootstrap !== 'undefined' && this.title) {
         this.tooltipInstance = new bootstrap.Tooltip(this.el.nativeElement, {
           title: this.title,
           placement: this.placement,
@@ -37,6 +41,12 @@ export class TooltipDirective implements OnInit, OnChanges, OnDestroy {
         });
       }
     }, 50);
+  }
+
+  // Une bulle ne doit pas rester affichée après un clic (changement de page, déconnexion…)
+  @HostListener('click')
+  masquerAuClic(): void {
+    this.tooltipInstance?.hide();
   }
 
   // Écoute les changements dynamiques (ex: bascule du mode sombre/clair sur le bouton de thème)

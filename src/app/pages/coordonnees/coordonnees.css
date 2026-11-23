@@ -402,7 +402,8 @@
 
 @media (max-width: 1100px) {
   .coordonnees-page {
-    overflow-y: auto;
+    height: auto;
+    overflow: visible;
   }
 
   .grille {

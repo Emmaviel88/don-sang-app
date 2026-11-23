@@ -11,9 +11,10 @@ import {
 } from '../../services/supabase';
 import { ResultatRechercheContact } from '../../services/recherche-contact';
 import { SessionService } from '../../services/session';
+import { DeselectionHorsTableauDirective } from '../../directives/deselection-hors-tableau.directive';
 
 @Component({
-  imports: [DatePipe, FormsModule, RechercheContactComponent],
+  imports: [DatePipe, FormsModule, RechercheContactComponent, DeselectionHorsTableauDirective],
   selector: 'app-comite',
   styleUrl: './comite.css',
   templateUrl: './comite.html',
@@ -152,6 +153,18 @@ export class Comite implements OnInit {
     };
 
     this.definirMembreSelectionne(membre);
+  }
+
+  basculerAffectation(affectation: AffectationComite): void {
+    if (this.idAffectationSelectionnee === affectation.IdContactFonction) {
+      this.deselectionnerAffectation();
+    } else {
+      this.selectionnerAffectation(affectation);
+    }
+  }
+
+  deselectionnerAffectation(): void {
+    this.idAffectationSelectionnee = null;
   }
 
   naviguerDansAffectations(event: KeyboardEvent, indexActuel: number): void {
@@ -523,18 +536,18 @@ export class Comite implements OnInit {
     return [nom, contact.Prenom].filter((valeur) => valeur !== null && valeur !== '').join(' ');
   }
 
-  dureeFonction(dateDebut: string | null): string {
+  dureeFonction(dateDebut: string | null, court = false): string {
     if (!dateDebut) {
       return '—';
     }
 
-    return this.formaterDuree(this.moisEntre(this.dateLocale(dateDebut), new Date()));
+    return this.formaterDuree(this.moisEntre(this.dateLocale(dateDebut), new Date()), court);
   }
 
-  ancienneteComite(idContact: number): string {
+  ancienneteComite(idContact: number, court = false): string {
     const mois = this.moisAncienneteParContact.get(idContact);
 
-    return mois === undefined ? '—' : this.formaterDuree(mois);
+    return mois === undefined ? '—' : this.formaterDuree(mois, court);
   }
 
   // Cumul des périodes de toutes les fonctions ; les périodes qui se chevauchent ne sont comptées qu'une fois.
@@ -599,7 +612,12 @@ export class Comite implements OnInit {
     return Math.max(0, mois);
   }
 
-  private formaterDuree(moisTotaux: number): string {
+  abregerFonction(libelle: string): string {
+    return libelle.replace(/Adjoint(?:\(e\)|e)?/g, 'Adj.');
+  }
+
+  // La forme courte (« 2 m ») sert aux écrans étroits (tablette) ; la forme longue (« 2 mois ») aux autres.
+  private formaterDuree(moisTotaux: number, court: boolean): string {
     const annees = Math.floor(moisTotaux / 12);
     const moisRestants = moisTotaux % 12;
 
@@ -607,7 +625,10 @@ export class Comite implements OnInit {
       return 'Moins d’un mois';
     }
 
-    return `${annees > 0 ? `${annees} an${annees > 1 ? 's' : ''}` : ''}${annees > 0 && moisRestants > 0 ? ' et ' : ''}${moisRestants > 0 ? `${moisRestants} mois` : ''}`;
+    const texteAnnees = annees > 0 ? `${annees} an${annees > 1 ? 's' : ''}` : '';
+    const texteMois = moisRestants > 0 ? `${moisRestants} ${court ? 'm' : 'mois'}` : '';
+
+    return [texteAnnees, texteMois].filter((texte) => texte !== '').join(' ');
   }
 
   estAffectationSelectionnee(affectation: AffectationComite): boolean {

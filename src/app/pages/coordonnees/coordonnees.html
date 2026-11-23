@@ -295,7 +295,7 @@ apportées au donneur"
                 />
               </div>
 
-              <div class="col-md-4">
+              <div class="col-md-3 col-xl-4">
                 <label class="form-label mb-1"> Prénom </label>
 
                 <input
@@ -336,7 +336,7 @@ apportées au donneur"
                 />
               </div>
 
-              <div class="col-md-3">
+              <div class="col-md-4 col-xl-3">
                 <label class="form-label mb-1"> Âge à la collecte </label>
 
                 <input
@@ -672,53 +672,39 @@ apportées au donneur"
               <!--<label class="form-label mb-1"> Âge </label> -->
 
               @if (!!donneur && !donneur.DateNaissance) {
-                <div class="form-control form-control-sm bg-body-secondary text-nowrap">
+                <div class="form-control form-control-sm bg-body-secondary h-100">
                   Âge à la collecte :
                   <span class="text-danger fw-bold">Renseigner la date de naissance</span>
                 </div>
               } @else {
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  [value]="'Âge à la collecte : ' + age"
-                  disabled
-                />
+                <div class="form-control form-control-sm bg-body-secondary h-100">
+                  Âge à la collecte : {{ age }}
+                </div>
               }
             </div>
 
             <div class="col-md-3">
               <!--<label class="form-label mb-1"> Dernier don </label>-->
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [value]="
-                  dernierDon ? 'Date du dernier don connu : ' + afficherDate(dernierDon) : 'Aucun'
-                "
-                disabled
-              />
+              <div class="form-control form-control-sm bg-body-secondary h-100">
+                {{ dernierDon ? 'Date du dernier don connu : ' + afficherDate(dernierDon) : 'Aucun' }}
+              </div>
             </div>
 
             <div class="col-md-3">
               <!--<label class="form-label mb-1"> Délai depuis le dernier don </label>-->
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [value]="'Délai depuis le dernier don : ' + delaiDernierDon"
-                disabled
-              />
+              <div class="form-control form-control-sm bg-body-secondary h-100">
+                Délai depuis le dernier don : {{ delaiDernierDon }}
+              </div>
             </div>
 
             <div class="col-md-3">
               <!--<label class="form-label mb-1"> Dons dans les 365 derniers jours </label>-->
 
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                [value]="'Nb de dons connus dans les 365 derniers jours : ' + nombreDons365"
-                disabled
-              />
+              <div class="form-control form-control-sm bg-body-secondary h-100">
+                Nb de dons connus dans les 365 derniers jours : {{ nombreDons365 }}
+              </div>
             </div>
           </div>
 

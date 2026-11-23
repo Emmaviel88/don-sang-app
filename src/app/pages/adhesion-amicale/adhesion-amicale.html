@@ -177,7 +177,7 @@ et les membres du comité"
               track annee
             ) {
               <tr
-                (dblclick)="selectionnerAnnee(annee)"
+                (click)="selectionnerAnnee(annee)"
                 [class.table-primary]="annee === anneeAEditer()"
                 style="cursor: pointer"
               >
@@ -217,7 +217,7 @@ et les membres du comité"
               track annee
             ) {
               <tr
-                (dblclick)="selectionnerAnnee(annee)"
+                (click)="selectionnerAnnee(annee)"
                 [class.table-primary]="annee === anneeAEditer()"
                 style="cursor: pointer"
               >
@@ -257,7 +257,7 @@ et les membres du comité"
               track annee
             ) {
               <tr
-                (dblclick)="selectionnerAnnee(annee)"
+                (click)="selectionnerAnnee(annee)"
                 [class.table-primary]="annee === anneeAEditer()"
                 style="cursor: pointer"
               >
@@ -297,8 +297,8 @@ et les membres du comité"
         Ajouter adhésion
       </button>
     </div>
-    <div class="col-md-1"></div>
-    <div class="col-md-5 ms-3">
+    <div class="col-md-1 d-none d-xl-block"></div>
+    <div class="col-xl-5 flex-fill ms-3" style="min-width: 0">
       <div class="fs-5 text-justify text-info">
         <br />
         <strong class="text-decoration-underline">Pour enregistrer une adhésion :</strong>

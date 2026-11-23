@@ -1,4 +1,4 @@
-<div class="container-fluid py-1">
+<div class="container-fluid py-1" appDeselectionHorsTableau (deselection)="deselectionnerDon()">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h2 class="mb-0">Collectes et enregistrement des dons</h2>
 
@@ -67,8 +67,7 @@ volontaires au don de plasma"
       <span class="fs-5 fw-bold">
         Collecte sélectionnée :
         <strong>
-          {{ collecte.annee }}
-          — collecte {{ collecte.NumCollecte }}
+          {{ collecte.annee }} N° {{ collecte.NumCollecte }}
           —
           {{ collecte.DateCollecte | date: 'dd/MM/yyyy' }}
         </strong>
@@ -88,7 +87,7 @@ volontaires au don de plasma"
 
       @if (!collecteModifiable()) {
         <span
-          class="alert alert-warning py-2 ms-1"
+          class="alert alert-warning py-2 ms-1 d-block d-xl-inline-block mt-2 mt-xl-0"
           [innerHTML]="
             collecteModifiable()
               ? ''
@@ -151,7 +150,7 @@ volontaires au don de plasma"
 
   @if (donneurSelectionne(); as donneur) {
     <div class="row align-items-end mb-3">
-      <div class="col-md-6">
+      <div class="col-12 col-xl-6">
         <input
           type="text"
           class="form-control fs-5 fw-bold"
@@ -167,7 +166,7 @@ volontaires au don de plasma"
         />
       </div>
 
-      <div class="col-md-6">
+      <div class="col-12 col-xl-6 mt-2 mt-xl-0">
         @if (collecteModifiable()) {
           <div class="badge bg-secondary py-2 mb-2 fs-6">
             Vérifier la collecte sélectionnée avant d'Enregistrer un don.
@@ -245,8 +244,8 @@ volontaires au don de plasma"
     </div>
 
     <div class="row gx-3 mb-3">
-      <div class="col-md-1"></div>
-      <div class="col-md-1">
+      <div class="d-none d-xl-block col-xl-1"></div>
+      <div class="col-md-2 col-xl-1">
         <label for="filtreAnnee" class="form-label fw-bold"> Filtrer par Année </label>
 
         <select
@@ -264,9 +263,9 @@ volontaires au don de plasma"
           }
         </select>
       </div>
-      <div class="col-md-1"></div>
+      <div class="d-none d-xl-block col-xl-1"></div>
 
-      <div class="col-md-3 tableau-dons">
+      <div class="col-md-4 col-xl-3 tableau-dons">
         <div class="table-responsive rounded border">
           <table class="table table-bordered table-hover table-striped table-sm mb-0 table-dons">
             <thead class="table-dark">
@@ -305,8 +304,8 @@ volontaires au don de plasma"
           </table>
         </div>
       </div>
-      <div class="col-md-1"></div>
-      <div class="col-md-4">
+      <div class="d-none d-xl-block col-xl-1"></div>
+      <div class="col-md-6 col-xl-4">
         <div class="fs-5 text-justify text-info">
           <strong class="text-decoration-underline">Enregistrement d'un nouveau don :</strong>
           <ul>

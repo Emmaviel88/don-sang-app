@@ -5,6 +5,7 @@ import { CollecteSelectionService, CollecteSelectionnee } from '../../services/c
 import { DonneurSelectionService, DonneurSelectionne } from '../../services/donneur-selection';
 import { SessionService } from '../../services/session';
 import { ExportDonneursExcelService } from '../../services/export-donneurs-excel';
+import { DeselectionHorsTableauDirective } from '../../directives/deselection-hors-tableau.directive';
 
 interface Collecte {
   IdCollecte: number;
@@ -25,7 +26,7 @@ interface Don {
 @Component({
   selector: 'app-collectes',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, DeselectionHorsTableauDirective],
   templateUrl: './collectes.html',
   styleUrl: './collectes.css',
 })
@@ -246,7 +247,11 @@ export class CollectesComponent {
   }
 
   selectionnerDon(don: Don): void {
-    this.donSelectionne.set(don);
+    this.donSelectionne.set(this.donSelectionne()?.IdDon === don.IdDon ? null : don);
+  }
+
+  deselectionnerDon(): void {
+    this.donSelectionne.set(null);
   }
 
   ouvrirChoixCollecte(): void {

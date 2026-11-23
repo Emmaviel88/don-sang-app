@@ -124,6 +124,14 @@ export class UtilisateursComponent implements OnInit {
     this.effacerMessages();
   }
 
+  basculerSelection(utilisateur: UtilisateurAdmin): void {
+    if (this.selection()?.IdUser === utilisateur.IdUser) {
+      this.annulerEdition();
+    } else {
+      this.selectionner(utilisateur);
+    }
+  }
+
   commencerCreation(): void {
     this.selection.set(null);
     this.creation.set(true);

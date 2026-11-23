@@ -69,7 +69,7 @@
                 @for (utilisateur of utilisateursFiltres(); track utilisateur.IdUser) {
                   <tr
                     [class.table-primary]="selection()?.IdUser === utilisateur.IdUser"
-                    (click)="selectionner(utilisateur)"
+                    (click)="basculerSelection(utilisateur)"
                     style="cursor: pointer"
                   >
                     <td>{{ utilisateur.Login || '(sans login)' }}</td>
