@@ -17,6 +17,8 @@ export interface UtilisateurConnecte {
 export class SessionService {
   utilisateur = signal<UtilisateurConnecte | null>(null);
 
+  messageDeconnexion = signal('');
+
   private sessionRestaurée: Promise<void>;
 
   constructor(private supabase: SupabaseService) {

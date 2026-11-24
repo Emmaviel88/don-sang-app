@@ -275,6 +275,32 @@ export class SupabaseService {
     }
   }
 
+  async getEtatAcces(): Promise<{ ouvert: boolean; jusqua: Date | null }> {
+    const { data, error } = await this.supabase.rpc('get_etat_acces');
+
+    if (error) {
+      throw error;
+    }
+
+    const ligne = data?.[0];
+
+    return {
+      ouvert: ligne?.Ouvert === true,
+      jusqua: ligne?.OuvertJusquA ? new Date(ligne.OuvertJusquA) : null,
+    };
+  }
+
+  // dureeHeures <= 0 : fermeture immédiate ; maximum 4 h (contrôlé aussi en base)
+  async definirAccesApplication(dureeHeures: number): Promise<void> {
+    const { error } = await this.supabase.rpc('definir_acces_application', {
+      p_duree_heures: dureeHeures,
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
+
   async testerLectureContacts(): Promise<number> {
     const { data, error } = await this.supabase.from('t_Contacts').select('IdContact');
 

@@ -148,6 +148,23 @@
       </div>
     </nav>
 
+    @if (minutesAvantFermeture(); as minutes) {
+      <div
+        class="text-center fw-bold text-uppercase py-1"
+        [class.bg-warning]="minutes > 2"
+        [class.text-dark]="minutes > 2"
+        [class.bg-black]="minutes <= 2"
+        [class.text-warning]="minutes <= 2"
+        [class.border-bottom]="true"
+        [class.border-4]="true"
+        [class.border-danger]="minutes <= 2"
+        role="alert"
+      >
+        ATTENTION ! VOTRE SESSION SERA FERMÉE AUTOMATIQUEMENT DANS {{ minutes }} min (à
+        {{ heureLimite() }}) : VEUILLEZ ENREGISTRER VOTRE TRAVAIL.
+      </div>
+    }
+
     <main
       class="container-fluid pt-1 pb-4 flex-grow-1 bg-body text-body"
       [attr.data-bs-theme]="theme.mode()"
@@ -156,7 +173,9 @@
     </main>
 
     <footer class="navbar-association py-2">
-      <div class="container-fluid d-flex justify-content-between text-white">
+      <div
+        class="container-fluid d-flex flex-wrap justify-content-between align-items-center column-gap-3 text-white"
+      >
         <span>
           Nb de contacts : {{ compteurs.total() ?? '…' }} (dont {{ compteurs.actifs() ?? '…' }}
           actifs)
@@ -168,9 +187,56 @@
           }}
         </span>
 
-        <span>
-          {{ session.utilisateur()?.NomComplet }} [{{ session.utilisateur()?.Role }}] ➜ Connecté à
-          la Base de données {{ typeConnexion }}
+        <span class="d-flex align-items-center gap-2">
+          <span>
+            {{ session.utilisateur()?.NomComplet }} [{{ session.utilisateur()?.Role }}] ➜ Base
+            {{ typeConnexion }}
+          </span>
+
+          @if (estSA()) {
+            <span class="position-relative">
+              <button
+                type="button"
+                class="btn btn-sm btn-light py-0 px-2"
+                (click)="menuAccesOuvert.set(!menuAccesOuvert())"
+              >
+                <i
+                  class="bi"
+                  [class.bi-unlock]="etatAcces().ouvert"
+                  [class.bi-lock]="!etatAcces().ouvert"
+                ></i>
+                {{ etatAcces().ouvert ? 'Accès ouvert → ' + heureLimite() : 'Accès fermé' }}
+              </button>
+
+              @if (menuAccesOuvert()) {
+                <div
+                  class="position-absolute bottom-100 end-0 mb-1 bg-white text-dark border rounded shadow p-2 menu-acces"
+                >
+                  <div class="small mb-1">Ouvrir l'accès aux Users/Admins :</div>
+                  <div class="d-flex flex-wrap gap-1">
+                    @for (duree of dureesAcces; track duree) {
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-success"
+                        (click)="definirAcces(duree)"
+                      >
+                        {{ duree }} h
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="definirAcces(0)"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              }
+            </span>
+          } @else if (etatAcces().ouvert) {
+            <span class="badge text-bg-light">Accès → {{ heureLimite() }}</span>
+          }
         </span>
       </div>
     </footer>

@@ -168,3 +168,8 @@
     font-size: 1rem !important;
   }
 }
+
+.menu-acces {
+  min-width: 220px;
+  z-index: 1050;
+}

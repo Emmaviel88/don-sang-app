@@ -33,6 +33,8 @@ export class LoginComponent {
     private session: SessionService,
     private router: Router,
   ) {
+    this.message.set(this.session.messageDeconnexion());
+    this.session.messageDeconnexion.set('');
     this.chargerLogins();
   }
 
@@ -92,6 +94,23 @@ export class LoginComponent {
     }
 
     const utilisateur = userData[0];
+
+    if (utilisateur.Role !== 'SA') {
+      let accesOuvert = false;
+      try {
+        accesOuvert = (await this.supabase.getEtatAcces()).ouvert;
+      } catch (error) {
+        console.error('ERREUR ÉTAT ACCÈS :', error);
+      }
+
+      if (!accesOuvert) {
+        await this.supabase.client.auth.signOut();
+        this.chargement.set(false);
+        this.message.set("L'accès à l'application n'est pas ouvert. Contactez le SA.");
+        this.password = '';
+        return;
+      }
+    }
 
     const { error: cnxError } = await this.supabase.client.rpc('maj_derniere_cnx');
     if (cnxError) {
