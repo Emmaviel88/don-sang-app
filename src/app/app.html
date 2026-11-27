@@ -197,7 +197,9 @@
             <span class="position-relative">
               <button
                 type="button"
-                class="btn btn-sm btn-light py-0 px-2"
+                class="btn btn-sm py-0 px-2 border border-1 border-light rounded"
+                [class.btn-success]="etatAcces().ouvert"
+                [class.btn-danger]="!etatAcces().ouvert"
                 (click)="menuAccesOuvert.set(!menuAccesOuvert())"
               >
                 <i
@@ -235,7 +237,7 @@
               }
             </span>
           } @else if (etatAcces().ouvert) {
-            <span class="badge text-bg-light">Accès → {{ heureLimite() }}</span>
+            <span class="badge text-bg-success">Accès → {{ heureLimite() }}</span>
           }
         </span>
       </div>

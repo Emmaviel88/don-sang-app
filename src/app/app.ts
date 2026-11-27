@@ -62,7 +62,7 @@ export class App {
     });
   }
 
-  readonly dureesAcces = [1, 2, 3, 4];
+  readonly dureesAcces = [1, 2, 3, 4, 5];
   etatAcces = signal<{ ouvert: boolean; jusqua: Date | null }>({ ouvert: false, jusqua: null });
   menuAccesOuvert = signal(false);
   maintenant = signal(Date.now());
